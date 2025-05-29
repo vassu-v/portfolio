@@ -1,0 +1,16 @@
+h1{
+    font-weight: 600;
+    background-color: transparent;
+    color: rebeccapurple;
+    text-shadow: 1px 1px black;
+    float: left;
+    flood-color: black;
+}
+.container{
+    margin-left: 75px;
+    margin-right: 75px;
+    align-self: center center;
+    background-color: rebeccapurple;
+    border-radius: 5px ;
+    min-height: max-content;
+}

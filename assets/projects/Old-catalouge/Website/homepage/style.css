@@ -1,0 +1,82 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    background-color: #f5f8ff;
+    
+}
+
+.wrapper {
+    width: 100%;
+    margin: 0 auto;
+    position: fixed;
+    background-color: #f5f8ff;
+}
+
+#search-container {
+    margin: 1em 0;
+}
+
+#search-container input {
+    background-color: transparent;
+    width: 40%;
+    border-bottom: 2px solid black;
+    padding: 1em 0.3em;
+}
+
+#search-container input:focus {
+    border-bottom-color: rebeccapurple;
+}
+
+#search-container button {
+    padding: 1em 2em;
+    margin: 1em;
+    background-color: rebeccapurple;
+    color: #ffff;
+    border-radius: 5px;
+    margin-top: 0.5em;
+}
+
+.card {
+    background-color: white;
+    max-width: 18em;
+    margin-top: 1em;
+    border-radius: 5px;
+    height: min-content;
+    border: solid black;
+    min-width: max-content;
+}
+.imgContainer {
+    text-align: center;
+    transform-origin: center center;
+    object-fit: contain;
+}
+img{
+    transform-origin: center center;
+    object-fit: contain;
+    height: 100%;
+    width: 100%;
+
+}
+.container{
+    padding-top: 1em;
+}
+
+.hide{
+    display: none;
+}
+.moto{
+    background-color: rebeccapurple;
+    height: 100px;
+    width: 100%;
+    text-align: center;
+    text-decoration: underline;
+    padding-top: 25px;
+    border-radius: 7%;
+}

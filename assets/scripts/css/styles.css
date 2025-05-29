@@ -1,0 +1,487 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Monomaniac+One&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap");
+
+#custom-watermark {
+  position: fixed;
+  bottom: 50px;
+  right: 20px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: Arial, sans-serif;
+  pointer-events: none; /* Prevents clicking or blocking content */
+  z-index: 8;
+  user-select: none;
+}
+
+#landscape-warning {
+  display: none;
+  position: fixed;
+  z-index: 7;
+  inset: 0;
+  background: #111;
+  color: #fff;
+  font-family: sans-serif;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.landscape-message {
+  max-width: 80%;
+  font-size: 1.2rem;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #fff;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+@media screen and (orientation: portrait) {
+  #landscape-warning {
+    display: flex;
+  }
+}
+
+/* Fullscreen Loading Screen */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #121212;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease-out;
+}
+
+/* Loading Text */
+.loading-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Animated Dots */
+.dots::after {
+  content: ".";
+  animation: dots-animation 1.5s steps(4, end) infinite;
+}
+
+/* Keyframes for bouncing dots */
+@keyframes dots-animation {
+  0% { content: "."; }
+  25% { content: ".."; }
+  50% { content: "..."; }
+  75% { content: "...."; }
+  100% { content: "."; }
+}
+
+
+/* Contact Tray Styles */
+.contact-tray-container {
+  position: fixed;
+  top: 30%;
+  right: 15px; /* Slightly adjusted for better alignment */
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Reduced spacing */
+  z-index: 1000;
+}
+.contact-tray-container a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 6px; /* Reduced padding */
+  border-radius: 50%;
+  width: 26px; /* New smaller size */
+  height: 26px;
+  text-decoration: none;
+  transition: background 0.3s ease, transform 0.2s ease;
+  position: relative;
+}
+.contact-tray-container a:hover {
+  background: #333;
+  transform: scale(1.1);
+}
+.contact-tray-container i {
+  font-size: 14px; /* Adjusted icon size */
+}
+/* Tooltip Effect */
+.contact-tray-container a::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 45px;
+  background: #333;
+  color: white;
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+.contact-tray-container a:hover::after {
+  opacity: 1;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: black;
+  font-family: Arial, sans-serif;
+  color: white;
+  position: relative;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  transition: background 0.3s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Background Moving Text */
+#container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.row {
+  position: absolute;
+  width: 100%;
+  white-space: nowrap;
+  font-size: 24px;
+  font-weight: bold;
+  overflow: hidden;
+}
+
+.insta-description{
+  font-family: "JetBrains Mono", monospace;
+}
+
+.text {
+  display: inline-block;
+  padding-right: 30px;
+  white-space: nowrap;
+}
+
+.word {
+  display: inline-block;
+  margin: 5px;
+  padding: 5px 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Main Image */
+.person-image {
+  position: fixed;
+  bottom: -10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110%;
+  max-height: 95vh;
+  object-fit: contain;
+  transition: transform 0.8s ease, width 0.8s ease, opacity 0.5s ease;
+  z-index: 2;
+}
+
+/* Hovering Text */
+.hover-text {
+  text-align: center;
+  position: fixed;
+  top: 45vh;
+  /* Position near the eyes */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  font-weight: bold;
+  color: wheat;
+  transition: top 0.8s ease, left 0.8s ease, transform 0.8s ease;
+  z-index: 4;
+  background-color: black;
+  border-radius: 50%;
+  opacity: 55%;
+  font-family: "Roboto Mono", monospace;
+  min-width: max-content;
+}
+
+/* Content Container */
+.content-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 100vh;
+  gap: 50px;
+  /* Increased space between sections */
+}
+
+.content-section {
+  width: 50%;
+  min-height: 50vh;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(5px);
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  position: relative;
+  z-index: 3;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.content-section:first-child {
+  align-self: flex-end;
+  margin-right: 5%;
+  position: relative;
+}
+
+/* Fullscreen Section */
+.fullscreen-section {
+  width: 100%;
+  min-height: 100vh;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: white;
+  align-items: center;
+  font-size: 28px;
+  font-weight: bold;
+  z-index: 5;
+  position: relative;
+  border-radius: 10px;
+}
+
+/* Image Movement & Scaling */
+.shrink-left {
+  transform: translate(-90%, 10%) scale(0.8) !important;
+  width: 80vw !important;
+}
+
+.hidden {
+  opacity: 0 !important;
+}
+
+.about {
+  font-family: "Monomaniac One", monospace;
+}
+
+.me {
+  font-family: "JetBrains Mono", monospace;
+  color: #14b8a7;
+}
+i {
+  color: wheat;
+}
+img {
+  filter: drop-shadow(0px 0px 20px white);
+}
+.explore-gallery-wrapper {
+  margin-top: 30px;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.insta-explore-wrapper {
+  margin-top: 30px;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+h3 {
+  font-family: "Monomaniac One", monospace;
+}
+
+.insta-explore-grid {
+  column-count: 3;
+  column-gap: 20px;
+}
+
+.insta-card {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 20px;
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  color: white;
+  text-decoration: none;
+  break-inside: avoid;
+  cursor: pointer;
+}
+
+.insta-card img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.insta-card:hover img {
+  transform: scale(1.05);
+}
+
+.insta-title {
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.6);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.insta-modal {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.insta-modal-content {
+  background: #1e1e1e;
+  display: flex;
+  flex-direction: row;
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 850px;
+  width: 100%;
+  color: white;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  max-height: 100%;
+  overflow-y: auto;
+  margin: auto;
+}
+
+.insta-modal-img {
+  flex: 1;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 100%;
+}
+
+.insta-modal-img img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  max-height: 100%;
+}
+
+.insta-modal-info {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+
+.insta-modal-info h2 {
+  margin-top: 0;
+  font-size: 1.6rem;
+}
+
+.insta-skills {
+  margin-top: 10px;
+}
+
+.insta-skills span {
+  padding: 6px 10px;
+  margin: 3px;
+  display: inline-block;
+  border-radius: 4px;
+  font-size: 15px;
+  color: black;
+  background: #ccc;
+  font-family: "Monomaniac One", monospace;
+}
+
+.insta-btn {
+  margin-top: 20px;
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  display: inline-block;
+  width: fit-content;
+}
+
+.insta-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+}
+
+
+
+@media (max-width: 480px) {
+  .insta-explore-grid {
+    column-count: 1;
+  }
+
+  .insta-modal {
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+
+  .insta-modal-info {
+    padding: 15px;
+  }
+}
+
+
+
+
+#tipMessage {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: "JetBrains Mono", monospace;
+  z-index: 10000;
+  transition: opacity 0.5s ease;
+}
+

@@ -1,0 +1,154 @@
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400,500" rel="stylesheet">
+
+<div class="card">
+   <div class="card-avatar">
+      <img src="Img Blank.png" alt="" srcset="">
+   </div>
+   <div class="card-details">
+      <div class="name">Shoryavardhaan Gupta</div>
+      <div class="occupation">Student</div>
+      
+      <div class="card-about">
+         <div class="item">
+            <span class="value" id="ageOutput"></span>
+            <span class="label">Age</span>
+         </div>
+         <div class="item">
+            <span class="value" id="class"></span>
+            <span class="label">Class</span>
+         </div>
+         <br>
+         <div class="item">
+            <span class="value">Py,Html,C/C++</span>
+            <span class="label">Languages</span>
+         </div>
+      </div>
+      <div class="skills">
+         <span class="value">Developer and AI Enthusiast from Kolkata, India. I have rich experience in Website Design/Customization & No-Code.
+            IoT, Gaming and Programming are my hobby also I am also decent at Editing & Photography.</span>
+      </div>
+   </div>
+</div>
+
+<script>
+
+    
+        // Birthdate
+        const birthDate = new Date('2009-09-02');
+
+        // Current date
+        const currentDate = new Date();
+
+        // Calculate the difference in years, months, days, hours, and minutes
+        let yearsDiff = currentDate.getFullYear() - birthDate.getFullYear();
+        const monthsDiff = currentDate.getMonth() - birthDate.getMonth();
+        const daysDiff = currentDate.getDate() - birthDate.getDate();
+        const hoursDiff = currentDate.getHours() - birthDate.getHours();
+        const minutesDiff = currentDate.getMinutes() - birthDate.getMinutes();
+
+        // Adjust for negative months, days, hours, or minutes differences
+        let adjustedMonths = monthsDiff;
+        let adjustedDays = daysDiff;
+        let adjustedHours = hoursDiff;
+        let adjustedMinutes = minutesDiff;
+
+        if (minutesDiff < 0) {
+            adjustedHours--;
+            adjustedMinutes += 60;
+        }
+
+        if (hoursDiff < 0) {
+            adjustedDays--;
+            adjustedHours += 24;
+        }
+
+        if (daysDiff < 0) {
+            adjustedMonths--;
+            const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+            adjustedDays += lastMonth.getDate();
+        }
+
+        if (adjustedMonths < 0) {
+            yearsDiff--;
+            adjustedMonths += 12;
+        }
+
+
+
+        // Function to calculate and display age and time remaining
+        function displayAgeAndTimeRemaining() {
+            // Calculate the age
+            const birthDate = new Date('2009-09-02');
+            const currentDate = new Date();
+
+            let yearsDiff = currentDate.getFullYear() - birthDate.getFullYear();
+            const monthsDiff = currentDate.getMonth() - birthDate.getMonth();
+            const daysDiff = currentDate.getDate() - birthDate.getDate();
+            const hoursDiff = currentDate.getHours() - birthDate.getHours();
+            const minutesDiff = currentDate.getMinutes() - birthDate.getMinutes();
+
+            // Adjust for negative differences
+            let adjustedMonths = monthsDiff;
+            let adjustedDays = daysDiff;
+            let adjustedHours = hoursDiff;
+            let adjustedMinutes = minutesDiff;
+
+            if (minutesDiff < 0) {
+                adjustedHours--;
+                adjustedMinutes += 60;
+            }
+
+            if (hoursDiff < 0) {
+                adjustedDays--;
+                adjustedHours += 24;
+            }
+
+            if (daysDiff < 0) {
+                adjustedMonths--;
+                const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+                adjustedDays += lastMonth.getDate();
+            }
+
+            if (adjustedMonths < 0) {
+                yearsDiff--;
+                adjustedMonths += 12;
+            }
+
+            // Calculate the date when you will turn one year older
+            const nextYearDate = new Date(birthDate.getFullYear() + yearsDiff + 1, birthDate.getMonth(), birthDate.getDate());
+
+            // Calculate the time difference between the current date and the next year date
+            const timeDifference = nextYearDate - currentDate;
+
+            // Calculate the remaining days, hours, minutes, and seconds
+            const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hoursRemaining = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutesRemaining = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const secondsRemaining = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            
+        }
+
+        // Update the display every second
+        setInterval(displayAgeAndTimeRemaining, 1000);
+
+        // Initial display
+        displayAgeAndTimeRemaining();
+
+        // Output the age
+        console.log(`Currently I am ${yearsDiff} years, ${adjustedMonths} months, ${adjustedDays} days, ${adjustedHours} hours, and ${adjustedMinutes} minutes old.`);
+
+        const ageOutput = document.getElementById('ageOutput');
+        ageOutput.textContent = ` ${yearsDiff} `;
+        const ageOut = document.getElementById('ageOut');
+        console.log("This website was last updated on")
+        console.log("22/4/2024")
+
+        let yrscom = yearsDiff+1
+        let clss = ~~(yrscom/2)+2;
+        const clsot = document.getElementById('class');
+        clsot.textContent =  ` ${clss}th `;
+
+</script>
