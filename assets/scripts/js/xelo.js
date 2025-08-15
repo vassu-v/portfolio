@@ -208,13 +208,6 @@
       skills: ["HTML", "CSS", "JavaScript"]
     },
     {
-      title: "Old Portfolio",
-      img: "./assets/projects/old-portfolio/Capture.PNG",
-      link: "./assets/projects/old-portfolio/index.html",
-      description: "An earlier version of the portfolio was built using HTML and CSS, with added interactivity through JavaScript and lightweight libraries like jQuery. While not fully vanilla, it maintained a clean structure with enhanced features such as smooth scrolling, responsive navigation, and animated elements. The layout included core sections like About, Skills, Projects, and Contact, offering a simple yet functional way to showcase work and background.",
-      skills: ["HTML", "CSS", "JavaScript", "Libraries"]
-    },
-    {
       title: "Szam Logo Design",
       img: "./assets/projects/szam/Szam-logo.png",
       link: "./assets/projects/szam/Szam-logo.png",
@@ -322,3 +315,4 @@
     grid.appendChild(card);
   });
 })();
+
