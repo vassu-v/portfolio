@@ -1,79 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="shortcut icon" href="./assets/images/favicon.png" type="image/x-icon">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
-    <link rel="stylesheet" href="./assets/scripts/css/styles.css" />
-    <title>ortfolio</title>
-  </head>
 
-  <body>
-    <div id="loading-screen">
-      <div class="loading-text">Loading<span class="dots"></span></div>
-    </div>
-    <div id="tipMessage"><i>Tip: Click on element for more info.</i></div>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="shortcut icon" href="./assets/images/favicon.png" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="./assets/scripts/css/styles.css" />
+  <title>Portfolio - Shoryavardhaan</title>
+</head>
 
-    <script src="./assets/scripts/js/loading.js"></script>
-    
-    <div id="landscape-warning">
-      <div class="landscape-message">
-        <p>Please rotate your device to landscape mode.</p>
+<body>
+  <div id="scroll-progress"></div>
+  <div id="custom-cursor"></div>
+  <div id="loading-screen">
+    <div class="loading-text">Loading<span class="dots"></span></div>
+  </div>
+  <div id="tipMessage"><i>Tip: Click on element for more info.</i></div>
+
+  <script src="./assets/scripts/js/loading.js"></script>
+
+  <!-- Landscape warning removed as per new direction, keeping div hidden or removing entirely is fine. Removing for cleaner DOM -->
+
+  <div id="custom-watermark">Shoryavardhaan Gupta</div>
+
+  <div id="container"></div>
+  <img src="./assets/images/2-removebg-preview.png" alt="Person" class="person-image" id="personImage" loading="lazy" />
+
+  <!-- Hovering Text -->
+  <div class="hover-text" id="hoverText">Shoryavardhaan Gupta</div>
+
+  <div class="content-container">
+    <div class="content-section" id="rightSection">
+      <h2 class="about">About Me</h2>
+      <div id="contactTray"></div>
+      <br />
+      <div class="me">
+        <h5>
+          I'm a <i id="ageOutput">[My Age]</i> yrs old from
+          <i>Kolkata, India</i> passionate about creating, learning, and
+          solving problems through innovation and design. With experience in
+          <i id="Skills">[skills, e.g., coding, design, animation,
+            problem-solving]</i>,<br><br>
+          <div class="sep" style="margin-top: 15px;">
+            I love bringing ideas to life in a way that’s both functional and
+            engaging. I'm always exploring new technologies and refining my
+            craft, drawing inspiration from
+            <i id="Interest">[interests, e.g., music, gaming, art]</i> to
+            push my creativity further.
+          </div>
+        </h5>
       </div>
     </div>
-    
-    <div id="custom-watermark">Shoryavardhaan Gupta</div>
 
-    <div id="container"></div>
-    <img src="./assets/images/2-removebg-preview.png" alt="Person" class="person-image" id="personImage" />
+    <!-- Spacer for more vertical gap -->
+    <div style="height: 10vh"></div>
 
-    <!-- Hovering Text -->
-    <div class="hover-text" id="hoverText">Shoryavardhaan Gupta</div>
-
-    <div class="content-container">
-      <div class="content-section" id="rightSection">
-        <h2 class="about">About Me</h2>
-        <div id="contactTray"></div>
-        <br />
-        <div class="me">
-          <h5>
-            I'm a <i id="ageOutput">[My Age]</i> yrs old from
-            <i>Kolkata, India</i> passionate about creating, learning, and
-            solving problems through innovation and design. With experience in
-            <i id="Skills"
-              >[skills, e.g., coding, design, animation,
-              problem-solving]</i
-            >,
-            <div class="sep">
-              I love bringing ideas to life in a way that’s both functional and
-              engaging. I'm always exploring new technologies and refining my
-              craft, drawing inspiration from
-              <i id="Interest">[interests, e.g., music, gaming, art]</i> to
-              push my creativity further.
-            </div>
-          </h5>
-        </div>
-      </div>
-
-      <!-- Spacer for more vertical gap -->
-      <div style="height: 300px"></div>
-
-      <div class="fullscreen-section" id="fullscreenSection">
-        <div class="explore-gallery-wrapper">
-          <h3>Experiences</h3>
-        </div>
-        <div class="insta-explore-wrapper">
-          <h3>Side-Projects</h3>
+    <!-- Tech Stack Marquee -->
+    <div class="tech-stack-container" id="techStack">
+      <h3>Tech Stack</h3>
+      <div class="marquee-wrapper">
+        <div class="marquee-content" id="marqueeContent">
+          <!-- Content injected via JS -->
         </div>
       </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="./assets/scripts/js/script.js"></script>
-    <script src="./assets/scripts/js/xelo.js"></script>
-  </body>
+    <!-- Spacer for more vertical gap -->
+    <div style="height: 15vh"></div>
+
+    <div class="fullscreen-section" id="fullscreenSection">
+      <div class="explore-gallery-wrapper" id="highlights">
+        <h3>Highlights</h3>
+      </div>
+      <div class="insta-explore-wrapper" id="work">
+        <h3>Projects</h3>
+      </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="site-footer" id="contact">
+      <div class="footer-content">
+        <h2>Let's Build Something Together</h2>
+        <p>Open for collaborations and new opportunities.</p>
+        <div class="footer-links" id="footerLinks">
+          <!-- Dynamicly populated -->
+        </div>
+        <p class="copyright">© 2026 Shoryavardhaan Gupta. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <button id="backToTop" class="back-to-top" aria-label="Back to Top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="./assets/scripts/js/script.js"></script>
+  <script src="./assets/scripts/js/gallery-loader.js?v=2"></script>
+</body>
+
 </html>

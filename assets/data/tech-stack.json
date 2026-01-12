@@ -1,0 +1,46 @@
+[
+    {
+        "name": "Python",
+        "icon": "fa-brands fa-python"
+    },
+    {
+        "name": "JavaScript",
+        "icon": "fa-brands fa-js"
+    },
+    {
+        "name": "C / Arduino",
+        "icon": "fa-solid fa-microchip"
+    },
+    {
+        "name": "HTML5",
+        "icon": "fa-brands fa-html5"
+    },
+    {
+        "name": "CSS3",
+        "icon": "fa-brands fa-css3-alt"
+    },
+    {
+        "name": "Flask",
+        "icon": "fa-solid fa-flask"
+    },
+    {
+        "name": "Node.js",
+        "icon": "fa-brands fa-node-js"
+    },
+    {
+        "name": "Jupyter",
+        "icon": "fa-solid fa-book-open"
+    },
+    {
+        "name": "Git",
+        "icon": "fa-brands fa-git-alt"
+    },
+    {
+        "name": "Linux",
+        "icon": "fa-brands fa-linux"
+    },
+    {
+        "name": "Zenodo",
+        "icon": "fa-solid fa-archive"
+    }
+]

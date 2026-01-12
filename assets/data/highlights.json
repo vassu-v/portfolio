@@ -1,0 +1,62 @@
+[
+    {
+        "title": "3rd at Quantum Qubit'25",
+        "img": "./assets/images/dbpc.jpg",
+        "description": "Secured 3rd place at the Quantum Qubit'25 Hackathon, building real-world systems across CS and electronics."
+    },
+    {
+        "title": "Published Research Preprint",
+        "img": "./assets/images/preprint.jpg",
+        "description": "Published 'Grounded Planning Research' on Zenodo, studying failure modes in AI planning systems."
+    },
+    {
+        "title": "Tried starting blogpost",
+        "img": "./assets/images/blog.jpeg",
+        "description": "Tried starting a blogpost, but it was not successful."
+    },
+    {
+        "title": "UI/UX Designer (Utsavy)",
+        "img": "./assets/images/utsavy.jpg",
+        "description": "Designed multiple client-facing templates and contributed to professional design workflows."
+    },
+    {
+        "title": "Open-Source Prompt Hub",
+        "img": "./assets/images/prompts.jpg",
+        "description": "Curated an open-source hub of practical AI prompts for high-efficiency task automation."
+    },
+    {
+        "title": "Shipped Multiple Prototypes",
+        "img": "./assets/images/proto.png",
+        "description": "Dedicated to shipping functional prototypes, moving beyond concepts to tangible implementations. Even tried no-code service business and other ideas."
+    },
+    {
+        "title": "Won Silver Medal at National Level",
+        "img": "./assets/images/cont.jpeg",
+        "description": "Secured the 2nd position in a prestigious national-level coding competition."
+    },
+    {
+        "title": "Google Cloud Ready Facilitator",
+        "img": "./assets/images/google.jpeg",
+        "description": "Recognized by Google Cloud for active participation and winning in their program at age 14."
+    },
+    {
+        "title": "Published Author at 15",
+        "img": "./assets/images/amzn.jpeg",
+        "description": "Wrote and published a book, sharing knowledge and stories with a wider audience."
+    },
+    {
+        "title": "8,000+ YouTube Views",
+        "img": "./assets/images/yt.jpeg",
+        "description": "Created content that resonated with thousands of viewers in 2021."
+    },
+    {
+        "title": "Science Exhibition Finalist",
+        "img": "https://images.unsplash.com/photo-1631323272731-b765ddfb59d1",
+        "description": "Presented a solo project at a science exhibition, demonstrating innovation in mechatronics."
+    },
+    {
+        "title": "Top 500 at School Youth Ideathon",
+        "img": "./assets/images/syi.png",
+        "description": "Selected in Top 500 nationally at School Youth Ideathon (SYI), representing school at national-level innovation screening and gaining feedback from educators and innovation mentors."
+    }
+]

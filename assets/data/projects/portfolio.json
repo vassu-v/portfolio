@@ -1,0 +1,12 @@
+{
+    "id": "portfolio",
+    "title": "This Portfolio",
+    "img": "https://images.unsplash.com/photo-1470770841072-f978cf4d019e",
+    "link": "#",
+    "description": "The portfolio you're looking at right now. This was made in pure HTML, CSS and JavaScript.",
+    "skills": [
+        "HTML",
+        "CSS",
+        "Vanilla JavaScript"
+    ]
+}

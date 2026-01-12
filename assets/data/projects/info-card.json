@@ -1,0 +1,11 @@
+{
+    "id": "info-card",
+    "title": "Info Card",
+    "img": "./assets/projects/srya-bscard/Img Blank.png",
+    "link": "./assets/projects/srya-bscard/index.html",
+    "description": "This dynamic info card is a fun project built with HTML, CSS, and JavaScript that updates key personal details in real-time, like the user's age, class, and skills. The age automatically adjusts based on the birthdate input, making it an interactive and user-friendly display. The card shows personal details like the name, class, languages known and hobbies, making it a great way to introduce someone in a tech-savvy, modern way. It’s perfect for personal portfolios or digital business cards and could be expanded to include more dynamic data like social media handles, project updates, or a mini resume.",
+    "skills": [
+        "HTML",
+        "CSS"
+    ]
+}

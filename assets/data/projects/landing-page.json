@@ -1,0 +1,12 @@
+{
+    "id": "landing-page",
+    "title": "Landing Page",
+    "img": "./assets/projects/landing-page/Capturefrerf.PNG",
+    "link": "./assets/projects/landing-page/index.html",
+    "description": "This project is a dynamic landing page designed for web browsers. It features a personalized greeting that changes based on the user's local time, four fully customizable quick-access buttons for favorite sites or tools, and a playful bubble-popping game for casual engagement. Designed to blend functionality with a touch of fun, the page acts as a daily home base for users looking to streamline access to common links while enjoying a bit of light interaction. Beyond a traditional start page, it can be creatively adapted into a kids' educational portal, a personal productivity dashboard, or even a calming anti-stress page with interactive elements. Its value lies in its user-friendly interface, personalization, and subtle entertainment factor.",
+    "skills": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+    ]
+}
