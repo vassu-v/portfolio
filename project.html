@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Details</title>
+    <link rel="shortcut icon" href="./assets/images/favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="./assets/scripts/css/styles.css" />
+    <style>
+        /* Page specific overrides for project.html */
+        body {
+            background-color: #0b0b0b;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Background Animation Container matches script logic */
+        #container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .main-wrapper {
+            width: 95%;
+            max-width: 1400px;
+            margin-top: 40px;
+            margin-bottom: 50px;
+            z-index: 10;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .back-nav {
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .back-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Split Layout Grid */
+        .project-split-layout {
+            display: grid;
+            grid-template-columns: 35% 65%;
+            /* Left smaller, Right wider */
+            gap: 30px;
+            height: 80vh;
+        }
+
+        /* Glass Panel Base */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Left Panel: Iframe/Preview */
+        .left-panel {
+            padding: 20px;
+            gap: 20px;
+            height: fit-content;
+            /* Don't stretch */
+            align-self: start;
+            /* Stick to top */
+        }
+
+        .preview-window {
+            width: 100%;
+            height: 280px;
+            /* Fixed height for preview */
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #333;
+        }
+
+        iframe.project-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            /* Default white bg for iframes */
+        }
+
+        .iframe-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Right Panel: Content */
+        .right-panel {
+            padding: 40px;
+            overflow-y: auto;
+            /* Scrollable content */
+        }
+
+        /* Custom scrollbar for right panel */
+        .right-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .right-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .project-title {
+            font-family: 'Monomaniac One', monospace;
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            line-height: 1.1;
+        }
+
+        .project-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .skill-tag {
+            background: rgba(255, 255, 255, 0.1);
+            color: #bbb;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .project-desc {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #ddd;
+            white-space: pre-wrap;
+        }
+
+        .mobile-warning {
+            display: none;
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .project-split-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .preview-window {
+                height: 400px;
+                /* Fixed height on mobile */
+            }
+
+            .main-wrapper {
+                margin-top: 20px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #loading {
+            margin-top: 20vh;
+            font-size: 1.5rem;
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 20vh;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Animation Container -->
+    <div id="container"></div>
+
+    <div id="loading">Loading Project...</div>
+
+    <div class="main-wrapper" id="project-app" style="display: none;">
+        <div class="back-nav">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Gallery</a>
+        </div>
+
+        <div class="project-split-layout">
+            <!-- Left Side: Preview -->
+            <div class="glass-panel left-panel">
+                <div class="mobile-warning">* Preview may be limited in iframe</div>
+                <div class="preview-window">
+                    <iframe class="project-iframe" id="p-iframe" src="about:blank"></iframe>
+                </div>
+                <div class="iframe-actions">
+                    <a href="#" target="_blank" class="action-btn" id="p-link-btn">
+                        Open Full Site <i class="fa-solid fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Side: Details -->
+            <div class="glass-panel right-panel">
+                <h1 class="project-title" id="p-title"></h1>
+
+                <div class="project-skills" id="p-skills"></div>
+
+                <div class="project-desc" id="p-desc"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (async function () {
+            // --- Background Animation Logic (Identical to existing) ---
+            const words = ["Code", "Algorithm", "Prototype", "Automation", "Kolkata", "Random", "Effect", "Text", "Animation", "Young", "Arduino"];
+            const colors = ["red", "purple", "white", "blue", "magenta"];
+            const fonts = ["Arial", "Courier New", "Georgia", "Impact", "Poppins", "Bebas Neue", "Oswald", "Rubik", "Playfair Display", "Exo", "Nunito", "Lobster", "Caveat"];
+            let rowHeight = 50;
+            function getRandomWords() { return Array.from({ length: 25 }, () => { const word = words[Math.floor(Math.random() * words.length)]; const font = fonts[Math.floor(Math.random() * fonts.length)]; const color = colors[Math.floor(Math.random() * colors.length)]; return `<span class="word" style="font-family: ${font}; color: ${color}; display: inline-block; margin: 5px; padding: 5px 10px; font-weight: bold; text-transform: uppercase;">${word}</span>`; }).join(" "); }
+            function createRow(index) { const row = document.createElement("div"); row.style.position = "absolute"; row.style.width = "100%"; row.style.whiteSpace = "nowrap"; row.style.fontSize = "24px"; row.style.fontWeight = "bold"; row.style.overflow = "hidden"; row.style.top = `${index * rowHeight}px`; const direction = index % 2 === 0 ? 1 : -1; const textContainer = document.createElement("div"); textContainer.style.display = "inline-block"; textContainer.style.paddingRight = "30px"; textContainer.style.whiteSpace = "nowrap"; textContainer.innerHTML = getRandomWords() + " " + getRandomWords(); row.appendChild(textContainer); document.getElementById("container").appendChild(row); let position = direction === 1 ? -textContainer.scrollWidth / 2 : 0; function animate() { position += direction * 2.5; if (direction === 1 && position > 0) { position = -textContainer.scrollWidth / 2; } else if (direction === -1 && position < -textContainer.scrollWidth / 2) { position = 0; } textContainer.style.transform = `translateX(${position}px)`; requestAnimationFrame(animate); } requestAnimationFrame(animate); }
+            function setupRows() { const container = document.getElementById("container"); if (!container) return; container.innerHTML = ""; let numRows = Math.floor(window.innerHeight / rowHeight) + 1; for (let i = 0; i < numRows; i++) { createRow(i); } }
+            window.addEventListener("resize", setupRows); setupRows();
+            // ---------------------------------------------------------
+
+            const params = new URLSearchParams(window.location.search);
+            const projectId = params.get("id");
+            const app = document.getElementById("project-app");
+            const loading = document.getElementById("loading");
+
+            if (!projectId) {
+                loading.innerHTML = "<div class='error-msg'>No project specified.</div>";
+                return;
+            }
+
+            try {
+                const response = await fetch(`./assets/data/projects/${projectId}.json`);
+                if (!response.ok) throw new Error("Project not found");
+                const data = await response.json();
+
+                // Populate Text
+                document.title = `${data.title} | Portfolio`;
+                document.getElementById("p-title").textContent = data.title;
+                document.getElementById("p-desc").textContent = data.description;
+                document.getElementById("p-link-btn").href = data.link;
+
+                // Skills
+                const skillsContainer = document.getElementById("p-skills");
+                skillsContainer.innerHTML = data.skills.map(s => `<span class="skill-tag">#${s}</span>`).join("");
+
+                // Iframe Handling
+                const iframe = document.getElementById("p-iframe");
+
+                // Logic: If link is a hash or likely not embeddable, maybe we should show image?
+                // User requested iframe explicitly. We will try to load the link.
+                // If the link is "#", it's a dummy, so we might want to handle that.
+                if (data.link && data.link !== "#") {
+                    iframe.src = data.link;
+                } else {
+                    // Fallback to a "Not Available" message in iframe? 
+                    // Or actually, if we HAVE an image, we could potentially show the image in an img tag inside the preview window if iframe fails?
+                    // For now, adhering to user request for iframe.
+                    // We can check if it's an image file:
+                    if (data.img && (data.img.endsWith('.jpg') || data.img.endsWith('.png'))) {
+                        // Should we put image in iframe? No.
+                        // Let's replace iframe with image if link is bad.
+                    }
+                }
+
+                // If it's the "Masterpiece" (image link), iframe might just show the image or download it.
+                // If it's "Portfolio" (#), we need a fallback.
+                if (data.link === "#") {
+                    // Use Image instead
+                    const previewWin = document.querySelector(".preview-window");
+                    previewWin.innerHTML = `<img src="${data.img}" style="width:100%; height:100%; object-fit:cover;" />`;
+                }
+
+                // Show App
+                loading.style.display = "none";
+                app.style.display = "block";
+
+            } catch (err) {
+                console.error(err);
+                loading.innerHTML = `<div class='error-msg'>Failed to load project: ${projectId}</div>`;
+            }
+        })();
+    </script>
+</body>
+
+</html>

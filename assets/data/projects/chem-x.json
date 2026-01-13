@@ -1,0 +1,13 @@
+{
+    "id": "chem-x",
+    "title": "Chem X: Reaction Sim",
+    "img": "./assets/projects/chemx/image.png",
+    "link": "https://github.com/vassu-v/ChemX_001/",
+    "description": "ChemX is a basic chemistry (reactions) simulator built using Arduino, aimed at making abstract chemical concepts a bit more hands-on. It uses simple components like LEDs, buttons, and sensors to mimic chemical reactions and behaviors in a fun, interactive way. This project started as a DIY experiment to explore how physical systems could represent molecular interactions, especially for students or anyone curious about chemistry. While it’s still in the early stages, it opens up possibilities for turning textbook theory into something you can actually play with. It could be expanded into a cool classroom demo, a science fair project, or even a base for more complex STEM kits down the line.",
+    "skills": [
+        "Vanilla HTML",
+        "Simulation",
+        "Arduino & Electronics",
+        "C/C++"
+    ]
+}

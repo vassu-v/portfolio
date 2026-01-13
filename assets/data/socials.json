@@ -1,0 +1,37 @@
+[
+    {
+        "platform": "Email",
+        "url": "mailto:shoryavardhaan@gmail.com",
+        "icon": "fa-solid fa-envelope",
+        "showInTray": true,
+        "showInFooter": true
+    },
+    {
+        "platform": "LinkedIn",
+        "url": "https://www.linkedin.com/in/shoryavardhaan/",
+        "icon": "fa-brands fa-linkedin",
+        "showInTray": true,
+        "showInFooter": true
+    },
+    {
+        "platform": "GitHub",
+        "url": "https://github.com/vassu-v",
+        "icon": "fa-brands fa-github",
+        "showInTray": true,
+        "showInFooter": true
+    },
+    {
+        "platform": "WhatsApp",
+        "url": "http://wa.me/919830911135",
+        "icon": "fa-brands fa-whatsapp",
+        "showInTray": true,
+        "showInFooter": false
+    },
+    {
+        "platform": "ORCID",
+        "url": "https://orcid.org/0009-0009-1370-5230",
+        "icon": "fa-brands fa-orcid",
+        "showInTray": true,
+        "showInFooter": false
+    }
+]

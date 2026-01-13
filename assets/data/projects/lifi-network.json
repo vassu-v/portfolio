@@ -1,0 +1,13 @@
+{
+    "id": "lifi-network",
+    "title": "Disaster-Resilient LiFi Network",
+    "img": "./assets/images/lifi.jpg",
+    "link": "https://github.com/vassu-v/D-LiFi-Proto",
+    "description": "Problem: Power grids and mobile networks fail simultaneously during natural disasters. Communities lose contact with rescue teams when they need it most. Solution: Retrofit solar street lamps with IR transceivers to create a disaster-resilient mesh network. Each lamp forwards emergency messages hop-by-hop using light, operates entirely off-grid, and routes SOS alerts to headquarters using gradient-based routing.",
+    "skills": [
+        "Electronics",
+        "IoT",
+        "C++",
+        "Networking"
+    ]
+}

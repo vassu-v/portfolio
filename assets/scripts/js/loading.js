@@ -1,31 +1,19 @@
 window.addEventListener("load", function () {
-    const loader = document.getElementById("loading-screen");
-  
-    // Fade out effect
-    loader.style.opacity = "0";
-  
-    setTimeout(() => {
-      loader.style.display = "none";
-    }, 500); // Smooth removal
-  });
+  const loader = document.getElementById("loading-screen");
+
+  // Fade out effect
+  loader.style.opacity = "0";
+
+  setTimeout(() => {
+    loader.style.display = "none";
+  }, 500); // Smooth removal
+});
 
 console.log("It took me 3 Days(actually 15hrs) to make this, hope you like it")
 
 console.log("This was last updated on 13/4/2025")
 
-function checkOrientation() {
-  const warning = document.getElementById("landscape-warning");
-  if (window.innerWidth < window.innerHeight) {
-    warning.style.display = "flex"; // Portrait
-  } else {
-    warning.style.display = "none"; // Landscape
-  }
-}
-
-// Check on load and resize
-window.addEventListener("load", checkOrientation);
-window.addEventListener("resize", checkOrientation);
-window.addEventListener("orientationchange", checkOrientation);
+// Orientation check removed as per new direction
 
 
 const tip = document.getElementById("tipMessage");

@@ -1,0 +1,12 @@
+{
+    "id": "age-calculator",
+    "title": "Age Calculator",
+    "img": "./assets/projects/age calc/Capture6.PNG",
+    "link": "./assets/projects/age calc/index.html",
+    "description": "This age calculator is a simple yet precise tool that computes a user’s exact age from their birthdate — down to the number of years, months, and days. It provides a quick and accurate way to determine age for everything from birthday tracking to formal documentation. The user inputs their birthdate, and the tool instantly returns a detailed breakdown of their age, emphasizing clarity and ease of use. Beyond personal curiosity, this tool can be creatively adapted for age-restricted platforms, generating countdowns to milestones, or even embedded into online forms or educational apps where age validation is required. Its effectiveness is measured through calculation accuracy, clean UI, and responsiveness across devices.",
+    "skills": [
+        "HTML",
+        "CSS",
+        "Vanilla JavaScript"
+    ]
+}
