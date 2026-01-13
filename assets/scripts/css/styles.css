@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Monomaniac+One&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap");
 
 *,
@@ -255,7 +257,7 @@ body {
   height: 100%;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.9;
   /* Slight dim for better content contrast */
 }
 
@@ -387,6 +389,8 @@ body {
   border-radius: 16px;
   padding: 40px;
   transition: transform 0.3s ease;
+
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .content-section:hover {
@@ -444,17 +448,28 @@ body {
 
 .me {
   font-family: var(--font-mono);
-  color: #d1d5db;
+  color: #14b8a7;
   line-height: 1.7;
+  font-weight: bold;
+  font-size: 22px;
 }
 
 .me h5 {
-  font-weight: 300;
-  font-size: 1.1rem;
+  font-size: 0.83em;
+  font-weight: bold;
+
+  display: block;
+  font-size: 0.83em;
+  margin-block-start: 1.67em;
+  margin-block-end: 1.67em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  font-weight: bold;
+  unicode-bidi: isolate;
 }
 
 i {
-  color: var(--accent-color);
+  color: wheat;
   font-style: normal;
   font-weight: 500;
 }
