@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg:    #090909;
+  --text:  #efefef;
+  --text2: #7a7a7a;
+  --text3: #383838;
+
+  --cu:   #C57B2B;
+  --cu-d: rgba(197,123,43,0.08);
+  --cu-b: rgba(197,123,43,0.20);
+
+  --go:   #D4983A;
+  --go-d: rgba(212,152,58,0.07);
+  --go-b: rgba(212,152,58,0.20);
+
+  --sl:   #5B8FAF;
+  --sl-d: rgba(91,143,175,0.07);
+  --sl-b: rgba(91,143,175,0.18);
+
+  --border:  rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.12);
+
+  --pad: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: auto; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+a, button, [role="button"] { cursor: none; }
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, rgba(9,9,9,0.75) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 40;
+}
+
+#cursor {
+  position: fixed;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 900;
+  mix-blend-mode: screen;
+  background: radial-gradient(circle, var(--cu) 0%, rgba(197,123,43,0.3) 40%, transparent 70%);
+  filter: blur(6px);
+  opacity: 0;
+  transform: translate(-50%,-50%);
+  transition: opacity 0.3s, scale 0.25s ease;
+  will-change: transform;
+}
+body:hover #cursor { opacity: 0.65; }
+
+#sp {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px; width: 0%;
+  background: var(--cu);
+  z-index: 1000;
+  box-shadow: 0 0 10px var(--cu);
+  transition: width 0.08s linear;
+}
+
+@keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes live    { 0%,100%{opacity:1;box-shadow:0 0 0 0 var(--cu-b)} 50%{opacity:.4;box-shadow:0 0 0 5px rgba(197,123,43,0)} }
+@keyframes sc-sweep{ 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+@keyframes tick    { 0%{transform:translateX(0)} 100%{transform:translateX(-33.33%)} }
