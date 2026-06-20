@@ -28,10 +28,16 @@ The name is deliberately local — a cup of chai is what you actually get in Kol
       { label: 'MIT licensed', text: 'Fork it, modify it, white-label it. Seven people already have.' },
     ],
 
+    images: [
+      '/projects/buy4chai_live.png',
+      '/projects/buy4chai_readme.png',
+      '/projects/buy4chai_community.png',
+    ],
+
     impact: [
       { val: '13', label: 'GitHub stars' },
       { val: '7', label: 'Forks' },
-      { val: '$75', label: 'First international payout' },
+      { val: '❤️', label: 'Loved by the community' },
       { val: '1', label: 'Open issue being actively tracked' },
     ],
   },
@@ -64,6 +70,10 @@ Built this as the sole technical member on a 5-person remote team. During board 
       { label: 'Semantic clustering', text: 'FastAPI + vector database groups similar complaints across districts. A hundred separate "no water" complaints surface as one data point.' },
       { label: 'Governance intelligence', text: 'Representatives see a real-time dashboard: commitments made vs. kept, complaint surge detection, agentic recommendations on where to direct resources.' },
       { label: 'Agentic advisor', text: 'Gemini AI reads the complaint corpus and generates specific, actionable briefings — not summaries, but decisions that can be acted on immediately.' },
+    ],
+
+    images: [
+      '/projects/sarkarsathi_cm.jpg',
     ],
 
     impact: [
@@ -100,6 +110,12 @@ The system operates entirely off-grid. No power grid dependency. No mobile netwo
       { label: 'Routing', text: 'Gradient-based routing calculates the best path through the mesh dynamically. Nodes that fail simply get routed around.' },
       { label: 'Power', text: 'Each node draws from the lamp\'s existing solar battery. Works even if the grid is down and the lamp\'s LED circuit isn\'t.' },
       { label: 'Protocol', text: 'Custom hop-based messaging in C. Messages include priority levels so emergency alerts preempt normal traffic.' },
+    ],
+
+    images: [
+      '/projects/lifi_exhibit.jpeg',
+      '/projects/lifi_slide.jpeg',
+      '/projects/lifi_report.png',
     ],
 
     impact: [

@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'framer-motion'
+import Lightbox from './Lightbox'
 
 function useCountUp(target, prefix = '', duration = 2000, start = false) {
   const [val, setVal] = useState(prefix + '0')
@@ -43,7 +44,7 @@ const CARDS = [
     bottom: <span style={{ fontFamily: 'Instrument Serif, serif', fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--go)' }}>Top 1k</span>,
     border: 'var(--go-b)', bg: 'var(--go-d)',
     images: [
-      { src: '/syi.png',   rotate: 6,  top: '-44px', right: '-18px' },
+      { src: '/projects/sarkarsathi_cm.jpg', rotate: 6, top: '-44px', right: '-18px' },
     ],
   },
   {
@@ -86,6 +87,9 @@ const CARDS = [
     cls: '', label: 'ThinkStartup · 2025', title: 'Top 500 National',
     desc: 'Youth Ideathon. Top 2,000 → Top 500 with PickedIn.',
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
+    images: [
+      { src: '/syi.png', rotate: -7, top: '-44px', right: '-16px' },
+    ],
   },
   {
     cls: 'c2', label: 'Amazon KDP · Age 14', title: 'Published Author',
@@ -99,21 +103,23 @@ const CARDS = [
 
 // ── Floating polaroid image ────────────────────────────────────────────────────
 
-function FloatingImg({ src, rotate, top, right, bottom, left, delay }) {
+function FloatingImg({ src, rotate, top, right, bottom, left, delay, onClick }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.82, rotate: rotate * 0.5 }}
       animate={{ opacity: 1, scale: 1,    rotate }}
       exit={{    opacity: 0, scale: 0.82, rotate: rotate * 0.5 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1], delay }}
+      onClick={onClick}
       style={{
         position: 'absolute', top, right, bottom, left,
         zIndex: 20,
         background: '#fff',
         padding: '5px 5px 16px',
         boxShadow: '0 6px 24px rgba(0,0,0,0.55)',
-        pointerEvents: 'none',
+        pointerEvents: 'auto',
         width: '130px',
+        cursor: 'zoom-in',
       }}
     >
       <img
@@ -129,7 +135,8 @@ function FloatingImg({ src, rotate, top, right, bottom, left, delay }) {
 
 function BentoCard({ card, index }) {
   const ref = useRef(null)
-  const [hovered, setHovered] = useState(false)
+  const [hovered, setHovered]       = useState(false)
+  const [lightboxSrc, setLightboxSrc] = useState(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 95%', 'start 30%'] })
   const colOffset = (index % 4) * 0.06
   const opacity = useTransform(scrollYProgress, [colOffset, 0.7 + colOffset], [0, 1])
@@ -141,61 +148,69 @@ function BentoCard({ card, index }) {
   const hasImages = images?.length > 0
 
   return (
-    // Outer: grid placement + scroll reveal + z-index lift on hover
-    <motion.div
-      ref={ref}
-      style={{
-        gridColumn: `span ${spanCol}`,
-        gridRow: `span ${spanRow}`,
-        opacity, y,
-        position: 'relative',
-        zIndex: hovered && hasImages ? 20 : 1,
-        willChange: 'transform',
-      }}
-    >
-      {/* Inner: visible card */}
+    <>
+      {/* Outer: grid placement + scroll reveal + hover tracking covers card + polaroids */}
       <motion.div
-        onHoverStart={() => setHovered(true)}
-        onHoverEnd={() => setHovered(false)}
-        whileHover={{ y: -2, boxShadow: '0 8px 32px rgba(0,0,0,0.45)' }}
+        ref={ref}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         style={{
-          height: '100%',
-          background: bg,
-          border: `1px solid ${border}`,
-          borderRadius: '13px',
-          padding: '24px',
-          display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-          minHeight: spanRow === 2 ? '330px' : '160px',
-          position: 'relative', overflow: 'hidden',
-          transition: 'border-color 0.22s, box-shadow 0.22s',
-          cursor: hasImages ? 'default' : undefined,
+          gridColumn: `span ${spanCol}`,
+          gridRow: `span ${spanRow}`,
+          opacity, y,
+          position: 'relative',
+          zIndex: hovered && hasImages ? 20 : 1,
+          willChange: 'transform',
         }}
       >
-        <div style={{ position: 'absolute', width: '120px', height: '120px', borderRadius: '50%', top: '-45px', right: '-45px', border: '1px solid var(--border)', pointerEvents: 'none' }} />
-        <div>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.57rem', letterSpacing: '0.17em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: '7px' }}>{label}</div>
-          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>{title}</div>
-          {desc && <div style={{ fontSize: '0.75rem', color: 'var(--text2)', lineHeight: 1.58, marginTop: '8px' }}>{desc}</div>}
-        </div>
-        {bottom && <div>{bottom}</div>}
+        {/* Inner: visible card */}
+        <motion.div
+          animate={{ y: hovered ? -2 : 0, boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.45)' : '0 0 0 rgba(0,0,0,0)' }}
+          transition={{ duration: 0.22 }}
+          style={{
+            height: '100%',
+            background: bg,
+            border: `1px solid ${border}`,
+            borderRadius: '13px',
+            padding: '24px',
+            display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+            minHeight: spanRow === 2 ? '330px' : '160px',
+            position: 'relative', overflow: 'hidden',
+            transition: 'border-color 0.22s',
+          }}
+        >
+          <div style={{ position: 'absolute', width: '120px', height: '120px', borderRadius: '50%', top: '-45px', right: '-45px', border: '1px solid var(--border)', pointerEvents: 'none' }} />
+          <div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.57rem', letterSpacing: '0.17em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: '7px' }}>{label}</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>{title}</div>
+            {desc && <div style={{ fontSize: '0.75rem', color: 'var(--text2)', lineHeight: 1.58, marginTop: '8px' }}>{desc}</div>}
+          </div>
+          {bottom && <div>{bottom}</div>}
+        </motion.div>
+
+        {/* Floating polaroids — outside inner card so they overflow; clickable */}
+        <AnimatePresence>
+          {hovered && hasImages && images.map((img, i) => (
+            <FloatingImg
+              key={i}
+              src={img.src}
+              rotate={img.rotate}
+              top={img.top}
+              right={img.right}
+              bottom={img.bottom}
+              left={img.left}
+              delay={i * 0.07}
+              onClick={(e) => { e.stopPropagation(); setLightboxSrc(img.src) }}
+            />
+          ))}
+        </AnimatePresence>
       </motion.div>
 
-      {/* Floating polaroids — mounted outside the inner card so they can overflow */}
+      {/* Lightbox */}
       <AnimatePresence>
-        {hovered && hasImages && images.map((img, i) => (
-          <FloatingImg
-            key={i}
-            src={img.src}
-            rotate={img.rotate}
-            top={img.top}
-            right={img.right}
-            bottom={img.bottom}
-            left={img.left}
-            delay={i * 0.07}
-          />
-        ))}
+        {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
       </AnimatePresence>
-    </motion.div>
+    </>
   )
 }
 

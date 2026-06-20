@@ -10,6 +10,24 @@ function ScrollReveal({ children, yFrom = 36, xFrom = 0, style }) {
   return <motion.div ref={ref} style={{ opacity, y, x, ...style }}>{children}</motion.div>
 }
 
+// Paragraph whose text brightens as it scrolls into reading position (~50% viewport)
+function ReadingPara({ children }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 78%', 'start 46%'] })
+  const color = useTransform(scrollYProgress, [0, 1], ['#7a7a7a', '#d8d8d8'])
+  return (
+    <ScrollReveal yFrom={20}>
+      <motion.p ref={ref} style={{
+        fontSize: '0.92rem', lineHeight: 1.95,
+        borderLeft: '1px solid var(--border)', paddingLeft: '20px',
+        color,
+      }}>
+        {children}
+      </motion.p>
+    </ScrollReveal>
+  )
+}
+
 export default function About() {
   const photoRef = useRef(null)
   // Photo parallax — moves slower than scroll, creating depth
@@ -59,17 +77,10 @@ export default function About() {
           </ScrollReveal>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {[
-              <>At 16, in 11th grade navigating PCM — while leading <strong>Bits&amp;Bytes Kolkata</strong>, consulting at <strong>4MQ.org</strong>, and building open-source tools that solve real gaps, not demo projects.</>,
-              <>Work spans hardware (LiFi mesh networks, Arduino reaction simulators), AI research (planning systems and grounding failures on Zenodo), and product — Buy4Chai for India's Stripe exclusion problem, SarkarSathi for civic accountability. The thread: constraint thinking. Building the right thing with what's actually available.</>,
-              <>Published research at 15. National ideathon recognition. First international payment from Kolkata. None of it felt like an achievement at the time — it felt like the next thing to figure out.</>,
-            ].map((p, i) => (
-              <ScrollReveal key={i} yFrom={20} style={{}}>
-                <p style={{ fontSize: '0.92rem', color: 'var(--text2)', lineHeight: 1.95, borderLeft: '1px solid var(--border)', paddingLeft: '20px' }}>
-                  {p}
-                </p>
-              </ScrollReveal>
-            ))}
+            <ReadingPara>At 16, in 11th grade navigating PCM — while leading <strong>Bits&amp;Bytes Kolkata</strong>, consulting at <strong>4MQ.org</strong>, and building open-source tools that solve real gaps, not demo projects.</ReadingPara>
+            <ReadingPara>Work spans hardware (LiFi mesh networks, Arduino reaction simulators), AI research (planning systems and grounding failures on Zenodo), and product — Buy4Chai for India's Stripe exclusion problem, SarkarSathi for civic accountability. The thread: constraint thinking. Building the right thing with what's actually available.</ReadingPara>
+            <ReadingPara>Published research at 15. National ideathon recognition. First international payment from Kolkata. None of it felt like an achievement at the time — it felt like the next thing to figure out.</ReadingPara>
+
           </div>
         </div>
       </div>

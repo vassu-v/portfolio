@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useRoute } from '../router'
 import { PROJECTS, getProject } from '../data/projects'
 import { Link } from '../router'
+import Lightbox from '../components/Lightbox'
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -134,6 +135,7 @@ function RelatedProjects({ currentSlug, navigate }) {
 export default function ProjectPage({ slug }) {
   const { navigate } = useRoute()
   const project = getProject(slug)
+  const [lightboxSrc, setLightboxSrc] = useState(null)
 
   useEffect(() => {
     if (project) document.title = `${project.name} — Shoryavardhaan`
@@ -334,6 +336,45 @@ export default function ProjectPage({ slug }) {
             </div>
           )}
 
+          {/* Photo strip */}
+          {project.images?.length > 0 && (
+            <div style={{ marginBottom: '64px' }}>
+              <div style={{
+                fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
+                letterSpacing: '0.2em', textTransform: 'uppercase',
+                color: 'var(--text3)', marginBottom: '20px',
+              }}>
+                In the wild
+              </div>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                {project.images.map((src, i) => (
+                  <motion.div
+                    key={src}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: i * 0.08 }}
+                    whileHover={{ scale: 1.04, zIndex: 2 }}
+                    onClick={() => setLightboxSrc(src)}
+                    style={{
+                      background: '#fff',
+                      padding: '6px 6px 18px',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.45)',
+                      rotate: `${(i % 2 === 0 ? 1 : -1) * (1 + i * 0.5)}deg`,
+                      position: 'relative', zIndex: 1,
+                      flexShrink: 0,
+                      cursor: 'zoom-in',
+                    }}
+                  >
+                    <img
+                      src={src} alt=""
+                      style={{ width: '220px', height: '140px', objectFit: 'cover', display: 'block' }}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Related */}
           <RelatedProjects currentSlug={slug} navigate={navigate} />
         </div>
@@ -402,6 +443,10 @@ export default function ProjectPage({ slug }) {
           shoryavardhaans2@gmail.com →
         </a>
       </div>
+
+      <AnimatePresence>
+        {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      </AnimatePresence>
     </div>
   )
 }

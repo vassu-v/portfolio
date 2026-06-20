@@ -9,6 +9,7 @@ import Projects from './components/Projects'
 import Ticker from './components/Ticker'
 import Highlights from './components/Highlights'
 import Currently from './components/Currently'
+import Experience from './components/Experience'
 import Footer from './components/Footer'
 import ProjectPage from './pages/ProjectPage'
 
@@ -69,6 +70,8 @@ function Portfolio() {
       <Nav />
       <Hero />
       <About />
+      <ZoneDivider />
+      <Experience />
       <ZoneDivider />
       <Projects />
       <Ticker />

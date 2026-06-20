@@ -5,12 +5,12 @@ const CARDS = [
   {
     tag: 'Community', org: 'Bits&Bytes Kolkata',
     desc: 'Kolkata Fork Lead. Building the Eastern India chapter — hackathons, builder events, core team formation. Launched Apr 2026.',
-    pill: 'Active · 3 months',
+    pill: 'Active',
   },
   {
     tag: 'Work', org: '4MQ.org',
     desc: 'Youth Partner + Consultant. Own the Antigravity Workflow. On equity. Advised production stack, co-authored episodes with Richard Kim.',
-    pill: 'Active · 6 months',
+    pill: 'Active',
   },
   {
     tag: 'Building', org: 'Buy4Chai',

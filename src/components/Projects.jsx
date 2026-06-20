@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { PROJECTS } from '../data/projects'
 import { useRoute } from '../router'
+import Lightbox from './Lightbox'
 
 const INTERVAL = 3200
 
@@ -114,10 +115,64 @@ function NameRow({ project, isActive, progressKey, onEnter, onNavigate }) {
   )
 }
 
+// ─── Scatter stack ─────────────────────────────────────────────────────────────
+
+// Preset positions so they don't change on re-render
+const SCATTERED = [
+  { x: -110, y: -18, rotate: -14 },
+  { x:   16, y: -48, rotate:   9 },
+  { x:   95, y:   8, rotate:  -4 },
+]
+const STACKED = [
+  { x:  3, y:  2, rotate: -8  },
+  { x: -2, y:  0, rotate:  3  },
+  { x:  1, y: -2, rotate:  9  },
+]
+
+function ScatterStack({ images }) {
+  const [out, setOut]           = useState(false)
+  const [lightboxSrc, setLightboxSrc] = useState(null)
+  const visible = images.slice(0, 3)
+  return (
+    <>
+      <div
+        style={{ position: 'relative', width: '130px', height: '92px', marginTop: '36px' }}
+        onMouseEnter={() => setOut(true)}
+        onMouseLeave={() => setOut(false)}
+      >
+        {visible.map((src, i) => {
+          const pos = out ? SCATTERED[i] : STACKED[i]
+          return (
+            <motion.div
+              key={src}
+              animate={{ x: pos.x, y: pos.y, rotate: pos.rotate }}
+              transition={{ type: 'spring', stiffness: 260, damping: 22, delay: i * 0.04 }}
+              onClick={() => setLightboxSrc(src)}
+              style={{
+                position: 'absolute', top: 0, left: 0,
+                width: '130px',
+                background: '#fff', padding: '5px 5px 14px',
+                boxShadow: '0 4px 18px rgba(0,0,0,0.55)',
+                zIndex: visible.length - i,
+                cursor: 'zoom-in',
+              }}
+            >
+              <img src={src} alt="" style={{ width: '100%', height: '80px', objectFit: 'cover', display: 'block' }} />
+            </motion.div>
+          )
+        })}
+      </div>
+      <AnimatePresence>
+        {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      </AnimatePresence>
+    </>
+  )
+}
+
 // ─── Right: detail panel ───────────────────────────────────────────────────────
 
 function DetailPanel({ project, onNavigate }) {
-  const { n, featured, name, tags, desc, stat } = project
+  const { n, featured, name, tags, desc, stat, images } = project
 
   return (
     <motion.div
@@ -218,6 +273,9 @@ function DetailPanel({ project, onNavigate }) {
         <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.6rem', transition: 'transform 0.2s' }} />
       </motion.button>
 
+      {/* Photo scatter stack */}
+      {images?.length > 0 && <ScatterStack images={images} />}
+
       {/* Bottom rule */}
       <motion.div
         initial={{ scaleX: 0 }}
@@ -272,7 +330,7 @@ export default function Projects() {
       id="projects"
       ref={sectionRef}
       className="sec-section"
-      style={{ opacity: sectionOp, y: sectionY, padding: '20px var(--pad) 80px', position: 'relative', zIndex: 1 }}
+      style={{ opacity: sectionOp, y: sectionY, padding: '20px var(--pad) 140px', position: 'relative', zIndex: 1 }}
     >
       <div style={{ display: 'grid', gridTemplateColumns: '45% 1fr', gap: 'clamp(40px, 6vw, 100px)', alignItems: 'start' }}>
 
@@ -292,8 +350,8 @@ export default function Projects() {
           <div style={{ borderTop: '1px solid var(--border)' }} />
         </div>
 
-        {/* Right — detail panel, sticky */}
-        <div style={{ position: 'sticky', top: '100px' }}>
+        {/* Right — detail panel, sticky. min-height reserves space for the tallest project (description + scatter stack) so the section never shifts height on project change */}
+        <div style={{ position: 'sticky', top: '100px', minHeight: '560px' }}>
           <AnimatePresence mode="wait">
             <DetailPanel
               key={activeIdx}
