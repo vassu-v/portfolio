@@ -12,6 +12,13 @@ import Currently from './components/Currently'
 import Footer from './components/Footer'
 import ProjectPage from './pages/ProjectPage'
 
+// Section → cursor RGB color map
+const SECTION_COLORS = {
+  about:      { r: 91,  g: 143, b: 175 }, // slate
+  highlights: { r: 212, g: 152, b: 58  }, // gold
+}
+const COPPER = { r: 197, g: 123, b: 43 }
+
 function ZoneDivider() {
   return (
     <div style={{ padding: '0 var(--pad)', position: 'relative', zIndex: 1 }}>
@@ -20,7 +27,7 @@ function ZoneDivider() {
   )
 }
 
-function Preloader({ onDone }) {
+function Preloader() {
   return (
     <motion.div
       initial={{ clipPath: 'inset(0% 0% 0% 0%)' }}
@@ -88,28 +95,77 @@ function AppShell() {
 }
 
 export default function App() {
-  const cursorRef  = useRef(null)
-  const spRef      = useRef(null)
-  const isHover    = useRef(false)
+  const cursorRef = useRef(null)
+  const spRef     = useRef(null)
+  const isHover   = useRef(false)
+  const curColor  = useRef({ ...COPPER })
+  const curTarget = useRef({ ...COPPER })
   const [preloaderVisible, setPreloaderVisible] = useState(true)
 
-  // Dismiss preloader after a short beat so the scramble starts mid-reveal
+  // Preloader
   useEffect(() => {
     const t = setTimeout(() => setPreloaderVisible(false), 950)
     return () => clearTimeout(t)
   }, [])
 
+  // ── Smooth scroll (wheel-driven, Lenis-style) ─────────────────────────────
+  useEffect(() => {
+    let targetY = window.scrollY
+    let rafId
+
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
+
+    const onWheel = (e) => {
+      e.preventDefault()
+      const maxY = document.documentElement.scrollHeight - window.innerHeight
+      targetY = clamp(targetY + e.deltaY, 0, maxY)
+    }
+
+    const tick = () => {
+      const diff = targetY - window.scrollY
+      if (Math.abs(diff) > 0.5) {
+        document.documentElement.scrollTop = window.scrollY + diff * 0.1
+      } else {
+        document.documentElement.scrollTop = targetY
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+
+    window.addEventListener('wheel', onWheel, { passive: false })
+    rafId = requestAnimationFrame(tick)
+
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+      cancelAnimationFrame(rafId)
+    }
+  }, [])
+
+  // ── Cursor + color-per-section ────────────────────────────────────────────
   useEffect(() => {
     let mx = 0, my = 0, cx = 0, cy = 0, rafId
     const cur = cursorRef.current
 
-    const onMove = e => { mx = e.clientX; my = e.clientY };
+    const onMove = e => { mx = e.clientX; my = e.clientY }
 
-    (function raf() {
+    ;(function raf() {
+      // Position
       cx += (mx - cx) * 0.11
       cy += (my - cy) * 0.11
       const scale = isHover.current ? 1.45 : 1
-      if (cur) cur.style.transform = `translate(${cx - 50}px,${cy - 50}px) scale(${scale})`
+
+      // Color — slow lerp so shift feels ambient, not reactive
+      const c = curColor.current
+      const t = curTarget.current
+      c.r += (t.r - c.r) * 0.04
+      c.g += (t.g - c.g) * 0.04
+      c.b += (t.b - c.b) * 0.04
+      const { r, g, b } = c
+
+      if (cur) {
+        cur.style.transform  = `translate(${cx - 50}px,${cy - 50}px) scale(${scale})`
+        cur.style.background = `radial-gradient(circle, rgb(${r|0},${g|0},${b|0}) 0%, rgba(${r|0},${g|0},${b|0},0.3) 40%, transparent 70%)`
+      }
+
       rafId = requestAnimationFrame(raf)
     })()
 
@@ -132,9 +188,9 @@ export default function App() {
       if (sp) sp.style.width = (s.scrollTop / (s.scrollHeight - s.clientHeight) * 100) + '%'
     }
 
-    document.addEventListener('mousemove', onMove, { passive: true })
-    document.addEventListener('mouseover',  onOver, { passive: true })
-    document.addEventListener('mouseout',   onOut,  { passive: true })
+    document.addEventListener('mousemove', onMove,   { passive: true })
+    document.addEventListener('mouseover',  onOver,   { passive: true })
+    document.addEventListener('mouseout',   onOut,    { passive: true })
     window.addEventListener('scroll',       onScroll, { passive: true })
 
     return () => {
@@ -144,6 +200,28 @@ export default function App() {
       document.removeEventListener('mouseout',   onOut)
       window.removeEventListener('scroll',       onScroll)
     }
+  }, [])
+
+  // ── Section color observer ────────────────────────────────────────────────
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            curTarget.current = { ...(SECTION_COLORS[e.target.id] ?? COPPER) }
+          }
+        })
+      },
+      { rootMargin: '-62px 0px -55% 0px', threshold: 0 }
+    )
+
+    const ids = ['about', 'projects', 'highlights', 'contact']
+    ids.forEach(id => {
+      const el = document.getElementById(id)
+      if (el) obs.observe(el)
+    })
+
+    return () => obs.disconnect()
   }, [])
 
   return (
