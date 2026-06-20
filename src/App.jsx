@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Router, useRoute } from './router'
+import { PROJECTS } from './data/projects'
+import { POSTS } from './data/blog'
 import DotGrid from './components/DotGrid'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
@@ -94,6 +96,21 @@ function AppShell() {
   const projectMatch = path.match(/^\/project\/([^/]+)$/)
   const blogMatch    = path.match(/^\/blog\/([^/]+)$/)
   const isBlogIndex  = path === '/blog'
+
+  useEffect(() => {
+    const base = 'Shoryavardhaan Gupta'
+    if (projectMatch) {
+      const proj = PROJECTS.find(p => p.slug === projectMatch[1])
+      document.title = proj ? `${proj.name} — ${base}` : base
+    } else if (blogMatch) {
+      const post = POSTS.find(p => p.slug === blogMatch[1])
+      document.title = post ? `${post.title} — ${base}` : base
+    } else if (isBlogIndex) {
+      document.title = `Log — ${base}`
+    } else {
+      document.title = base
+    }
+  }, [path])
 
   return (
     <AnimatePresence mode="wait">
