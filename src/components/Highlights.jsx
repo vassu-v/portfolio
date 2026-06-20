@@ -217,7 +217,7 @@ function BentoCard({ card, index }) {
 export default function Highlights() {
   return (
     <section id="highlights" className="sec-section" style={{ padding: '0 var(--pad) 100px', position: 'relative', zIndex: 1 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+      <div className="hl-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
         {CARDS.map((card, i) => <BentoCard key={i} card={card} index={i} />)}
       </div>
     </section>

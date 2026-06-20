@@ -282,10 +282,10 @@ export default function ProjectPage({ slug }) {
       </div>
 
       {/* ── Body ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '0', alignItems: 'start' }}>
+      <div className="pp-body" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '0', alignItems: 'start' }}>
 
         {/* Left: narrative */}
-        <div style={{ padding: '64px var(--pad)', borderRight: '1px solid var(--border)' }}>
+        <div className="pp-narrative" style={{ padding: '64px var(--pad)', borderRight: '1px solid var(--border)' }}>
 
           {/* Problem */}
           <div style={{ marginBottom: '64px' }}>
@@ -379,7 +379,7 @@ export default function ProjectPage({ slug }) {
         </div>
 
         {/* Right: stats sidebar (sticky) */}
-        <div style={{ position: 'sticky', top: '80px', padding: '64px 40px' }}>
+        <div className="pp-sidebar" style={{ position: 'sticky', top: '80px', padding: '64px 40px' }}>
 
           {/* Impact */}
           {impact?.length > 0 && (

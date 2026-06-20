@@ -20,6 +20,12 @@ function LiquidHeading({ scrollYProgress }) {
   const inView  = useInView(h2Ref, { once: true, amount: 0.7 })
 
   useEffect(() => {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      blurRef.current?.setAttribute('stdDeviation', '0')
+      dispRef.current?.setAttribute('scale', '0')
+      return
+    }
+
     let time = 0
     let rafId
     let targetScale = 80

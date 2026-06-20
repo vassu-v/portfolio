@@ -42,6 +42,7 @@ function PullQuote({ text }) {
       initial={{ opacity: 0, x: -20 }}
       animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="bp-pullquote"
       style={{
         margin: '52px 0 52px -28px',
         paddingLeft: '28px',
@@ -143,7 +144,7 @@ function BackButton() {
 function ContinueReading({ url, platform }) {
   if (!url) return null
   return (
-    <div style={{
+    <div className="bp-continue" style={{
       margin: '56px 0',
       padding: '28px 32px',
       border: '1px solid var(--cu-b)',
@@ -373,18 +374,18 @@ export default function BlogPost({ slug }) {
       </div>
 
       {/* ── Body ── */}
-      <div style={{
+      <div className="bp-body" style={{
         display: 'grid',
         gridTemplateColumns: '1fr min(68ch, 100%) 1fr',
         padding: '0 var(--pad) 80px',
       }}>
-        <div /> {/* left spacer */}
+        <div className="bp-spacer" /> {/* left spacer */}
         <div>
           {renderContent(post.content)}
           <ContinueReading url={post.externalUrl} platform={post.platform} />
           <MorePosts currentSlug={slug} />
         </div>
-        <div /> {/* right spacer */}
+        <div className="bp-spacer" /> {/* right spacer */}
       </div>
 
       {/* ── Footer strip ── */}

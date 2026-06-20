@@ -81,3 +81,96 @@ body:hover #cursor { opacity: 0.65; }
 @keyframes live    { 0%,100%{opacity:1;box-shadow:0 0 0 0 var(--cu-b)} 50%{opacity:.4;box-shadow:0 0 0 5px rgba(197,123,43,0)} }
 @keyframes sc-sweep{ 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
 @keyframes tick    { 0%{transform:translateX(0)} 100%{transform:translateX(-33.33%)} }
+
+/* ── Phone (portrait) ───────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  :root { --pad: 20px; }
+
+  body { cursor: auto; }
+  a, button, [role="button"] { cursor: pointer !important; }
+  #cursor, #sp { display: none !important; }
+
+  .about-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .about-grid > div:first-child { max-width: 200px !important; margin: 0 auto !important; }
+  .blog-grid  { grid-template-columns: 1fr !important; }
+  .curr-grid  { grid-template-columns: 1fr !important; }
+  .hl-grid     { grid-template-columns: repeat(2, 1fr) !important; }
+  .hl-grid > * { grid-column: span 1 !important; grid-row: span 1 !important; }
+  .bi-grid     { grid-template-columns: 1fr !important; }
+
+  .proj-grid   { grid-template-columns: 1fr !important; }
+  .proj-names  { order: 2; }
+  .proj-detail { order: 1; position: static !important; min-height: 0 !important; padding-bottom: 32px !important; }
+
+  .bp-body      { display: block !important; padding: 0 var(--pad) 80px !important; }
+  .bp-spacer    { display: none !important; }
+  .bp-pullquote { margin-left: 0 !important; margin-right: 0 !important; }
+  .bp-continue  { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+
+  .pp-body      { grid-template-columns: 1fr !important; }
+  .pp-narrative { border-right: none !important; padding: 40px var(--pad) !important; }
+  .pp-sidebar   { position: static !important; padding: 0 var(--pad) 48px !important; border-top: 1px solid var(--border); }
+}
+
+/* ── Tablet portrait — mobile-like layout with wider breathing room ──────── */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+  :root { --pad: 32px; }
+
+  body { cursor: auto; }
+  a, button, [role="button"] { cursor: pointer !important; }
+  #cursor, #sp { display: none !important; }
+
+  /* About: single col, photo a bit bigger than phone */
+  .about-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+  .about-grid > div:first-child { max-width: 260px !important; margin: 0 auto !important; }
+
+  /* 2-col grids where width allows it */
+  .blog-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .curr-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .bi-grid   { grid-template-columns: repeat(2, 1fr) !important; }
+  .hl-grid     { grid-template-columns: repeat(2, 1fr) !important; }
+  .hl-grid > * { grid-column: span 1 !important; grid-row: span 1 !important; }
+
+  /* Projects: still stacked (detail first) */
+  .proj-grid   { grid-template-columns: 1fr !important; }
+  .proj-names  { order: 2; }
+  .proj-detail { order: 1; position: static !important; min-height: 0 !important; padding-bottom: 32px !important; }
+
+  /* Blog post: full-width body */
+  .bp-body      { display: block !important; padding: 0 var(--pad) 80px !important; }
+  .bp-spacer    { display: none !important; }
+  .bp-pullquote { margin-left: 0 !important; margin-right: 0 !important; }
+  .bp-continue  { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+
+  /* Project page: stacked */
+  .pp-body      { grid-template-columns: 1fr !important; }
+  .pp-narrative { border-right: none !important; padding: 48px var(--pad) !important; }
+  .pp-sidebar   { position: static !important; padding: 0 var(--pad) 48px !important; border-top: 1px solid var(--border); }
+}
+
+/* ── Tablet landscape — intermediate between mobile and desktop ──────────── */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+  :root { --pad: 36px; }
+
+  /* Touch-primary — hide custom cursor */
+  body { cursor: auto; }
+  a, button, [role="button"] { cursor: pointer !important; }
+  #cursor, #sp { display: none !important; }
+
+  /* About: keep 2-col but tighten gap and cap photo */
+  .about-grid { gap: 48px !important; }
+  .about-grid > div:first-child { max-width: 240px !important; }
+
+  /* Blog: 2-col (desktop is 3, too tight here) */
+  .blog-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Highlights: 3-col — let natural col/row spans apply (2-wide cards span 2/3) */
+  .hl-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* BlogIndex secondary grid: 2-col is fine */
+  .bi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Project page sidebar: tighten the column so narrative gets more room */
+  .pp-body    { grid-template-columns: 1fr 280px !important; }
+  .pp-sidebar { padding: 48px 28px !important; }
+}

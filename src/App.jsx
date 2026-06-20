@@ -98,17 +98,85 @@ function AppShell() {
   const isBlogIndex  = path === '/blog'
 
   useEffect(() => {
-    const base = 'Shoryavardhaan Gupta'
+    const BASE      = 'Shoryavardhaan Gupta'
+    const BASE_URL  = 'https://shoryavardhaan.vercel.app'
+    const BASE_DESC = '16-year-old builder from Kolkata shipping civic tech, hardware, and AI. Projects live in the real world, not just on GitHub.'
+    const BASE_IMG  = `${BASE_URL}/og-image.svg`
+
+    let title = BASE, desc = BASE_DESC, url = BASE_URL, img = BASE_IMG, jsonld = null
+
     if (projectMatch) {
       const proj = PROJECTS.find(p => p.slug === projectMatch[1])
-      document.title = proj ? `${proj.name} — ${base}` : base
+      if (proj) {
+        title = `${proj.name} — ${BASE}`
+        desc  = proj.tagline
+        url   = `${BASE_URL}/project/${proj.slug}`
+        img   = proj.images?.[0] ? `${BASE_URL}${proj.images[0]}` : BASE_IMG
+        jsonld = {
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: proj.name,
+          description: proj.desc,
+          url,
+          author: { '@type': 'Person', name: BASE, url: BASE_URL },
+          applicationCategory: 'WebApplication',
+          operatingSystem: 'Any',
+        }
+      }
     } else if (blogMatch) {
       const post = POSTS.find(p => p.slug === blogMatch[1])
-      document.title = post ? `${post.title} — ${base}` : base
+      if (post) {
+        title = `${post.title} — ${BASE}`
+        desc  = post.subtitle
+        url   = `${BASE_URL}/blog/${post.slug}`
+        img   = post.hero ? `${BASE_URL}${post.hero}` : BASE_IMG
+        jsonld = {
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: post.title,
+          description: post.subtitle,
+          url,
+          datePublished: post.date,
+          image: img,
+          author: { '@type': 'Person', name: BASE, url: BASE_URL },
+          publisher: { '@type': 'Person', name: BASE },
+        }
+      }
     } else if (isBlogIndex) {
-      document.title = `Log — ${base}`
+      title = `Log — ${BASE}`
+      desc  = 'Writing on building, technology, and thinking clearly. Essays on civic tech, hardware, AI, and what it means to ship real things.'
+      url   = `${BASE_URL}/blog`
+    }
+
+    document.title = title
+
+    const setMeta = (sel, attr, val) => {
+      const el = document.querySelector(sel)
+      if (el && val) el.setAttribute(attr, val)
+    }
+
+    setMeta('meta[name="description"]',         'content', desc)
+    setMeta('link[rel="canonical"]',             'href',    url)
+    setMeta('meta[property="og:url"]',           'content', url)
+    setMeta('meta[property="og:title"]',         'content', title)
+    setMeta('meta[property="og:description"]',   'content', desc)
+    setMeta('meta[property="og:image"]',         'content', img)
+    setMeta('meta[name="twitter:url"]',          'content', url)
+    setMeta('meta[name="twitter:title"]',        'content', title)
+    setMeta('meta[name="twitter:description"]',  'content', desc)
+    setMeta('meta[name="twitter:image"]',        'content', img)
+
+    let ldEl = document.getElementById('page-jsonld')
+    if (jsonld) {
+      if (!ldEl) {
+        ldEl = document.createElement('script')
+        ldEl.id = 'page-jsonld'
+        ldEl.type = 'application/ld+json'
+        document.head.appendChild(ldEl)
+      }
+      ldEl.textContent = JSON.stringify(jsonld)
     } else {
-      document.title = base
+      ldEl?.remove()
     }
   }, [path])
 
@@ -140,8 +208,15 @@ export default function App() {
     return () => clearTimeout(t)
   }, [])
 
-  // ── Smooth scroll (wheel-driven, Lenis-style) ─────────────────────────────
+  // ── Smooth scroll (wheel-driven, Lenis-style) ────────────────────────────
+  // Disabled for phones and portrait tablets — they use native touch scroll.
+  // On landscape tablets, touch sync keeps targetY aligned so RAF doesn't
+  // fight native touch momentum from finger scrolling.
   useEffect(() => {
+    if (window.matchMedia(
+      '(max-width: 767px), (max-width: 1023px) and (orientation: portrait)'
+    ).matches) return
+
     let targetY = window.scrollY
     let rafId
 
@@ -152,6 +227,8 @@ export default function App() {
       const maxY = document.documentElement.scrollHeight - window.innerHeight
       targetY = clamp(targetY + e.deltaY, 0, maxY)
     }
+
+    const onTouch = () => { targetY = window.scrollY }
 
     const tick = () => {
       const diff = targetY - window.scrollY
@@ -164,10 +241,14 @@ export default function App() {
     }
 
     window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('touchstart', onTouch, { passive: true })
+    window.addEventListener('touchmove',  onTouch, { passive: true })
     rafId = requestAnimationFrame(tick)
 
     return () => {
       window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouch)
+      window.removeEventListener('touchmove',  onTouch)
       cancelAnimationFrame(rafId)
     }
   }, [])
