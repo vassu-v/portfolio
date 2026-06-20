@@ -13,7 +13,7 @@
     <meta property="og:url"         content="https://shoryavardhaan.vercel.app/" />
     <meta property="og:title"       content="Shoryavardhaan Gupta" />
     <meta property="og:description" content="16-year-old builder from Kolkata shipping civic tech, hardware, and AI. Projects live in the real world, not just on GitHub." />
-    <meta property="og:image"       content="https://shoryavardhaan.vercel.app/og-image.svg" />
+    <meta property="og:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
     <meta property="og:image:width"  content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name"   content="Shoryavardhaan Gupta" />
@@ -22,34 +22,66 @@
     <meta name="twitter:url"         content="https://shoryavardhaan.vercel.app/" />
     <meta name="twitter:title"       content="Shoryavardhaan Gupta" />
     <meta name="twitter:description" content="16-year-old builder from Kolkata shipping civic tech, hardware, and AI. Projects live in the real world, not just on GitHub." />
-    <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/og-image.svg" />
+    <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
     <meta name="twitter:creator"     content="@shoryavardhaan" />
 
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Person",
-      "name": "Shoryavardhaan Gupta",
-      "url": "https://shoryavardhaan.vercel.app/",
-      "image": "https://shoryavardhaan.vercel.app/syi.png",
-      "jobTitle": "Builder & Developer",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Kolkata",
-        "addressCountry": "IN"
-      },
-      "sameAs": [
-        "https://github.com/vassu-v",
-        "https://linkedin.com/in/shoryavardhaan",
-        "https://x.com/shoryavardhaan",
-        "https://www.instagram.com/let_shorya.be/"
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://shoryavardhaan.vercel.app/#person",
+          "name": "Shoryavardhaan Gupta",
+          "alternateName": "Shorya",
+          "birthDate": "2009-09-02",
+          "description": "16-year-old builder and developer from Kolkata, India. Creator of Buy4Chai (Razorpay/UPI supporter pages for developers), SarkarSathi (AI civic tech, India Innovates Top 1k), and a disaster-resilient LiFi mesh network. Published AI planning research on Zenodo at age 15. Kolkata Fork Lead at Bits&Bytes. Youth Partner at 4MQ.org.",
+          "jobTitle": "Builder & Developer",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Kolkata",
+            "addressCountry": "IN"
+          },
+          "knowsAbout": ["Civic Technology", "Open Source Software", "Hardware Prototyping", "AI Research", "Web Development"],
+          "award": ["India Innovates 2026 Top 1,000 of 26,000+ entries", "CBSE Regional Science Exhibition 2025-26"],
+          "memberOf": [
+            { "@type": "Organization", "name": "Bits&Bytes" },
+            { "@type": "Organization", "name": "4MQ.org" }
+          ],
+          "image": { "@type": "ImageObject", "url": "https://shoryavardhaan.vercel.app/syi.png" },
+          "url": "https://shoryavardhaan.vercel.app/",
+          "sameAs": [
+            "https://github.com/vassu-v",
+            "https://www.linkedin.com/in/shoryavardhaan",
+            "https://x.com/shoryavardhaan",
+            "https://www.instagram.com/let_shorya.be/",
+            "https://medium.com/@shoryavardhaans2",
+            "https://zenodo.org/records/18196407"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://shoryavardhaan.vercel.app/#website",
+          "url": "https://shoryavardhaan.vercel.app/",
+          "name": "Shoryavardhaan Gupta",
+          "author": { "@id": "https://shoryavardhaan.vercel.app/#person" },
+          "inLanguage": "en-IN"
+        },
+        {
+          "@type": "ProfilePage",
+          "@id": "https://shoryavardhaan.vercel.app/",
+          "mainEntity": { "@id": "https://shoryavardhaan.vercel.app/#person" },
+          "dateModified": "2026-06-21"
+        }
       ]
     }
     </script>
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   </head>
   <body>

@@ -101,9 +101,10 @@ function AppShell() {
     const BASE      = 'Shoryavardhaan Gupta'
     const BASE_URL  = 'https://shoryavardhaan.vercel.app'
     const BASE_DESC = '16-year-old builder from Kolkata shipping civic tech, hardware, and AI. Projects live in the real world, not just on GitHub.'
-    const BASE_IMG  = `${BASE_URL}/og-image.svg`
+    const BASE_IMG  = `${BASE_URL}/og-image.png`
 
     let title = BASE, desc = BASE_DESC, url = BASE_URL, img = BASE_IMG, jsonld = null
+    let is404 = false
 
     if (projectMatch) {
       const proj = PROJECTS.find(p => p.slug === projectMatch[1])
@@ -114,14 +115,25 @@ function AppShell() {
         img   = proj.images?.[0] ? `${BASE_URL}${proj.images[0]}` : BASE_IMG
         jsonld = {
           '@context': 'https://schema.org',
-          '@type': 'SoftwareApplication',
-          name: proj.name,
-          description: proj.desc,
-          url,
-          author: { '@type': 'Person', name: BASE, url: BASE_URL },
-          applicationCategory: 'WebApplication',
-          operatingSystem: 'Any',
+          '@graph': [
+            {
+              '@type': 'SoftwareApplication',
+              '@id': url,
+              name: proj.name,
+              description: proj.desc,
+              url,
+              author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE },
+              applicationCategory: 'WebApplication',
+              operatingSystem: 'Any',
+            },
+            { '@type': 'BreadcrumbList', itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+              { '@type': 'ListItem', position: 2, name: proj.name, item: url },
+            ]},
+          ],
         }
+      } else {
+        is404 = true
       }
     } else if (blogMatch) {
       const post = POSTS.find(p => p.slug === blogMatch[1])
@@ -132,20 +144,57 @@ function AppShell() {
         img   = post.hero ? `${BASE_URL}${post.hero}` : BASE_IMG
         jsonld = {
           '@context': 'https://schema.org',
-          '@type': 'BlogPosting',
-          headline: post.title,
-          description: post.subtitle,
-          url,
-          datePublished: post.date,
-          image: img,
-          author: { '@type': 'Person', name: BASE, url: BASE_URL },
-          publisher: { '@type': 'Person', name: BASE },
+          '@graph': [
+            {
+              '@type': 'BlogPosting',
+              '@id': url,
+              headline: post.title,
+              description: post.subtitle,
+              url,
+              datePublished: post.isoDate ?? post.date,
+              dateModified: post.isoDate ?? post.date,
+              image: { '@type': 'ImageObject', url: img },
+              author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE },
+              publisher: { '@type': 'Person', name: BASE, url: BASE_URL },
+              mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+              inLanguage: 'en-IN',
+            },
+            { '@type': 'BreadcrumbList', itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+              { '@type': 'ListItem', position: 2, name: 'Log', item: `${BASE_URL}/blog` },
+              { '@type': 'ListItem', position: 3, name: post.title, item: url },
+            ]},
+          ],
         }
+      } else {
+        is404 = true
       }
     } else if (isBlogIndex) {
       title = `Log — ${BASE}`
       desc  = 'Writing on building, technology, and thinking clearly. Essays on civic tech, hardware, AI, and what it means to ship real things.'
       url   = `${BASE_URL}/blog`
+      jsonld = {
+        '@context': 'https://schema.org',
+        '@type': 'Blog',
+        name: `Log — ${BASE}`,
+        url,
+        author: { '@type': 'Person', '@id': `${BASE_URL}/#person` },
+        inLanguage: 'en-IN',
+      }
+    } else if (path !== '/') {
+      is404 = true
+    }
+
+    let robotsEl = document.querySelector('meta[name="robots"]')
+    if (is404) {
+      if (!robotsEl) {
+        robotsEl = document.createElement('meta')
+        robotsEl.name = 'robots'
+        document.head.appendChild(robotsEl)
+      }
+      robotsEl.content = 'noindex'
+    } else {
+      robotsEl?.remove()
     }
 
     document.title = title
@@ -204,7 +253,7 @@ export default function App() {
 
   // Preloader
   useEffect(() => {
-    const t = setTimeout(() => setPreloaderVisible(false), 950)
+    const t = setTimeout(() => setPreloaderVisible(false), 300)
     return () => clearTimeout(t)
   }, [])
 

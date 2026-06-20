@@ -63,7 +63,7 @@ function FeaturedPost({ post }) {
       {/* Parallax image */}
       <motion.img
         src={post.hero}
-        alt=""
+        alt={post.title}
         animate={{ scale: hovered ? 1.04 : 1 }}
         style={{
           position: 'absolute', inset: 0,
@@ -187,7 +187,7 @@ function SmallCard({ post, delay }) {
         {post.hero && (
           <motion.img
             src={post.hero}
-            alt=""
+            alt={post.title}
             animate={{ scale: hovered ? 1.07 : 1 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}

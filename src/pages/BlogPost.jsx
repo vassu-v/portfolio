@@ -315,6 +315,10 @@ export default function BlogPost({ slug }) {
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', color: 'var(--text3)', letterSpacing: '0.06em' }}>
             {post.readTime}
           </span>
+          <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'var(--text3)' }} />
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', color: 'var(--text3)', letterSpacing: '0.06em' }}>
+            Shoryavardhaan Gupta
+          </span>
         </motion.div>
 
         {/* Title */}
@@ -350,7 +354,7 @@ export default function BlogPost({ slug }) {
           >
             <motion.img
               src={post.hero}
-              alt=""
+              alt={post.title}
               style={{
                 width: '100%', height: '130%',
                 objectFit: 'cover', objectPosition: 'center',
