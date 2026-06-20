@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValue, useSpring, useInView } from 'framer-motion'
+import { AGE, YEAR } from '../utils/meta'
 
 const LINKS = [
   { icon: 'fa-brands fa-linkedin',  label: 'LinkedIn',     href: 'https://linkedin.com/in/shoryavardhaan' },
@@ -15,15 +16,15 @@ function LiquidHeading({ scrollYProgress }) {
   const turbRef = useRef(null)
   const dispRef = useRef(null)
   const blurRef = useRef(null)
+  const h2Ref   = useRef(null)
+  const inView  = useInView(h2Ref, { once: true, amount: 0.7 })
 
   useEffect(() => {
     let time = 0
     let rafId
-    // Mutable targets driven by scroll
     let targetScale = 80
     let targetFreqBase = 0.038
 
-    // Scroll drives the target values (how liquid vs resolved)
     const unsub = scrollYProgress.on('change', v => {
       const t = Math.max(0, Math.min(1, v / 0.72))
       targetScale    = (1 - t) * 80
@@ -32,7 +33,6 @@ function LiquidHeading({ scrollYProgress }) {
       dispRef.current?.setAttribute('scale', targetScale.toFixed(1))
     })
 
-    // RAF continuously animates the turbulence pattern — makes it flow
     const tick = () => {
       time += 0.007
       if (turbRef.current && targetScale > 0.5) {
@@ -52,47 +52,51 @@ function LiquidHeading({ scrollYProgress }) {
 
   return (
     <>
-      {/* SVG filter — hidden, referenced by id */}
-      <svg
-        width="0" height="0"
-        style={{ position: 'absolute', pointerEvents: 'none' }}
-        aria-hidden
-      >
+      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }} aria-hidden>
         <defs>
           <filter id="lq-fluid" x="-30%" y="-40%" width="160%" height="180%">
-            <feTurbulence
-              ref={turbRef}
-              type="turbulence"
-              baseFrequency="0.038 0.021"
-              numOctaves="5"
-              seed="14"
-              result="noise"
-            />
-            <feGaussianBlur
-              ref={blurRef}
-              in="SourceGraphic"
-              stdDeviation="7"
-              result="soft"
-            />
-            <feDisplacementMap
-              ref={dispRef}
-              in="soft"
-              in2="noise"
-              scale="80"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
+            <feTurbulence ref={turbRef} type="turbulence" baseFrequency="0.038 0.021" numOctaves="5" seed="14" result="noise" />
+            <feGaussianBlur ref={blurRef} in="SourceGraphic" stdDeviation="7" result="soft" />
+            <feDisplacementMap ref={dispRef} in="soft" in2="noise" scale="80" xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </defs>
       </svg>
 
-      <h2 style={{
-        fontSize: 'clamp(30px, 5.5vw, 74px)', fontWeight: 700,
-        letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: '14px',
-        filter: 'url(#lq-fluid)',
-        willChange: 'filter',
-      }}>
-        Let's build<br />
+      <h2
+        ref={h2Ref}
+        style={{
+          fontSize: 'clamp(30px, 5.5vw, 74px)', fontWeight: 700,
+          letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: '14px',
+          filter: 'url(#lq-fluid)',
+          willChange: 'filter',
+        }}
+      >
+        {/*
+          "Let's build" sits inside an inline-block span so it becomes
+          the containing block for the absolute highlight mark behind it.
+          Both pass through the same lq-fluid filter on the h2, so they
+          distort and resolve in perfect sync — no alignment math needed.
+        */}
+        <span style={{ position: 'relative', display: 'inline-block' }}>
+          <motion.span
+            aria-hidden
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: inView ? 1 : 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.38 }}
+            style={{
+              position: 'absolute',
+              inset: '-0.09em -0.14em',
+              background: 'rgba(197,123,43,0.23)',
+              borderRadius: '3px',
+              transformOrigin: 'left center',
+              zIndex: 0,
+              // Tiny blur softens the mark edges slightly — like marker feathering
+              filter: 'blur(1.2px)',
+            }}
+          />
+          <span style={{ position: 'relative', zIndex: 1 }}>Let's build</span>
+        </span>
+        <br />
         <em style={{
           fontFamily: 'Instrument Serif, serif', fontStyle: 'italic',
           fontWeight: 300, color: 'var(--text2)',
@@ -204,7 +208,7 @@ export default function Footer() {
           </div>
 
           <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text3)', opacity: 0.45 }}>
-            © 2026 Shoryavardhaan Gupta &nbsp;·&nbsp; Kolkata, India
+            © {YEAR} Shoryavardhaan Gupta &nbsp;·&nbsp; {AGE} y/o &nbsp;·&nbsp; Kolkata, India
           </p>
         </motion.div>
       </footer>

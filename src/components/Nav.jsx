@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRoute } from '../router'
 
 const IDS  = ['about', 'projects', 'highlights', 'contact']
 const NUMS = ['01',    '02',       '03',          '04']
@@ -94,6 +95,8 @@ function NavLink({ id, index, isActive }) {
 export default function Nav() {
   const [stuck,  setStuck]  = useState(false)
   const [active, setActive] = useState('')
+  const [logHov, setLogHov] = useState(false)
+  const { navigate } = useRoute()
 
   useEffect(() => {
     const onScroll = () => setStuck(window.scrollY > 40)
@@ -147,7 +150,7 @@ export default function Nav() {
       </motion.a>
 
       {/* Links */}
-      <ul style={{ display: 'flex', gap: '36px', listStyle: 'none' }}>
+      <ul style={{ display: 'flex', gap: '36px', listStyle: 'none', alignItems: 'center' }}>
         {IDS.map((id, i) => (
           <motion.li
             key={id}
@@ -158,6 +161,53 @@ export default function Nav() {
             <NavLink id={id} index={i} isActive={active === id} />
           </motion.li>
         ))}
+
+        {/* Separator */}
+        <motion.li
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 1.18 }}
+          style={{ width: '1px', height: '14px', background: 'var(--border2)', flexShrink: 0 }}
+        />
+
+        {/* Log — navigates to /blog page */}
+        <motion.li
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 1.22 }}
+        >
+          <button
+            onClick={() => navigate('/blog')}
+            onMouseEnter={() => setLogHov(true)}
+            onMouseLeave={() => setLogHov(false)}
+            style={{
+              position: 'relative',
+              background: 'none', border: 'none',
+              padding: '0 0 3px',
+              cursor: 'none',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: '0.68rem',
+              letterSpacing: '0.10em',
+              color: logHov ? 'var(--cu)' : 'var(--text2)',
+              transition: 'color 0.15s',
+              display: 'block',
+            }}
+          >
+            log
+            {/* Hover underline */}
+            <motion.span
+              animate={{ scaleX: logHov ? 1 : 0 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                height: '1px',
+                background: 'var(--cu)',
+                transformOrigin: 'left',
+                display: 'block',
+              }}
+            />
+          </button>
+        </motion.li>
       </ul>
     </motion.nav>
   )

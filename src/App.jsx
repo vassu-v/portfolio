@@ -10,8 +10,11 @@ import Ticker from './components/Ticker'
 import Highlights from './components/Highlights'
 import Currently from './components/Currently'
 import Experience from './components/Experience'
+import Blog from './components/Blog'
 import Footer from './components/Footer'
 import ProjectPage from './pages/ProjectPage'
+import BlogPost from './pages/BlogPost'
+import BlogIndex from './pages/BlogIndex'
 
 // Section → cursor RGB color map
 const SECTION_COLORS = {
@@ -74,10 +77,13 @@ function Portfolio() {
       <Experience />
       <ZoneDivider />
       <Projects />
+      <ZoneDivider />
+      <Blog />
       <Ticker />
       <Highlights />
       <ZoneDivider />
       <Currently />
+      <ZoneDivider />
       <Footer />
     </>
   )
@@ -86,12 +92,18 @@ function Portfolio() {
 function AppShell() {
   const { path } = useRoute()
   const projectMatch = path.match(/^\/project\/([^/]+)$/)
+  const blogMatch    = path.match(/^\/blog\/([^/]+)$/)
+  const isBlogIndex  = path === '/blog'
 
   return (
     <AnimatePresence mode="wait">
       {projectMatch
         ? <ProjectPage key={path} slug={projectMatch[1]} />
-        : <Portfolio key="home" />
+        : blogMatch
+          ? <BlogPost key={path} slug={blogMatch[1]} />
+          : isBlogIndex
+            ? <BlogIndex key="blog-index" />
+            : <Portfolio key="home" />
       }
     </AnimatePresence>
   )

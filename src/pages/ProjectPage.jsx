@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useRoute } from '../router'
 import { PROJECTS, getProject } from '../data/projects'
-import { Link } from '../router'
 import Lightbox from '../components/Lightbox'
 
 const fade = (delay = 0) => ({

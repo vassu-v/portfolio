@@ -330,7 +330,7 @@ export default function Projects() {
       id="projects"
       ref={sectionRef}
       className="sec-section"
-      style={{ opacity: sectionOp, y: sectionY, padding: '20px var(--pad) 140px', position: 'relative', zIndex: 1 }}
+      style={{ opacity: sectionOp, y: sectionY, padding: '20px var(--pad) 180px', position: 'relative', zIndex: 1 }}
     >
       <div style={{ display: 'grid', gridTemplateColumns: '45% 1fr', gap: 'clamp(40px, 6vw, 100px)', alignItems: 'start' }}>
 
@@ -351,7 +351,7 @@ export default function Projects() {
         </div>
 
         {/* Right — detail panel, sticky. min-height reserves space for the tallest project (description + scatter stack) so the section never shifts height on project change */}
-        <div style={{ position: 'sticky', top: '100px', minHeight: '560px' }}>
+        <div style={{ position: 'sticky', top: '100px', minHeight: '680px' }}>
           <AnimatePresence mode="wait">
             <DetailPanel
               key={activeIdx}

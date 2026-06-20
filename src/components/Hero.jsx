@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { AGE, YEAR } from '../utils/meta'
 
 const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
@@ -110,7 +111,7 @@ export default function Hero() {
             marginBottom: '22px',
           }}>
             <span style={{ width: '24px', height: '1px', background: 'var(--cu)', flexShrink: 0 }} />
-            Kolkata, India &nbsp;·&nbsp; 2026
+            Kolkata, India &nbsp;·&nbsp; {YEAR}
           </motion.div>
 
           <span style={{
@@ -145,9 +146,23 @@ export default function Hero() {
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--cu)', animation: 'live 2.4s ease-in-out infinite' }} />
               Open to collaborate
             </div>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.64rem', color: 'var(--text3)', letterSpacing: '0.08em' }}>
-              16 &nbsp;·&nbsp; CS × Chemistry × Neuroscience
-            </span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+              <span style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '1.05rem',
+                fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1,
+                color: 'var(--text2)',
+              }}>
+                {AGE}
+              </span>
+              <span style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '0.5rem', letterSpacing: '0.14em',
+                textTransform: 'uppercase', color: 'var(--text3)',
+              }}>
+                y/o
+              </span>
+            </div>
           </motion.div>
         </div>
       </motion.div>
