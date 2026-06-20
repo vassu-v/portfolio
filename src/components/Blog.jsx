@@ -180,9 +180,30 @@ export default function Blog() {
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '28px',
       }}>
-        {POSTS.map((post, i) => (
+        {POSTS.filter(p => p.featured).map((post, i) => (
           <PostCard key={post.slug} post={post} index={i} />
         ))}
+      </div>
+
+      {/* Explore more */}
+      <div style={{ marginTop: '48px', display: 'flex', justifyContent: 'center' }}>
+        <button
+          onClick={() => navigate('/blog')}
+          onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '10px',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: 'var(--text3)', background: 'none',
+            border: '1px solid var(--border)', borderRadius: '100px',
+            padding: '12px 28px', cursor: 'none',
+            transition: 'color 0.18s, border-color 0.18s',
+          }}
+        >
+          Explore more
+          <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.5rem' }} />
+        </button>
       </div>
     </section>
   )
