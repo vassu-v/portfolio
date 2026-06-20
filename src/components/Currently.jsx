@@ -60,7 +60,7 @@ function CurrCard({ c, i }) {
 export default function Currently() {
   return (
     <section id="currently" className="sec-section" style={{ padding: '0 var(--pad) 80px', position: 'relative', zIndex: 1 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+      <div className="curr-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
         {CARDS.map((c, i) => <CurrCard key={i} c={c} i={i} />)}
       </div>
     </section>

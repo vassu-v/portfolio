@@ -40,7 +40,7 @@ export default function About() {
       className="sec-section"
       style={{ padding: '40px var(--pad) 80px', position: 'relative', zIndex: 1 }}
     >
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 340px) 1fr', gap: '72px', alignItems: 'start' }}>
+      <div className="about-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 340px) 1fr', gap: '72px', alignItems: 'start' }}>
 
         {/* Photo with independent parallax */}
         <div ref={photoRef}>

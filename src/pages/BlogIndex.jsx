@@ -418,7 +418,7 @@ export default function BlogIndex() {
 
         {/* Rest — 2-column grid */}
         {rest.length > 0 && (
-          <div style={{
+          <div className="bi-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(2, 1fr)',
             gap: '20px',

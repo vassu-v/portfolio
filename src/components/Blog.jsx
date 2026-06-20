@@ -175,7 +175,7 @@ export default function Blog() {
       </div>
 
       {/* Card grid */}
-      <div style={{
+      <div className="blog-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '28px',
