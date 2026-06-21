@@ -15,6 +15,7 @@ export function Router({ children }) {
     window.history.pushState({}, '', to)
     setPath(to)
     window.scrollTo({ top: 0, behavior: 'instant' })
+    window.dispatchEvent(new Event('spa-navigate'))
   }
 
   const back = () => {

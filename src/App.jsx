@@ -278,6 +278,7 @@ export default function App() {
     }
 
     const onTouch = () => { targetY = window.scrollY }
+    const onNavigate = () => { targetY = 0 }
 
     const tick = () => {
       const diff = targetY - window.scrollY
@@ -292,12 +293,14 @@ export default function App() {
     window.addEventListener('wheel', onWheel, { passive: false })
     window.addEventListener('touchstart', onTouch, { passive: true })
     window.addEventListener('touchmove',  onTouch, { passive: true })
+    window.addEventListener('spa-navigate', onNavigate)
     rafId = requestAnimationFrame(tick)
 
     return () => {
       window.removeEventListener('wheel', onWheel)
       window.removeEventListener('touchstart', onTouch)
       window.removeEventListener('touchmove',  onTouch)
+      window.removeEventListener('spa-navigate', onNavigate)
       cancelAnimationFrame(rafId)
     }
   }, [])
