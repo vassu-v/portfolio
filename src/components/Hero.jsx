@@ -165,6 +165,7 @@ export default function Hero() {
             ref={photoRef}
             src="/preview (1).jpg"
             alt="Shoryavardhaan Gupta"
+            fetchPriority="high"
             style={{
               position: 'absolute', bottom: 0, left: '50%',
               transform: 'translateX(-50%)',
@@ -263,6 +264,7 @@ export default function Hero() {
           ref={photoRef}
           src="/preview (1).jpg"
           alt="Shoryavardhaan Gupta"
+          fetchPriority="high"
           style={{
             position: 'absolute', bottom: 0, left: '50%',
             transform: 'translateX(-50%)',

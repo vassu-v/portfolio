@@ -88,7 +88,7 @@ const CARDS = [
     desc: 'Youth Ideathon. Top 2,000 → Top 500 with PickedIn.',
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
-      { src: '/syi.png', rotate: -7, top: '-44px', right: '-16px' },
+      { src: '/syi.webp', rotate: -7, top: '-44px', right: '-16px' },
     ],
   },
   {

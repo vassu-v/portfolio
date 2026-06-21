@@ -101,6 +101,17 @@ function renderContent(blocks) {
   return blocks.map((block, i) => {
     if (block.type === 'paragraph') {
       paraIndex++
+      if (block.link) {
+        const { word, href } = block.link
+        const [before, after] = block.text.split(word)
+        return (
+          <ReadingPara key={i} index={paraIndex}>
+            {before}
+            <a href={href} style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>{word}</a>
+            {after}
+          </ReadingPara>
+        )
+      }
       return <ReadingPara key={i} index={paraIndex}>{block.text}</ReadingPara>
     }
     if (block.type === 'pullquote') return <PullQuote key={i} text={block.text} />
