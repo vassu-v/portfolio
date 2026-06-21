@@ -47,8 +47,9 @@ export default function About() {
           <ScrollReveal>
             <motion.div style={{ y: photoY }}>
               <img
-                src="/1758438412149.png"
+                src="/1758438412149.webp"
                 alt="Shoryavardhaan Gupta"
+                loading="lazy"
                 style={{
                   width: '100%', aspectRatio: '4/5', objectFit: 'cover', objectPosition: 'top center',
                   borderRadius: '10px', display: 'block',

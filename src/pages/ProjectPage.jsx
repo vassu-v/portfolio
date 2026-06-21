@@ -365,7 +365,8 @@ export default function ProjectPage({ slug }) {
                     }}
                   >
                     <img
-                      src={src} alt=""
+                      src={src} alt={`${name} — image ${i + 1}`}
+                      loading="lazy"
                       style={{ width: '220px', height: '140px', objectFit: 'cover', display: 'block' }}
                     />
                   </motion.div>

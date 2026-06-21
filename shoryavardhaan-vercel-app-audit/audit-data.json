@@ -1,0 +1,374 @@
+{
+  "summary": {
+    "health_score": 41,
+    "business_type": "Personal Portfolio + Publisher",
+    "audited_url": "https://shoryavardhaan.vercel.app/",
+    "audit_date": "2026-06-20",
+    "top_findings": [
+      "SPA render gap: all 12 sitemap URLs serve blank HTML to AI crawlers and social scrapers",
+      "Static canonical hardcoded to / — Google collapses all inner pages into one",
+      "950ms preloader + no image preload pushes LCP above 3,000ms on mobile",
+      "Font Awesome CDN: 102KB render-blocking stylesheet from third-party origin",
+      "Non-ISO datePublished in BlogPosting schema rejects Google Rich Results eligibility"
+    ],
+    "quick_wins": [
+      "Expand Person schema to @graph (Person + WebSite + ProfilePage) — 30 min, immediate AI crawler signal improvement",
+      "Add isoDate fields to blog.js — 15 min, unblocks Rich Results eligibility",
+      "Add preconnect for fonts.gstatic.com — 5 min, ~200ms font load improvement",
+      "Redirect old Vercel preview URL — 10 min no-code, consolidates name search authority",
+      "Convert og-image.svg to PNG — 20 min, fixes broken LinkedIn/WhatsApp previews"
+    ]
+  },
+  "categories": [
+    {
+      "name": "Technical SEO",
+      "score": 35,
+      "weight": 22,
+      "what_works": [
+        "robots.txt present and correct — all crawlers allowed, sitemap referenced",
+        "Sitemap covers all 12 routes with appropriate priority values",
+        "HSTS correctly configured via Vercel",
+        "HTTP/2 confirmed on all routes",
+        "CDN cache HIT from Vercel edge"
+      ],
+      "findings": [
+        {
+          "id": "C1",
+          "title": "SPA: All inner pages serve blank HTML to crawlers",
+          "severity": "Critical",
+          "description": "Every URL serves identical raw HTML: <div id='root'></div>. Non-Google AI crawlers never execute JS. Static canonical points all 12 routes to /.",
+          "recommendation": "Implement vite-ssg for static pre-rendering. Each route gets a pre-rendered HTML file at build time."
+        },
+        {
+          "id": "C3",
+          "title": "Soft 404s: Unknown routes return HTTP 200",
+          "severity": "Critical",
+          "description": "Typo URLs (/project/buy4-chai, /blog/wrong-slug) return HTTP 200 with blank SPA shell — wasting crawl budget and creating thin-content entries.",
+          "recommendation": "Add <meta name='robots' content='noindex'> from the client-side 404 render state."
+        },
+        {
+          "id": "M1",
+          "title": "Security headers absent",
+          "severity": "Medium",
+          "description": "X-Content-Type-Options, X-Frame-Options, Referrer-Policy not present in response headers.",
+          "recommendation": "Add headers config to vercel.json."
+        },
+        {
+          "id": "M5",
+          "title": "Cache-Control on /assets/* not immutable",
+          "severity": "Medium",
+          "description": "Vite content-hashed assets should be served with max-age=31536000, immutable for optimal repeat-visitor performance.",
+          "recommendation": "Add immutable cache-control header for /assets/* in vercel.json."
+        }
+      ]
+    },
+    {
+      "name": "Content Quality (E-E-A-T)",
+      "score": 55,
+      "weight": 23,
+      "what_works": [
+        "5 blog posts with specific, first-person, data-backed writing",
+        "Real E-E-A-T signals: India Innovates Top 1k (26,000+ entries), Zenodo preprint, MIT-licensed open source, 13 GitHub stars",
+        "Project case studies have clear problem/solution/impact framing",
+        "Content is genuine — not generated or templated"
+      ],
+      "findings": [
+        {
+          "id": "C6",
+          "title": "Blog post title opaque to search intent",
+          "severity": "Critical",
+          "description": "building-buy4chai titled 'The gap nobody was filling.' — users searching 'Indian developer Stripe alternative' won't click it despite the post being exactly what they need.",
+          "recommendation": "Retitle to something that surfaces the keyword angle while keeping voice, e.g. 'Why Indian developers can't get paid online — and how I fixed it'."
+        },
+        {
+          "id": "H8",
+          "title": "No author byline on blog posts",
+          "severity": "High",
+          "description": "Individual BlogPost.jsx renders don't show the author name — Google's 'Who' quality heuristic is unmet.",
+          "recommendation": "Add 'by Shoryavardhaan Gupta' to the post header in BlogPost.jsx."
+        },
+        {
+          "id": "M2",
+          "title": "No H2/H3 headings inside blog post bodies",
+          "severity": "Medium",
+          "description": "Native posts (building-buy4chai, markets-dont-get-disrupted) are ~250 words with no internal structure — reads as thin and hard to scan.",
+          "recommendation": "Add {type:'heading'} blocks in blog.js and render in BlogPost.jsx."
+        },
+        {
+          "id": "M3",
+          "title": "No internal links in blog content",
+          "severity": "Medium",
+          "description": "Buy4Chai post doesn't link to /project/buy4chai. Hardware post doesn't link to /project/lifi-network. Missed PageRank distribution and topical signal.",
+          "recommendation": "Add cross-links between related blog posts and project pages."
+        },
+        {
+          "id": "L5",
+          "title": "No narrative origin post",
+          "severity": "Low",
+          "description": "No post targeting '16 year old developer India' or 'student builder Kolkata' — the intent that would most naturally reach this portfolio's audience.",
+          "recommendation": "Write a first-person origin story post."
+        }
+      ]
+    },
+    {
+      "name": "On-Page SEO",
+      "score": 40,
+      "weight": 20,
+      "what_works": [
+        "Meta description present in static HTML",
+        "OG tags and Twitter Card present",
+        "Dynamic per-route title/description injection via useEffect is architecturally correct",
+        "Sitemap priorities appropriate (/ = 1.0, /blog = 0.9, posts = 0.8, projects = 0.8)"
+      ],
+      "findings": [
+        {
+          "id": "C1-onpage",
+          "title": "All inner pages have homepage metadata at crawl time",
+          "severity": "Critical",
+          "description": "Dynamic meta injection runs after JS. At first-wave crawl time, /blog/building-buy4chai has title 'Shoryavardhaan Gupta' and canonical /.",
+          "recommendation": "Resolved by vite-ssg (C1)."
+        },
+        {
+          "id": "M4",
+          "title": "Image alt text empty on all images",
+          "severity": "Medium",
+          "description": "All img elements across BlogPost.jsx, BlogIndex.jsx, ProjectPage.jsx have alt='' — fails accessibility and image search.",
+          "recommendation": "Add alt={post.title} or alt={proj.name} to all image elements."
+        },
+        {
+          "id": "M8",
+          "title": "Unused Space Grotesk font weights",
+          "severity": "Medium",
+          "description": "5 weights of Space Grotesk loaded from Google Fonts but none used in the actual CSS.",
+          "recommendation": "Remove Space Grotesk from the fonts URL in index.html."
+        }
+      ]
+    },
+    {
+      "name": "Schema / Structured Data",
+      "score": 42,
+      "weight": 10,
+      "what_works": [
+        "Person schema present in static HTML (rare for SPAs — good foundation)",
+        "Dynamic BlogPosting and SoftwareApplication schema injection architecture is correct",
+        "sitemap.xml and robots.txt reference correct"
+      ],
+      "findings": [
+        {
+          "id": "H4",
+          "title": "Person schema missing key entity signals",
+          "severity": "High",
+          "description": "Missing @id, description, birthDate, knowsAbout, award, memberOf, alternateName. These fields are what AI crawlers read to understand entity identity.",
+          "recommendation": "Replace with @graph containing Person + WebSite + ProfilePage. Full replacement JSON in FULL-AUDIT-REPORT.md H4."
+        },
+        {
+          "id": "H5",
+          "title": "datePublished non-ISO in BlogPosting schema",
+          "severity": "High",
+          "description": "post.date stores 'May 2026' — Google Rich Results tester rejects non-ISO 8601 dates. Blog posts ineligible for rich results.",
+          "recommendation": "Add isoDate field to each post in blog.js. Use post.isoDate ?? post.date in App.jsx."
+        },
+        {
+          "id": "H6",
+          "title": "BlogPosting schema missing required fields",
+          "severity": "High",
+          "description": "Missing mainEntityOfPage (required for rich results), wrong publisher type, missing articleSection, wordCount, dateModified.",
+          "recommendation": "Update the BlogPosting jsonld block in App.jsx."
+        },
+        {
+          "id": "M9",
+          "title": "BreadcrumbList absent on project/blog pages",
+          "severity": "Medium",
+          "description": "No BreadcrumbList schema — missing the SERP breadcrumb rich result.",
+          "recommendation": "Add BreadcrumbList to the dynamic jsonld graph in App.jsx for project and blog routes."
+        },
+        {
+          "id": "M10",
+          "title": "/blog index has no structured data",
+          "severity": "Medium",
+          "description": "The BlogIndex route at /blog emits no JSON-LD.",
+          "recommendation": "Add Blog schema in the isBlogIndex branch of the meta useEffect in App.jsx."
+        }
+      ]
+    },
+    {
+      "name": "Performance (CWV)",
+      "score": 38,
+      "weight": 10,
+      "what_works": [
+        "Vercel CDN serves from edge — base latency is low",
+        "HTTP/2 multiplexing active",
+        "Framer Motion's layout animation approach avoids forced reflows"
+      ],
+      "findings": [
+        {
+          "id": "C4",
+          "title": "950ms preloader hard-blocks LCP",
+          "severity": "Critical",
+          "description": "The setTimeout(950) in the preloader guarantees LCP cannot occur before ~950ms. On mobile with JS parse time, real-world LCP exceeds 3,000ms (poor threshold).",
+          "recommendation": "Reduce to ≤300ms or fire on font-load event. Add fetchpriority='high' to hero image."
+        },
+        {
+          "id": "C5",
+          "title": "Font Awesome: render-blocking CDN stylesheet",
+          "severity": "Critical",
+          "description": "102KB CSS from cdnjs.cloudflare.com + 3 woff2 font files from 3rd-party origin block FCP/LCP. Only 8 icons used site-wide.",
+          "recommendation": "Remove CDN link. Replace 8 <i fa-*> elements with inline SVGs."
+        },
+        {
+          "id": "H7",
+          "title": "5 concurrent RAF loops — INP risk",
+          "severity": "High",
+          "description": "DotGrid, smooth scroll, cursor glow, hero parallax, and Footer liquid all run simultaneously at 60fps. Combined cost exceeds 16ms budget on budget Android.",
+          "recommendation": "Move DotGrid to OffscreenCanvas + Web Worker. Merge cursor + hero parallax RAFs."
+        },
+        {
+          "id": "M6",
+          "title": "1758438412149.png is 746 KB",
+          "severity": "Medium",
+          "description": "PNG photograph at 746 KB. WebP conversion targets <80 KB at equivalent quality.",
+          "recommendation": "Convert to WebP. Consider srcset for responsive sizes."
+        },
+        {
+          "id": "M7",
+          "title": "syi.png is 309 KB",
+          "severity": "Medium",
+          "description": "PNG photograph at 309 KB. WebP target <40 KB.",
+          "recommendation": "Convert to WebP."
+        },
+        {
+          "id": "M12",
+          "title": "DotGrid RAF runs during preloader",
+          "severity": "Medium",
+          "description": "Canvas physics loop starts before preloader exits — wasted CPU during the phase when LCP measurement is already blocked.",
+          "recommendation": "Delay DotGrid RAF start until preloader unmounts."
+        }
+      ]
+    },
+    {
+      "name": "AI Search Readiness (GEO)",
+      "score": 25,
+      "weight": 10,
+      "what_works": [
+        "robots.txt allows all AI crawlers including GPTBot, Claude-Web, PerplexityBot",
+        "Person schema in static HTML is the one piece AI crawlers can read"
+      ],
+      "findings": [
+        {
+          "id": "GEO-1",
+          "title": "All content invisible to AI crawlers — SPA render gap",
+          "severity": "Critical",
+          "description": "ChatGPT, Perplexity, ClaudeBot never execute JavaScript. All 12 content-bearing routes return blank HTML. AI tools cannot cite or summarize any page content.",
+          "recommendation": "Resolved by vite-ssg (C1). Until then, the expanded Person schema (H4) in static index.html is the only mitigation."
+        },
+        {
+          "id": "GEO-2",
+          "title": "Old Vercel preview URL competing for name queries",
+          "severity": "High",
+          "description": "portfolio-vassu-vs-projects.vercel.app indexed by Google, appears in SERPs for 'Shoryavardhaan Gupta' — AI tools may cite the preview URL instead of production.",
+          "recommendation": "Redirect in Vercel dashboard (1.5 in ACTION-PLAN.md)."
+        },
+        {
+          "id": "GEO-3",
+          "title": "No llms.txt",
+          "severity": "Low",
+          "description": "No /llms.txt for AI crawler optionality. Currently non-blocking, but becomes useful as the standard adoption grows.",
+          "recommendation": "Create minimal /llms.txt pointing to key pages."
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "score": 45,
+      "weight": 5,
+      "what_works": [
+        "OG image present and referenced",
+        "Hero photo loads from /public/ without build-time transform"
+      ],
+      "findings": [
+        {
+          "id": "H1",
+          "title": "OG image is SVG — breaks social previews",
+          "severity": "High",
+          "description": "LinkedIn, Facebook, WhatsApp, iMessage scrapers don't render SVG. All shared links show blank/broken preview images.",
+          "recommendation": "Export og-image.png at 1200x630. Update index.html and App.jsx BASE_IMG."
+        },
+        {
+          "id": "M4-img",
+          "title": "alt='' on all img elements",
+          "severity": "Medium",
+          "description": "Empty alt text fails WCAG 2.1 AA and makes all images invisible to Google Image Search.",
+          "recommendation": "See M4 in content category."
+        },
+        {
+          "id": "L7",
+          "title": "No srcset on hero image",
+          "severity": "Low",
+          "description": "Mobile visitors download the same image as desktop. A WebP srcset would halve the payload for most visitors.",
+          "recommendation": "Add srcset with WebP variants in Hero.jsx."
+        },
+        {
+          "id": "L8",
+          "title": "loading='lazy' absent on below-fold images",
+          "severity": "Low",
+          "description": "Highlights, About, and Projects images load eagerly even on initial pageload.",
+          "recommendation": "Add loading='lazy' to all below-fold img elements."
+        }
+      ]
+    }
+  ],
+  "action_plan": {
+    "phases": [
+      {
+        "name": "Phase 1: Critical Fixes",
+        "timeframe": "This week (~80 min total)",
+        "items": [
+          "1.1 Expand Person schema to @graph in index.html (30 min)",
+          "1.2 Add isoDate to blog.js posts + update App.jsx (15 min)",
+          "1.3 Convert og-image.svg to og-image.png (20 min)",
+          "1.4 Add preconnect hints to index.html (5 min)",
+          "1.5 Redirect old Vercel preview URL in dashboard (10 min)"
+        ]
+      },
+      {
+        "name": "Phase 2: High-Impact Improvements",
+        "timeframe": "Next 1-2 weeks (~115 min total)",
+        "items": [
+          "2.1 Add noindex meta to 404 render state (30 min)",
+          "2.2 Add author byline to BlogPost.jsx (15 min)",
+          "2.3 Complete BlogPosting schema — mainEntityOfPage, publisher, BreadcrumbList (20 min)",
+          "2.4 Add security headers and immutable cache to vercel.json (20 min)",
+          "2.5 Reduce preloader setTimeout to ≤300ms (10 min)",
+          "2.6 Add BreadcrumbList to dynamic schemas (20 min)"
+        ]
+      },
+      {
+        "name": "Phase 3: Content & Authority",
+        "timeframe": "Month 2 (~170 min total)",
+        "items": [
+          "3.1 Add H2/H3 headings to native blog posts",
+          "3.2 Fix image alt text on all img elements",
+          "3.3 Add internal links in blog content",
+          "3.4 Add Blog schema on /blog route",
+          "3.5 Convert syi.png and 1758438412149.png to WebP",
+          "3.6 Remove unused Space Grotesk font weights",
+          "3.7 Retitle Buy4Chai post for search intent"
+        ]
+      },
+      {
+        "name": "Phase 4: Architecture",
+        "timeframe": "Month 2-3 (~8.5 hours total)",
+        "items": [
+          "4.1 Implement vite-ssg for static pre-rendering (highest leverage — fixes root cause of 60% of findings)",
+          "4.2 Replace Font Awesome CDN with inline SVGs",
+          "4.3 Move DotGrid to OffscreenCanvas + Web Worker",
+          "4.4 Create /llms.txt"
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "findings_dir": "findings/",
+    "screenshots_dir": "screenshots/"
+  }
+}

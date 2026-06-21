@@ -88,7 +88,7 @@ const CARDS = [
     desc: 'Youth Ideathon. Top 2,000 → Top 500 with PickedIn.',
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
-      { src: '/syi.png', rotate: -7, top: '-44px', right: '-16px' },
+      { src: '/syi.webp', rotate: -7, top: '-44px', right: '-16px' },
     ],
   },
   {
@@ -125,6 +125,7 @@ function FloatingImg({ src, rotate, top, right, bottom, left, delay, onClick }) 
       <img
         src={src}
         alt=""
+        loading="lazy"
         style={{ width: '100%', height: '82px', objectFit: 'cover', display: 'block' }}
       />
     </motion.div>

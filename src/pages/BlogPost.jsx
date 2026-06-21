@@ -1,7 +1,8 @@
-import { useRef, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { useRef, useEffect, useState } from 'react'
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
 import { useRoute } from '../router'
 import { POSTS, getPost } from '../data/blog'
+import Lightbox from '../components/Lightbox'
 
 // ── Scroll-brightening paragraph (same mechanic as About) ─────────────────────
 
@@ -101,6 +102,17 @@ function renderContent(blocks) {
   return blocks.map((block, i) => {
     if (block.type === 'paragraph') {
       paraIndex++
+      if (block.link) {
+        const { word, href } = block.link
+        const [before, after] = block.text.split(word)
+        return (
+          <ReadingPara key={i} index={paraIndex}>
+            {before}
+            <a href={href} style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>{word}</a>
+            {after}
+          </ReadingPara>
+        )
+      }
       return <ReadingPara key={i} index={paraIndex}>{block.text}</ReadingPara>
     }
     if (block.type === 'pullquote') return <PullQuote key={i} text={block.text} />
@@ -245,6 +257,7 @@ const fade = (delay = 0) => ({
 export default function BlogPost({ slug }) {
   const post = getPost(slug)
   const heroRef = useRef(null)
+  const [lightboxSrc, setLightboxSrc] = useState(null)
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroY = useTransform(heroScroll, [0, 1], ['0%', '30%'])
 
@@ -315,6 +328,10 @@ export default function BlogPost({ slug }) {
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', color: 'var(--text3)', letterSpacing: '0.06em' }}>
             {post.readTime}
           </span>
+          <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: 'var(--text3)' }} />
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', color: 'var(--text3)', letterSpacing: '0.06em' }}>
+            Shoryavardhaan Gupta
+          </span>
         </motion.div>
 
         {/* Title */}
@@ -337,20 +354,21 @@ export default function BlogPost({ slug }) {
           {post.subtitle}
         </motion.p>
 
-        {/* Hero image — parallax */}
+        {/* Hero image — parallax, click to enlarge */}
         {post.hero && (
           <motion.div
             ref={heroRef}
             {...fade(0.22)}
+            onClick={() => setLightboxSrc(post.hero)}
             style={{
               width: '100%', height: 'clamp(260px, 42vh, 500px)',
               overflow: 'hidden', borderRadius: '8px',
-              marginBottom: '64px',
+              marginBottom: '64px', cursor: 'zoom-in',
             }}
           >
             <motion.img
               src={post.hero}
-              alt=""
+              alt={post.title}
               style={{
                 width: '100%', height: '130%',
                 objectFit: 'cover', objectPosition: 'center',
@@ -402,6 +420,10 @@ export default function BlogPost({ slug }) {
           {post.date} · Kolkata, India
         </span>
       </div>
+
+      <AnimatePresence>
+        {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      </AnimatePresence>
     </div>
   )
 }

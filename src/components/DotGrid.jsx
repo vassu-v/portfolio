@@ -4,6 +4,7 @@ export default function DotGrid() {
   const canvasRef = useRef(null)
 
   useEffect(() => {
+    if (window.matchMedia('(max-width: 767px)').matches) return
     const cvs = canvasRef.current
     const ctx = cvs.getContext('2d')
 
