@@ -125,6 +125,7 @@ function FloatingImg({ src, rotate, top, right, bottom, left, delay, onClick }) 
       <img
         src={src}
         alt=""
+        loading="lazy"
         style={{ width: '100%', height: '82px', objectFit: 'cover', display: 'block' }}
       />
     </motion.div>
