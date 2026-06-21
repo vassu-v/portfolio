@@ -19,7 +19,7 @@ export const POSTS = [
     title: 'Nobody told me to start. That was the point.',
     subtitle: 'Two years of shipping real things from Kolkata, and what nobody tells you about starting before you\'re supposed to.',
     category: 'Reflection',
-    date: 'Jun 2026',
+    date: '21 Jun 2026',
     isoDate: '2026-06-21',
     readTime: '5 min read',
     hero: '/syi.webp',
