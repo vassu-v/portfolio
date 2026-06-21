@@ -1,7 +1,8 @@
-import { useRef, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { useRef, useEffect, useState } from 'react'
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
 import { useRoute } from '../router'
 import { POSTS, getPost } from '../data/blog'
+import Lightbox from '../components/Lightbox'
 
 // ── Scroll-brightening paragraph (same mechanic as About) ─────────────────────
 
@@ -256,6 +257,7 @@ const fade = (delay = 0) => ({
 export default function BlogPost({ slug }) {
   const post = getPost(slug)
   const heroRef = useRef(null)
+  const [lightboxSrc, setLightboxSrc] = useState(null)
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroY = useTransform(heroScroll, [0, 1], ['0%', '30%'])
 
@@ -352,15 +354,16 @@ export default function BlogPost({ slug }) {
           {post.subtitle}
         </motion.p>
 
-        {/* Hero image — parallax */}
+        {/* Hero image — parallax, click to enlarge */}
         {post.hero && (
           <motion.div
             ref={heroRef}
             {...fade(0.22)}
+            onClick={() => setLightboxSrc(post.hero)}
             style={{
               width: '100%', height: 'clamp(260px, 42vh, 500px)',
               overflow: 'hidden', borderRadius: '8px',
-              marginBottom: '64px',
+              marginBottom: '64px', cursor: 'zoom-in',
             }}
           >
             <motion.img
@@ -417,6 +420,10 @@ export default function BlogPost({ slug }) {
           {post.date} · Kolkata, India
         </span>
       </div>
+
+      <AnimatePresence>
+        {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      </AnimatePresence>
     </div>
   )
 }
