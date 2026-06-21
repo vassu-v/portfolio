@@ -29,3 +29,4 @@ https://shoryavardhaan.vercel.app/
 - X / Twitter: https://x.com/shoryavardhaan
 - Medium: https://medium.com/@shoryavardhaans2
 - Zenodo: https://zenodo.org/records/18196407
+- ORCID: https://orcid.org/0009-0009-1370-5230
