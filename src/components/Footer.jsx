@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { motion, useScroll, useTransform, useMotionValue, useSpring, useInView } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { AGE, YEAR } from '../utils/meta'
 
 const LINKS = [
@@ -7,8 +7,6 @@ const LINKS = [
   { icon: 'fa-brands fa-github',    label: 'GitHub',       href: 'https://github.com/vassu-v' },
   { icon: 'fa-brands fa-x-twitter', label: 'X / Twitter',  href: 'https://x.com/shoryavardhaan' },
   { icon: 'fa-brands fa-instagram', label: 'Instagram',    href: 'https://www.instagram.com/let_shorya.be/' },
-  { icon: 'fa-brands fa-orcid',      label: 'ORCID',        href: 'https://orcid.org/0009-0009-1370-5230' },
-  { icon: 'fa-solid fa-calendar-days', label: 'Book a call', href: 'https://cal.com/shoryavardhaan' },
   { icon: 'fa-solid fa-envelope',   label: 'shoryavardhaans2@gmail.com', href: 'mailto:shoryavardhaans2@gmail.com' },
 ]
 
@@ -118,40 +116,28 @@ function LiquidHeading({ scrollYProgress }) {
 
 // ── Magnetic CTA ───────────────────────────────────────────────────────────────
 
-function MagneticCTA() {
-  const btnRef = useRef(null)
-  const rawX   = useMotionValue(0)
-  const rawY   = useMotionValue(0)
-  const x      = useSpring(rawX, { stiffness: 180, damping: 18 })
-  const y      = useSpring(rawY, { stiffness: 180, damping: 18 })
-
-  const onMove = e => {
-    const rect = btnRef.current.getBoundingClientRect()
-    rawX.set((e.clientX - rect.left - rect.width  / 2) * 0.28)
-    rawY.set((e.clientY - rect.top  - rect.height / 2) * 0.28)
-  }
-  const onLeave = () => { rawX.set(0); rawY.set(0) }
-
+function MagneticCTA({ href, icon, label, secondary }) {
   return (
     <motion.a
-      ref={btnRef}
-      href="mailto:shoryavardhaans2@gmail.com"
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
+      href={href}
+      target={href.startsWith('http') ? '_blank' : undefined}
+      rel="noreferrer"
       style={{
-        x, y,
         display: 'inline-flex', alignItems: 'center', gap: '14px',
         fontFamily: 'JetBrains Mono, monospace', fontSize: '0.76rem',
         fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: '#0a0a0a', background: 'var(--cu)',
+        color: secondary ? 'var(--cu)' : '#0a0a0a',
+        background: secondary ? 'transparent' : 'var(--cu)',
+        border: secondary ? '1px solid var(--cu-b)' : '1px solid transparent',
         padding: '18px 40px', borderRadius: '6px', textDecoration: 'none',
-        marginBottom: '52px',
-        transition: 'background 0.22s, box-shadow 0.22s',
+        transition: 'background 0.22s, box-shadow 0.22s, border-color 0.22s',
       }}
-      whileHover={{ background: 'var(--go)', boxShadow: '0 14px 40px rgba(197,123,43,0.28)' }}
+      whileHover={secondary
+        ? { background: 'var(--cu-d)', borderColor: 'var(--cu)' }
+        : { background: 'var(--go)', boxShadow: '0 14px 40px rgba(197,123,43,0.28)' }}
     >
-      <i className="fa-solid fa-envelope" />
-      get in touch
+      <i className={icon} />
+      {label}
       <i className="fa-solid fa-arrow-right" />
     </motion.a>
   )
@@ -191,7 +177,10 @@ export default function Footer() {
             Open for collaborations, projects, and conversations worth having.
           </p>
 
-          <MagneticCTA />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '52px' }}>
+            <MagneticCTA href="mailto:shoryavardhaans2@gmail.com" icon="fa-solid fa-envelope" label="get in touch" />
+            <MagneticCTA href="https://cal.com/shoryavardhaan" icon="fa-solid fa-calendar-days" label="hop on a call" secondary />
+          </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '22px', marginBottom: '60px' }}>
             {LINKS.map(({ icon, label, href }) => (
