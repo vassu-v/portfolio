@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Analytics } from '@vercel/analytics/react'
 import { Router, useRoute } from './router'
 import { PROJECTS } from './data/projects'
 import { POSTS } from './data/blog'
@@ -14,6 +15,7 @@ import Currently from './components/Currently'
 import Experience from './components/Experience'
 import Blog from './components/Blog'
 import Footer from './components/Footer'
+import DeskBackdrop from './three/DeskBackdrop'
 import ProjectPage from './pages/ProjectPage'
 import BlogPost from './pages/BlogPost'
 import BlogIndex from './pages/BlogIndex'
@@ -72,6 +74,7 @@ function Preloader() {
 function Portfolio() {
   return (
     <>
+      <DeskBackdrop />
       <Nav />
       <Hero />
       <About />
@@ -400,6 +403,7 @@ export default function App() {
       </AnimatePresence>
 
       <AppShell />
+      <Analytics />
     </Router>
   )
 }

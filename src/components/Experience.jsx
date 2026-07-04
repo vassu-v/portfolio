@@ -5,7 +5,7 @@ import { useMobile, PORTRAIT_QUERY } from '../hooks/useMobile'
 const TABLET_LANDSCAPE_QUERY =
   '(min-width: 768px) and (max-width: 1023px) and (orientation: landscape)'
 
-const EXP = [
+export const EXP = [
   {
     n: '01',
     org: 'Bits&Bytes',

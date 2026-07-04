@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Lightbox from './Lightbox'
 
 function useCountUp(target, prefix = '', duration = 2000, start = false) {
@@ -53,18 +53,11 @@ const CARDS = [
     bottom: <StatCard id="c-li" target={1249} prefix="" color="var(--cu)" />,
     border: 'var(--cu-b)', bg: 'var(--cu-d)',
   },
+  { gram: true, cls: 'r2' },
   {
     cls: '', label: 'International Payments Processed', title: 'From Kolkata. Age 16.',
     bottom: <StatCard id="c-pay" target={300} prefix="$" color="var(--text)" />,
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
-  },
-  {
-    cls: 'c2', label: 'Zenodo · Jan 2026', title: 'Published Research Preprint',
-    desc: 'Object Commitment as a Diagnostic Pressure Point in Grounded Planning — exposing failure modes that high success rates hide.',
-    border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
-    images: [
-      { src: '/preprint.jpg', rotate: -7, top: '-42px', right: '-16px' },
-    ],
   },
   {
     cls: '', label: "Quantum Qubit'25", title: '3rd Place',
@@ -73,6 +66,14 @@ const CARDS = [
     images: [
       { src: '/dbpc.jpg',    rotate: 8,   top: '-42px', right: '-18px' },
       { src: '/solder.jpeg', rotate: -6, bottom: '-36px', left: '-14px' },
+    ],
+  },
+  {
+    cls: 'c2', label: 'Zenodo · Jan 2026', title: 'Published Research Preprint',
+    desc: 'Object Commitment as a Diagnostic Pressure Point in Grounded Planning — exposing failure modes that high success rates hide.',
+    border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
+    images: [
+      { src: '/preprint.jpg', rotate: -7, top: '-42px', right: '-16px' },
     ],
   },
   {
@@ -128,6 +129,138 @@ function FloatingImg({ src, rotate, top, right, bottom, left, delay, onClick }) 
         loading="lazy"
         style={{ width: '100%', height: '82px', objectFit: 'cover', display: 'block' }}
       />
+    </motion.div>
+  )
+}
+
+// ── Gramophone widget ──────────────────────────────────────────────────────────
+
+function GramophoneCard({ index }) {
+  const ref = useRef(null)
+  const [playing, setPlaying] = useState(true)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 95%', 'start 30%'] })
+  const colOffset = (index % 4) * 0.06
+  const opacity = useTransform(scrollYProgress, [colOffset, 0.7 + colOffset], [0, 1])
+  const y       = useTransform(scrollYProgress, [colOffset, 0.7 + colOffset], [24, 0])
+
+  const rotate = useMotionValue(0)
+  const speed  = useRef(0)
+  useAnimationFrame((_, delta) => {
+    const d = Math.min(delta, 64)
+    speed.current += ((playing ? 42 : 0) - speed.current) * Math.min(d / 600, 1)
+    if (speed.current > 0.1) rotate.set((rotate.get() + (speed.current * d) / 1000) % 360)
+  })
+
+  return (
+    <motion.div
+      ref={ref}
+      className="tgo"
+      style={{ gridColumn: 'span 1', gridRow: 'span 2', opacity, y, position: 'relative' }}
+    >
+      <div
+        onClick={() => setPlaying(p => !p)}
+        style={{
+          height: '100%', aspectRatio: '1 / 1',
+          background: '#000',
+          border: '1px solid var(--go-b)',
+          borderRadius: '13px',
+          position: 'relative', overflow: 'hidden',
+          cursor: 'pointer',
+        }}
+      >
+        {/* Record */}
+        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '86%', aspectRatio: '1 / 1' }}>
+          <motion.div style={{
+            rotate,
+            width: '100%', height: '100%', borderRadius: '50%',
+            background: 'repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0px, rgba(0,0,0,0) 1.5px, rgba(0,0,0,0) 3.5px), radial-gradient(circle, rgba(20,20,20,1), rgba(5,5,5,1))',
+            boxShadow: '0 0 0 1.5px var(--go-b), 0 14px 40px rgba(0,0,0,0.8)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{
+              width: '32%', height: '32%', borderRadius: '50%',
+              background: 'radial-gradient(circle at 38% 32%, rgba(30,30,30,1), rgba(8,8,8,1))',
+              border: '1px solid var(--go-b)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--go)', boxShadow: '0 0 6px rgba(212,152,58,0.6)' }} />
+            </div>
+          </motion.div>
+          {/* Static sheen — stays put while grooves spin */}
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%', pointerEvents: 'none',
+            background: 'conic-gradient(from 205deg, rgba(0,0,0,0) 0deg, rgba(255,255,255,0.06) 22deg, rgba(0,0,0,0) 48deg, rgba(0,0,0,0) 180deg, rgba(255,255,255,0.04) 205deg, rgba(0,0,0,0) 230deg)',
+          }} />
+        </div>
+
+        {/* Tonearm */}
+        <motion.div
+          animate={{ rotate: playing ? 15 : -6 }}
+          transition={{ type: 'spring', stiffness: 60, damping: 14 }}
+          style={{
+            position: 'absolute', top: '5%', right: '2%',
+            width: '32%', height: '68%',
+            transformOrigin: '72% 11%',
+            pointerEvents: 'none',
+          }}
+        >
+          <svg viewBox="0 0 100 200" width="100%" height="100%" fill="none" style={{ overflow: 'visible' }}>
+            <defs>
+              <linearGradient id="gram-arm" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stopColor="#5e3f13" />
+                <stop offset="0.35" stopColor="#f0c069" />
+                <stop offset="0.55" stopColor="#fbe3a8" />
+                <stop offset="0.75" stopColor="#c8913a" />
+                <stop offset="1" stopColor="#8a6220" />
+              </linearGradient>
+              <radialGradient id="gram-pivot" cx="0.35" cy="0.3" r="1">
+                <stop offset="0" stopColor="#3a3a3a" />
+                <stop offset="0.6" stopColor="#111" />
+                <stop offset="1" stopColor="#000" />
+              </radialGradient>
+              <radialGradient id="gram-knob" cx="0.35" cy="0.3" r="1">
+                <stop offset="0" stopColor="#fbe3a8" />
+                <stop offset="0.5" stopColor="#d4983a" />
+                <stop offset="1" stopColor="#7a5518" />
+              </radialGradient>
+              <linearGradient id="gram-cart" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#2e2e2e" />
+                <stop offset="0.5" stopColor="#141414" />
+                <stop offset="1" stopColor="#000" />
+              </linearGradient>
+              <filter id="gram-shadow" x="-40%" y="-40%" width="180%" height="180%">
+                <feDropShadow dx="-5" dy="7" stdDeviation="5" floodColor="#000" floodOpacity="0.75" />
+              </filter>
+            </defs>
+            <g filter="url(#gram-shadow)">
+              <circle cx="72" cy="24" r="18" fill="url(#gram-pivot)" stroke="rgba(212,152,58,0.35)" strokeWidth="1.5" />
+              <circle cx="72" cy="24" r="9" fill="url(#gram-knob)" />
+              <circle cx="69" cy="21" r="3" fill="rgba(255,255,255,0.55)" />
+              <path d="M72 24 C 75 82, 54 112, 36 152" stroke="rgba(60,38,8,0.9)" strokeWidth="7" strokeLinecap="round" />
+              <path d="M72 24 C 75 82, 54 112, 36 152" stroke="url(#gram-arm)" strokeWidth="5" strokeLinecap="round" />
+              <path d="M71 24 C 73.5 80, 53 110, 35.5 150" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" strokeLinecap="round" />
+              <rect x="24" y="148" width="22" height="36" rx="5" transform="rotate(24 35 166)" fill="url(#gram-cart)" stroke="rgba(212,152,58,0.4)" strokeWidth="1.5" />
+              <circle cx="31" cy="158" r="1.6" fill="var(--go)" transform="rotate(24 35 166)" />
+              <circle cx="40" cy="158" r="1.6" fill="var(--go)" transform="rotate(24 35 166)" />
+            </g>
+          </svg>
+        </motion.div>
+
+        {/* Power */}
+        <div style={{
+          position: 'absolute', bottom: '14px', left: '16px',
+          width: '20px', height: '20px', borderRadius: '50%',
+          border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{
+            width: '6px', height: '6px', borderRadius: '50%',
+            background: playing ? 'var(--go)' : 'var(--text3)',
+            boxShadow: playing ? '0 0 8px var(--go)' : 'none',
+            transition: 'background 0.2s, box-shadow 0.2s',
+          }} />
+        </div>
+      </div>
     </motion.div>
   )
 }
@@ -219,7 +352,9 @@ export default function Highlights() {
   return (
     <section id="highlights" className="sec-section" style={{ padding: '0 var(--pad) 100px', position: 'relative', zIndex: 1 }}>
       <div className="hl-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-        {CARDS.map((card, i) => <BentoCard key={i} card={card} index={i} />)}
+        {CARDS.map((card, i) => card.gram
+          ? <GramophoneCard key={i} index={i} />
+          : <BentoCard key={i} card={card} index={i} />)}
       </div>
     </section>
   )

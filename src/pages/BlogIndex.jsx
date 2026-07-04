@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { POSTS, LAST_UPDATED } from '../data/blog'
 import { YEAR } from '../utils/meta'
 import { useRoute } from '../router'
+import CRTMonitor from '../components/CRTMonitor'
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 16 },
@@ -313,8 +314,9 @@ export default function BlogIndex() {
       </div>
 
       {/* ── Hero ── */}
-      <div style={{ padding: 'clamp(90px, 10vh, 120px) var(--pad) 48px' }}>
+      <div className="bi-hero" style={{ padding: 'clamp(90px, 10vh, 120px) var(--pad) 48px', display: 'grid', gridTemplateColumns: '1fr 320px', gap: '48px', alignItems: 'start' }}>
 
+        <div>
         {/* Label row */}
         <motion.div
           {...fade(0)}
@@ -409,6 +411,12 @@ export default function BlogIndex() {
           }}>
             These aren't posts. They're things I actually had something to say about — stuff I'd still stand behind.
           </p>
+        </motion.div>
+        </div>
+
+        {/* CRT Monitor */}
+        <motion.div {...fade(0.16)} className="bi-crt" style={{ justifySelf: 'end' }}>
+          <CRTMonitor text={String(POSTS.length).padStart(2, '0')} isTag={false} />
         </motion.div>
       </div>
 

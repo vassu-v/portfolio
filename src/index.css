@@ -174,3 +174,9 @@ body:hover #cursor { opacity: 0.65; }
   .pp-body    { grid-template-columns: 1fr 280px !important; }
   .pp-sidebar { padding: 48px 28px !important; }
 }
+
+/* ── CRT monitor is a desktop-only garnish ────────────────────────────────── */
+@media (max-width: 1023px) {
+  .bi-hero, .bp-hero-grid { display: block !important; }
+  .bi-crt, .bp-crt        { display: none !important; }
+}
