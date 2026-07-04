@@ -8,6 +8,7 @@ const LINKS = [
   { icon: 'fa-brands fa-x-twitter', label: 'X / Twitter',  href: 'https://x.com/shoryavardhaan' },
   { icon: 'fa-brands fa-instagram', label: 'Instagram',    href: 'https://www.instagram.com/let_shorya.be/' },
   { icon: 'fa-brands fa-orcid',      label: 'ORCID',        href: 'https://orcid.org/0009-0009-1370-5230' },
+  { icon: 'fa-solid fa-calendar-days', label: 'Book a call', href: 'https://cal.com/shoryavardhaan' },
   { icon: 'fa-solid fa-envelope',   label: 'shoryavardhaans2@gmail.com', href: 'mailto:shoryavardhaans2@gmail.com' },
 ]
 
