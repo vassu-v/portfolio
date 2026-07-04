@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Analytics } from '@vercel/analytics/react'
 import { Router, useRoute } from './router'
 import { PROJECTS } from './data/projects'
 import { POSTS } from './data/blog'
@@ -402,6 +403,7 @@ export default function App() {
       </AnimatePresence>
 
       <AppShell />
+      <Analytics />
     </Router>
   )
 }
