@@ -14,6 +14,7 @@ import Currently from './components/Currently'
 import Experience from './components/Experience'
 import Blog from './components/Blog'
 import Footer from './components/Footer'
+import DeskBackdrop from './three/DeskBackdrop'
 import ProjectPage from './pages/ProjectPage'
 import BlogPost from './pages/BlogPost'
 import BlogIndex from './pages/BlogIndex'
@@ -72,6 +73,7 @@ function Preloader() {
 function Portfolio() {
   return (
     <>
+      <DeskBackdrop />
       <Nav />
       <Hero />
       <About />
