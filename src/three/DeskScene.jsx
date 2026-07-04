@@ -11,10 +11,10 @@ const ZOOM_CAM = [0.1, 0.59, 0.06]
 
 // Stage targets: camera, look-at, lid rotation (0 closed → -1.95 open), mouse parallax
 const STAGES = [
-  { id: 'hero',       cam: [-3.2, 1.7, 4.9],   look: [-1.05, 0.45, 0], lid: -0.06, par: 0.1 },
-  { id: 'about',      cam: [-2.05, 1.35, 3.7], look: [-0.5, 0.45, 0],  lid: -1.88, par: 0.12 },
+  { id: 'hero',       cam: [3.2, 1.7, 4.9],    look: [1.05, 0.45, 0],  lid: -0.06, par: 0.1 },
+  { id: 'about',      cam: [2.3, 1.3, 3.6],    look: [-1.6, 0.5, 0],   lid: -1.88, par: 0.1 },
   { id: 'experience', cam: [0.85, 1.0, 2.4],   look: [0, 0.45, 0],     lid: -1.95, par: 0.12 },
-  { id: 'projects',   cam: [-1.6, 1.05, 2.55], look: [-0.15, 0.4, 0],  lid: -1.95, par: 0.12 },
+  { id: 'projects',   cam: [-1.6, 1.05, 2.55], look: [0.5, 0.4, 0],    lid: -1.95, par: 0.12 },
   { id: 'writing',    cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
   { id: 'highlights', cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
   { id: 'currently',  cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
@@ -289,7 +289,7 @@ function Props() {
         </mesh>
         <mesh position={[-0.36, 0.72, 0]}>
           <sphereGeometry args={[0.035, 12, 12]} />
-          <meshBasicMaterial color="#F5C580" toneMapped={false} />
+          <meshBasicMaterial color="#FFF3D6" toneMapped={false} />
         </mesh>
       </group>
     </group>
@@ -406,8 +406,8 @@ export default function DeskScene() {
         }}
       >
         <ambientLight intensity={0.14} />
-        <pointLight position={[1.0, 1.6, -0.1]} color="#E8A455" intensity={4.2} distance={7} decay={2} />
-        <pointLight position={[-0.6, 2.3, 1.4]} color="#ffffff" intensity={1.3} distance={7} decay={2} />
+        <pointLight position={[1.0, 1.6, -0.1]} color="#FFE9C4" intensity={4.2} distance={7} decay={2} />
+        <pointLight position={[-0.4, 2.3, 1.0]} color="#ffffff" intensity={1.8} distance={7} decay={2} />
         <directionalLight position={[-3, 2, 2]} color="#45506a" intensity={0.35} />
         <Rig ctl={ctl} />
       </Canvas>
