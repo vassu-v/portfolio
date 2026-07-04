@@ -2,56 +2,57 @@ import { useRef, useMemo, useEffect } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
+import { EXP } from '../components/Experience'
+import { PROJECTS } from '../data/projects'
 
-// Stage targets: camera position, look-at, lid rotation (0 closed → -1.92 open ≈ 110°)
+// Screen world position when lid is open (-1.95 rad): used for the zoom-in stages
+const SCREEN_POS = new THREE.Vector3(0.1, 0.4, -0.41)
+const ZOOM_CAM = [0.1, 0.59, 0.06]
+
+// Stage targets: camera, look-at, lid rotation (0 closed → -1.95 open), mouse parallax
 const STAGES = [
-  { id: 'hero',       cam: [2.9, 1.7, 3.6],   look: [0, 0.3, 0],  lid: -0.06 },
-  { id: 'about',      cam: [1.9, 1.25, 2.7],  look: [0, 0.35, 0], lid: -1.88 },
-  { id: 'experience', cam: [1.3, 1.0, 2.3],   look: [0, 0.4, 0],  lid: -1.95 },
-  { id: 'projects',   cam: [-1.6, 1.05, 2.55], look: [0, 0.4, 0], lid: -1.95 },
-  { id: 'writing',    cam: [0, 1.1, 2.6],     look: [0, 0.45, 0], lid: -1.95 },
-  { id: 'highlights', cam: [1.7, 1.35, 2.9],  look: [0, 0.4, 0],  lid: -1.95 },
-  { id: 'currently',  cam: [2.0, 1.5, 3.1],   look: [0, 0.35, 0], lid: -1.95 },
-  { id: 'contact',    cam: [2.6, 2.0, 3.9],   look: [0, 0.25, 0], lid: -0.06 },
+  { id: 'hero',       cam: [-3.2, 1.7, 4.9],   look: [-1.05, 0.45, 0], lid: -0.06, par: 0.1 },
+  { id: 'about',      cam: [-2.05, 1.35, 3.7], look: [-0.5, 0.45, 0],  lid: -1.88, par: 0.12 },
+  { id: 'experience', cam: [0.85, 1.0, 2.4],   look: [0, 0.45, 0],     lid: -1.95, par: 0.12 },
+  { id: 'projects',   cam: [-1.6, 1.05, 2.55], look: [-0.15, 0.4, 0],  lid: -1.95, par: 0.12 },
+  { id: 'writing',    cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
+  { id: 'highlights', cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
+  { id: 'currently',  cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
+  { id: 'contact',    cam: [0.1, 0.85, 2.1],   look: [0.1, 0.45, -0.15], lid: -1.95, par: 0.08 },
 ]
-
-const SCREEN_TEXT = {
-  hero: [],
-  about: ['$ whoami', '', '16 · kolkata · builder', '', 'building something', 'that might matter'],
-  experience: ['$ ls work/', '', 'bits&bytes   fork lead', '4mq.org      consultant', 'freelance    ui design', 'beyond rote  outreach', 'utsavy       ux intern'],
-  projects: ['$ ls projects/', '', 'buy4chai/', 'sarkarsathi/', 'lifi-mesh/', 'chemx/', 'grounded-planning/'],
-  writing: ['$ cat log/latest', '', 'nobody told me', 'to start.', 'that was the point.'],
-  highlights: ['$ ./achievements', '', 'top 1k / 26,000+', '$300 intl · kolkata', 'published @ 15'],
-  currently: ['$ ps aux | active', '', 'bits&bytes kolkata', '4mq consulting', 'buy4chai v2'],
-  contact: ['$ mail -s "hey"', '', '> get in touch'],
-}
 
 const SECTION_IDS = ['about', 'experience', 'projects', 'writing', 'highlights', 'currently', 'contact']
 
-function useStageRef() {
-  const stageRef = useRef(0)
-  useEffect(() => {
-    const measure = () => {
-      let idx = 0
-      const threshold = window.innerHeight * 0.45
-      for (let i = 0; i < SECTION_IDS.length; i++) {
-        const el = document.getElementById(SECTION_IDS[i])
-        if (el && el.getBoundingClientRect().top < threshold) idx = i + 1
-      }
-      stageRef.current = idx
-    }
-    measure()
-    window.addEventListener('scroll', measure, { passive: true })
-    window.addEventListener('resize', measure)
-    return () => {
-      window.removeEventListener('scroll', measure)
-      window.removeEventListener('resize', measure)
-    }
-  }, [])
-  return stageRef
+const wrap = (text, max = 30) => {
+  const words = text.split(' ')
+  const lines = ['']
+  for (const w of words) {
+    if ((lines[lines.length - 1] + ' ' + w).trim().length > max) lines.push(w)
+    else lines[lines.length - 1] = (lines[lines.length - 1] + ' ' + w).trim()
+  }
+  return lines
 }
 
-function Screen({ screenRef }) {
+const slug = s => s.toLowerCase().replace(/\s+/g, '-')
+
+function screenLines(stageId, sub) {
+  switch (stageId) {
+    case 'about':
+      return ['$ whoami', '16 · kolkata · builder', '', '$ ls work/', ...EXP.map(e => slug(e.org) + '/')]
+    case 'experience': {
+      const e = EXP[sub] || EXP[0]
+      return ['$ cd work/' + slug(e.org), '$ ls', '', 'role → ' + e.primaryRole.toLowerCase(), 'time → ' + e.period.toLowerCase()]
+    }
+    case 'projects': {
+      const p = PROJECTS[sub] || PROJECTS[0]
+      return ['$ open ' + p.slug + '/', '', p.name.toLowerCase(), ...wrap(p.tagline.toLowerCase())]
+    }
+    default:
+      return null
+  }
+}
+
+function Screen({ ctl }) {
   const { texture, ctx, canvas } = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 512
@@ -62,18 +63,24 @@ function Screen({ screenRef }) {
     return { texture, ctx, canvas }
   }, [])
 
-  const local = useRef({ stage: -1, reveal: 0, blink: 0, blinkOn: true, dirty: true })
+  const local = useRef({ key: '', reveal: 0, blink: 0, blinkOn: true, dirty: true })
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     const s = local.current
-    const target = screenRef.current.stage
-    if (s.stage !== target) {
-      s.stage = target
+    const stage = STAGES[ctl.current.stage] || STAGES[0]
+    const sub = stage.id === 'experience' ? ctl.current.exp : stage.id === 'projects' ? ctl.current.proj : 0
+    const key = stage.id + ':' + sub
+    if (s.key !== key) {
+      s.key = key
       s.reveal = 0
       s.dirty = true
     }
-    const lines = SCREEN_TEXT[STAGES[s.stage]?.id] || []
-    const total = lines.join('\n').length
+
+    const isContact = stage.id === 'contact'
+    const lines = screenLines(stage.id, sub)
+    const off = stage.off || (stage.id === 'hero')
+
+    const total = isContact ? 40 : lines ? lines.join('\n').length : 0
     if (s.reveal < total) {
       s.reveal = Math.min(total, s.reveal + delta * 120)
       s.dirty = true
@@ -82,37 +89,56 @@ function Screen({ screenRef }) {
     if (s.blink > 0.5) {
       s.blink = 0
       s.blinkOn = !s.blinkOn
-      s.dirty = true
+      if (!off) s.dirty = true
     }
     if (!s.dirty) return
     s.dirty = false
 
-    ctx.fillStyle = '#070604'
+    ctx.fillStyle = off ? '#000' : '#070604'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
-    ctx.font = '500 24px "JetBrains Mono", monospace'
-    ctx.textBaseline = 'top'
-    let remaining = Math.floor(s.reveal)
-    let y = 26
-    let lastX = 28
-    let lastY = y
-    for (const line of lines) {
-      const take = Math.max(0, Math.min(line.length, remaining))
-      const shown = line.slice(0, take)
-      ctx.fillStyle = line.startsWith('$') ? '#8a6220' : '#D4983A'
-      ctx.fillText(shown, 28, y)
-      lastX = 28 + ctx.measureText(shown).width
-      lastY = y
-      remaining -= line.length + 1
-      y += 34
-      if (remaining < 0) break
+
+    if (!off) {
+      if (isContact) {
+        const t = Math.min(1, s.reveal / 40)
+        ctx.globalAlpha = t
+        ctx.fillStyle = '#D4983A'
+        ctx.font = 'italic 300 104px "Instrument Serif", serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('hi.', canvas.width / 2, 128)
+        ctx.font = '500 20px "JetBrains Mono", monospace'
+        ctx.fillStyle = '#8a6220'
+        ctx.fillText("let's build something together", canvas.width / 2, 232)
+        ctx.globalAlpha = 1
+        ctx.textAlign = 'left'
+        ctx.textBaseline = 'alphabetic'
+      } else if (lines) {
+        ctx.font = '500 24px "JetBrains Mono", monospace'
+        ctx.textBaseline = 'top'
+        let remaining = Math.floor(s.reveal)
+        let y = 26
+        let lastX = 28
+        let lastY = y
+        for (const line of lines) {
+          const take = Math.max(0, Math.min(line.length, remaining))
+          const shown = line.slice(0, take)
+          ctx.fillStyle = line.startsWith('$') ? '#8a6220' : '#D4983A'
+          ctx.fillText(shown, 28, y)
+          lastX = 28 + ctx.measureText(shown).width
+          lastY = y
+          remaining -= line.length + 1
+          y += 34
+          if (remaining < 0) break
+        }
+        if (s.blinkOn) {
+          ctx.fillStyle = '#D4983A'
+          ctx.fillRect(lastX + 6, lastY + 2, 12, 22)
+        }
+      }
+      // Scanlines
+      ctx.fillStyle = 'rgba(0,0,0,0.22)'
+      for (let sy = 0; sy < canvas.height; sy += 4) ctx.fillRect(0, sy, canvas.width, 1)
     }
-    if (s.blinkOn) {
-      ctx.fillStyle = '#D4983A'
-      ctx.fillRect(lastX + 6, lastY + 2, 12, 22)
-    }
-    // Scanlines
-    ctx.fillStyle = 'rgba(0,0,0,0.22)'
-    for (let sy = 0; sy < canvas.height; sy += 4) ctx.fillRect(0, sy, canvas.width, 1)
     texture.needsUpdate = true
   })
 
@@ -124,7 +150,7 @@ function Screen({ screenRef }) {
   )
 }
 
-function Laptop({ lidRef, screenRef, glowRef }) {
+function Laptop({ lidRef, glowRef, ctl }) {
   return (
     <group position={[0.1, 0, 0.1]}>
       {/* Base */}
@@ -146,10 +172,59 @@ function Laptop({ lidRef, screenRef, glowRef }) {
         <RoundedBox args={[1.15, 0.035, 0.76]} radius={0.02} position={[0, 0, 0.375]}>
           <meshStandardMaterial color="#161311" roughness={0.5} metalness={0.55} />
         </RoundedBox>
-        <Screen screenRef={screenRef} />
+        <Screen ctl={ctl} />
       </group>
       {/* Screen light spilling onto the desk */}
       <pointLight ref={glowRef} position={[0, 0.5, 0.7]} color="#D4983A" intensity={0} distance={2.4} decay={2} />
+    </group>
+  )
+}
+
+function DeskPhoto({ ctl }) {
+  const photoMat = useRef()
+  const frameMat = useRef()
+  const shown = useRef(-1)
+
+  const textures = useMemo(() => {
+    const loader = new THREE.TextureLoader()
+    return PROJECTS.map(p => {
+      const src = p.images?.[0]
+      if (!src) return null
+      const t = loader.load(src)
+      t.colorSpace = THREE.SRGBColorSpace
+      return t
+    })
+  }, [])
+
+  useFrame((_, delta) => {
+    const stage = STAGES[ctl.current.stage] || STAGES[0]
+    const idx = ctl.current.proj
+    const tex = textures[idx]
+    const want = stage.id === 'projects' && tex ? 1 : 0
+    const k = Math.min(1, delta * 5)
+    if (photoMat.current) {
+      if (shown.current !== idx && tex && photoMat.current.opacity < 0.15) {
+        photoMat.current.map = tex
+        photoMat.current.needsUpdate = true
+        shown.current = idx
+      }
+      const changing = shown.current !== idx
+      const target = changing ? 0 : want
+      photoMat.current.opacity += (target - photoMat.current.opacity) * (changing ? Math.min(1, delta * 10) : k)
+      if (frameMat.current) frameMat.current.opacity = photoMat.current.opacity
+    }
+  })
+
+  return (
+    <group position={[-0.78, 0.19, 0.06]} rotation={[-0.13, 0.55, 0]}>
+      <mesh>
+        <planeGeometry args={[0.5, 0.38]} />
+        <meshStandardMaterial ref={frameMat} color="#e8e2d6" roughness={0.85} transparent opacity={0} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, 0.015, 0.002]}>
+        <planeGeometry args={[0.45, 0.3]} />
+        <meshBasicMaterial ref={photoMat} transparent opacity={0} toneMapped={false} />
+      </mesh>
     </group>
   )
 }
@@ -208,7 +283,7 @@ function Props() {
           <cylinderGeometry args={[0.014, 0.014, 0.85, 10]} />
           <meshStandardMaterial color="#131211" roughness={0.5} metalness={0.6} />
         </mesh>
-        <mesh position={[-0.32, 0.78, 0]} rotation={[0, 0, 2.2]}>
+        <mesh position={[-0.32, 0.78, 0]} rotation={[0, 0, 2.2 + Math.PI]}>
           <coneGeometry args={[0.11, 0.18, 20, 1, true]} />
           <meshStandardMaterial color="#171410" roughness={0.5} metalness={0.5} side={THREE.DoubleSide} />
         </mesh>
@@ -240,12 +315,12 @@ function Desk() {
   )
 }
 
-function Rig({ stageRef, screenRef }) {
+function Rig({ ctl }) {
   const lidRef = useRef()
   const glowRef = useRef()
   const { camera } = useThree()
   const mouse = useRef({ x: 0, y: 0 })
-  const look = useRef(new THREE.Vector3(0, 0.3, 0))
+  const look = useRef(new THREE.Vector3(-1.05, 0.45, 0))
 
   useEffect(() => {
     const onMove = e => {
@@ -257,12 +332,11 @@ function Rig({ stageRef, screenRef }) {
   }, [])
 
   useFrame((_, delta) => {
-    const stage = STAGES[stageRef.current] || STAGES[0]
-    screenRef.current.stage = stageRef.current
+    const stage = STAGES[ctl.current.stage] || STAGES[0]
     const k = 1 - Math.pow(0.0018, delta)
 
-    camera.position.x += (stage.cam[0] + mouse.current.x * 0.14 - camera.position.x) * k
-    camera.position.y += (stage.cam[1] - mouse.current.y * 0.1 - camera.position.y) * k
+    camera.position.x += (stage.cam[0] + mouse.current.x * stage.par - camera.position.x) * k
+    camera.position.y += (stage.cam[1] - mouse.current.y * stage.par * 0.7 - camera.position.y) * k
     camera.position.z += (stage.cam[2] - camera.position.z) * k
     look.current.x += (stage.look[0] - look.current.x) * k
     look.current.y += (stage.look[1] - look.current.y) * k
@@ -272,37 +346,70 @@ function Rig({ stageRef, screenRef }) {
     if (lidRef.current) {
       lidRef.current.rotation.x += (stage.lid - lidRef.current.rotation.x) * k
       const openness = Math.min(1, Math.abs(lidRef.current.rotation.x) / 1.9)
-      if (glowRef.current) glowRef.current.intensity = openness * 1.1
+      if (glowRef.current) glowRef.current.intensity = stage.off ? 0 : openness * 1.1
     }
   })
 
   return (
     <>
       <Desk />
-      <Laptop lidRef={lidRef} screenRef={screenRef} glowRef={glowRef} />
+      <Laptop lidRef={lidRef} glowRef={glowRef} ctl={ctl} />
       <Props />
+      <DeskPhoto ctl={ctl} />
     </>
   )
 }
 
 export default function DeskScene() {
-  const stageRef = useStageRef()
-  const screenRef = useRef({ stage: 0 })
+  const ctl = useRef({ stage: 0, exp: 0, proj: 0 })
+
+  useEffect(() => {
+    const measure = () => {
+      let idx = 0
+      const threshold = window.innerHeight * 0.45
+      for (let i = 0; i < SECTION_IDS.length; i++) {
+        const el = document.getElementById(SECTION_IDS[i])
+        if (el && el.getBoundingClientRect().top < threshold) idx = i + 1
+      }
+      ctl.current.stage = idx
+
+      const exp = document.getElementById('experience')
+      if (exp) {
+        const rect = exp.getBoundingClientRect()
+        const scrollable = rect.height - window.innerHeight
+        if (scrollable > 0) {
+          const p = Math.max(0, Math.min(1, -rect.top / scrollable))
+          ctl.current.exp = Math.min(EXP.length - 1, Math.floor(p * EXP.length))
+        }
+      }
+    }
+    measure()
+    const onProj = e => { ctl.current.proj = e.detail }
+    window.addEventListener('scroll', measure, { passive: true })
+    window.addEventListener('resize', measure)
+    window.addEventListener('desk-active-project', onProj)
+    return () => {
+      window.removeEventListener('scroll', measure)
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('desk-active-project', onProj)
+    }
+  }, [])
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
       <Canvas
         dpr={[1, 1.75]}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
-        camera={{ position: [2.9, 1.7, 3.6], fov: 38 }}
+        camera={{ position: [-3.2, 1.7, 4.9], fov: 38 }}
         onCreated={({ scene }) => {
           scene.fog = new THREE.Fog('#090909', 3.4, 8.5)
         }}
       >
         <ambientLight intensity={0.14} />
         <pointLight position={[1.0, 1.6, -0.1]} color="#E8A455" intensity={4.2} distance={7} decay={2} />
+        <pointLight position={[-0.6, 2.3, 1.4]} color="#ffffff" intensity={1.3} distance={7} decay={2} />
         <directionalLight position={[-3, 2, 2]} color="#45506a" intensity={0.35} />
-        <Rig stageRef={stageRef} screenRef={screenRef} />
+        <Rig ctl={ctl} />
       </Canvas>
     </div>
   )

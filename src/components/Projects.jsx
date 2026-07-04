@@ -317,6 +317,10 @@ export default function Projects() {
     return () => clearInterval(timerRef.current)
   }, [])
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('desk-active-project', { detail: activeIdx }))
+  }, [activeIdx])
+
   const handleEnter = (i) => {
     setActiveIdx(i)
     setProgressKey(k => k + 1)
