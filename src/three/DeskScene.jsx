@@ -242,8 +242,8 @@ function Props() {
           <circleGeometry args={[0.048, 24]} />
           <meshStandardMaterial color="#6b4218" roughness={0.35} emissive="#4a2c0e" emissiveIntensity={0.4} />
         </mesh>
-        <mesh position={[0.065, 0.06, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <torusGeometry args={[0.035, 0.008, 10, 20, Math.PI]} />
+        <mesh position={[0.088, 0.06, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <torusGeometry args={[0.04, 0.008, 10, 20, Math.PI]} />
           <meshStandardMaterial color="#241a10" roughness={0.6} />
         </mesh>
       </group>

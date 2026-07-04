@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'fra
 import { useRoute } from '../router'
 import { POSTS, getPost } from '../data/blog'
 import Lightbox from '../components/Lightbox'
+import CRTMonitor from '../components/CRTMonitor'
 
 // ── Scroll-brightening paragraph (same mechanic as About) ─────────────────────
 
@@ -312,6 +313,8 @@ export default function BlogPost({ slug }) {
           {post.category}
         </div>
 
+        <div className="bp-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '48px', alignItems: 'start' }}>
+        <div>
         {/* Category + meta */}
         <motion.div {...fade(0)} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
           <span style={{
@@ -353,6 +356,13 @@ export default function BlogPost({ slug }) {
         }}>
           {post.subtitle}
         </motion.p>
+        </div>
+
+        {/* CRT Monitor — displays the post tag */}
+        <motion.div {...fade(0.16)} className="bp-crt" style={{ justifySelf: 'end', position: 'relative' }}>
+          <CRTMonitor text={post.category} isTag />
+        </motion.div>
+        </div>
 
         {/* Hero image — parallax, click to enlarge */}
         {post.hero && (
