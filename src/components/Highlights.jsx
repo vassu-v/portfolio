@@ -1,6 +1,9 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useContext, createContext } from 'react'
 import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Lightbox from './Lightbox'
+import CRTMonitor from './CRTMonitor'
+
+const HoveredImageContext = createContext({ hoveredSrc: null, setHoveredSrc: () => {} })
 
 function useCountUp(target, prefix = '', duration = 2000, start = false) {
   const [val, setVal] = useState(prefix + '0')
@@ -100,6 +103,7 @@ const CARDS = [
       { src: '/amzn.jpeg', rotate: 7, top: '-44px', right: '-18px' },
     ],
   },
+  { crt: true, cls: '' },
 ]
 
 // ── Floating polaroid image ────────────────────────────────────────────────────
@@ -138,6 +142,7 @@ function FloatingImg({ src, rotate, top, right, bottom, left, delay, onClick }) 
 function GramophoneCard({ index }) {
   const ref = useRef(null)
   const [playing, setPlaying] = useState(true)
+  const { hoveredSrc } = useContext(HoveredImageContext)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 95%', 'start 30%'] })
   const colOffset = (index % 4) * 0.06
   const opacity = useTransform(scrollYProgress, [colOffset, 0.7 + colOffset], [0, 1])
@@ -177,13 +182,20 @@ function GramophoneCard({ index }) {
             boxShadow: '0 0 0 1.5px var(--go-b), 0 14px 40px rgba(0,0,0,0.8)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
+            {/* Center label - shows hovered image or default */}
             <div style={{
               width: '32%', height: '32%', borderRadius: '50%',
-              background: 'radial-gradient(circle at 38% 32%, rgba(30,30,30,1), rgba(8,8,8,1))',
+              background: hoveredSrc
+                ? `url(${hoveredSrc}) center/cover no-repeat`
+                : 'radial-gradient(circle at 38% 32%, rgba(30,30,30,1), rgba(8,8,8,1))',
               border: '1px solid var(--go-b)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              filter: playing ? 'none' : 'grayscale(1)',
+              transition: 'filter 0.3s ease',
             }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--go)', boxShadow: '0 0 6px rgba(212,152,58,0.6)' }} />
+              {!hoveredSrc && (
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--go)', boxShadow: '0 0 6px rgba(212,152,58,0.6)' }} />
+              )}
             </div>
           </motion.div>
           {/* Static sheen — stays put while grooves spin */}
@@ -271,6 +283,7 @@ function BentoCard({ card, index }) {
   const ref = useRef(null)
   const [hovered, setHovered]       = useState(false)
   const [lightboxSrc, setLightboxSrc] = useState(null)
+  const { setHoveredSrc } = useContext(HoveredImageContext)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 95%', 'start 30%'] })
   const colOffset = (index % 4) * 0.06
   const opacity = useTransform(scrollYProgress, [colOffset, 0.7 + colOffset], [0, 1])
@@ -280,14 +293,15 @@ function BentoCard({ card, index }) {
   const spanCol = cls.includes('c2') ? 2 : 1
   const spanRow = cls.includes('r2') ? 2 : 1
   const hasImages = images?.length > 0
+  const firstImage = images?.[0]?.src
 
   return (
     <>
       {/* Outer: grid placement + scroll reveal + hover tracking covers card + polaroids */}
       <motion.div
         ref={ref}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => { setHovered(true); if (firstImage) setHoveredSrc(firstImage) }}
+        onMouseLeave={() => { setHovered(false); setHoveredSrc(null) }}
         style={{
           gridColumn: `span ${spanCol}`,
           gridRow: `span ${spanRow}`,
@@ -349,13 +363,27 @@ function BentoCard({ card, index }) {
 }
 
 export default function Highlights() {
+  const [hoveredSrc, setHoveredSrc] = useState(null)
+
   return (
-    <section id="highlights" className="sec-section" style={{ padding: '0 var(--pad) 100px', position: 'relative', zIndex: 1 }}>
-      <div className="hl-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-        {CARDS.map((card, i) => card.gram
-          ? <GramophoneCard key={i} index={i} />
-          : <BentoCard key={i} card={card} index={i} />)}
-      </div>
-    </section>
+    <HoveredImageContext.Provider value={{ hoveredSrc, setHoveredSrc }}>
+      <section id="highlights" className="sec-section" style={{ padding: '0 var(--pad) 100px', position: 'relative', zIndex: 1 }}>
+        <div className="hl-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+          {CARDS.map((card, i) => card.gram
+            ? <GramophoneCard key={i} index={i} />
+            : card.crt
+            ? <CRTCard key={i} />
+            : <BentoCard key={i} card={card} index={i} />)}
+        </div>
+      </section>
+    </HoveredImageContext.Provider>
+  )
+}
+
+function CRTCard() {
+  return (
+    <div style={{ gridColumn: '4', gridRow: '4', position: 'relative' }}>
+      <CRTMonitor text="Now Playing:\nLife + JEE" isTag />
+    </div>
   )
 }
