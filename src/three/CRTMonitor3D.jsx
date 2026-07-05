@@ -24,15 +24,19 @@ function drawScreen(ctx, canvas, text, isTag, blinkOn) {
     ctx.font = '500 22px "JetBrains Mono", monospace'
     ctx.fillText('$ cat tag', 42, 62)
 
+    // Split text by \n for multi-line support
+    const lines = String(text).split('\\n')
     ctx.textAlign = 'center'
     ctx.font = '700 46px "JetBrains Mono", monospace'
-    ctx.fillText(String(text).toUpperCase(), w / 2, h / 2 + 4)
+    lines.forEach((line, i) => {
+      ctx.fillText(line.toUpperCase(), w / 2, h / 2 + 4 + (i - (lines.length - 1) / 2) * 52)
+    })
 
     ctx.font = '500 20px "JetBrains Mono", monospace'
     ctx.globalAlpha = 0.55
-    ctx.fillText('─────────────', w / 2, h / 2 + 58)
+    ctx.fillText('\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501', w / 2, h / 2 + 58)
     ctx.globalAlpha = 0.8
-    ctx.fillText(`loaded${blinkOn ? ' █' : ''}`, w / 2, h - 62)
+    ctx.fillText(`loaded${blinkOn ? ' \u2588' : ''}`, w / 2, h - 62)
     ctx.globalAlpha = 1
   } else {
     ctx.textAlign = 'left'
@@ -44,7 +48,7 @@ function drawScreen(ctx, canvas, text, isTag, blinkOn) {
     ctx.fillText('bytes: synced', 42, 158)
     ctx.fillText('status: ready', 42, 210)
     ctx.globalAlpha = 1
-    if (blinkOn) ctx.fillText('█', 42, 258)
+    if (blinkOn) ctx.fillText('\u2588', 42, 258)
   }
 
   ctx.shadowBlur = 0
