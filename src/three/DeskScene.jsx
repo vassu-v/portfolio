@@ -21,6 +21,18 @@ const STAGES = [
   { id: 'contact',    cam: [0.1, 0.85, 2.1],   look: [0.1, 0.45, -0.15], lid: -1.95, par: 0.08 },
 ]
 
+// On mobile portrait, zoom in starting from experience (skip projects/writing as separate camera stages)
+const MOBILE_STAGES = [
+  { id: 'hero',       cam: [3.2, 1.7, 4.9],    look: [1.05, 0.45, 0],  lid: -0.06, par: 0.1 },
+  { id: 'about',      cam: [-0.8, 1.1, 3.2],   look: [0.4, 0.45, 0],   lid: -1.88, par: 0.1 },
+  { id: 'experience', cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
+  { id: 'projects',   cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
+  { id: 'writing',    cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
+  { id: 'highlights', cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
+  { id: 'currently',  cam: ZOOM_CAM, look: [SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z], lid: -1.95, par: 0.012, off: true },
+  { id: 'contact',    cam: [0.1, 0.85, 2.1],   look: [0.1, 0.45, -0.15], lid: -1.95, par: 0.08 },
+]
+
 const SECTION_IDS = ['about', 'experience', 'projects', 'writing', 'highlights', 'currently', 'contact']
 
 const wrap = (text, max = 30) => {
@@ -52,7 +64,7 @@ function screenLines(stageId, sub) {
   }
 }
 
-function Screen({ ctl }) {
+function Screen({ ctl, stages }) {
   const { texture, ctx, canvas } = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 512
@@ -67,7 +79,7 @@ function Screen({ ctl }) {
 
   useFrame((_, delta) => {
     const s = local.current
-    const stage = STAGES[ctl.current.stage] || STAGES[0]
+    const stage = stages[ctl.current.stage] || stages[0]
     const sub = stage.id === 'experience' ? ctl.current.exp : stage.id === 'projects' ? ctl.current.proj : 0
     const key = stage.id + ':' + sub
     if (s.key !== key) {
@@ -150,7 +162,7 @@ function Screen({ ctl }) {
   )
 }
 
-function Laptop({ lidRef, glowRef, ctl }) {
+function Laptop({ lidRef, glowRef, ctl, stages }) {
   return (
     <group position={[0.1, 0, 0.1]}>
       {/* Base */}
@@ -172,7 +184,7 @@ function Laptop({ lidRef, glowRef, ctl }) {
         <RoundedBox args={[1.15, 0.035, 0.76]} radius={0.02} position={[0, 0, 0.375]}>
           <meshStandardMaterial color="#161311" roughness={0.5} metalness={0.55} />
         </RoundedBox>
-        <Screen ctl={ctl} />
+        <Screen ctl={ctl} stages={stages} />
       </group>
       {/* Screen light spilling onto the desk */}
       <pointLight ref={glowRef} position={[0, 0.5, 0.7]} color="#D4983A" intensity={0} distance={2.4} decay={2} />
@@ -180,7 +192,7 @@ function Laptop({ lidRef, glowRef, ctl }) {
   )
 }
 
-function DeskPhoto({ ctl }) {
+function DeskPhoto({ ctl, stages }) {
   const photoMat = useRef()
   const frameMat = useRef()
   const shown = useRef(-1)
@@ -197,7 +209,7 @@ function DeskPhoto({ ctl }) {
   }, [])
 
   useFrame((_, delta) => {
-    const stage = STAGES[ctl.current.stage] || STAGES[0]
+    const stage = stages[ctl.current.stage] || stages[0]
     const idx = ctl.current.proj
     const tex = textures[idx]
     const want = stage.id === 'projects' && tex ? 1 : 0
@@ -315,7 +327,7 @@ function Desk() {
   )
 }
 
-function Rig({ ctl }) {
+function Rig({ ctl, stages }) {
   const lidRef = useRef()
   const glowRef = useRef()
   const { camera } = useThree()
@@ -332,7 +344,7 @@ function Rig({ ctl }) {
   }, [])
 
   useFrame((_, delta) => {
-    const stage = STAGES[ctl.current.stage] || STAGES[0]
+    const stage = stages[ctl.current.stage] || stages[0]
     const k = 1 - Math.pow(0.0018, delta)
 
     camera.position.x += (stage.cam[0] + mouse.current.x * stage.par - camera.position.x) * k
@@ -353,15 +365,20 @@ function Rig({ ctl }) {
   return (
     <>
       <Desk />
-      <Laptop lidRef={lidRef} glowRef={glowRef} ctl={ctl} />
+      <Laptop lidRef={lidRef} glowRef={glowRef} ctl={ctl} stages={stages} />
       <Props />
-      <DeskPhoto ctl={ctl} />
+      <DeskPhoto ctl={ctl} stages={stages} />
     </>
   )
 }
 
+const isMobilePortrait = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(max-width: 767px), (max-width: 1023px) and (orientation: portrait)').matches
+
 export default function DeskScene() {
   const ctl = useRef({ stage: 0, exp: 0, proj: 0 })
+  const stages = isMobilePortrait() ? MOBILE_STAGES : STAGES
 
   useEffect(() => {
     const measure = () => {
@@ -398,7 +415,7 @@ export default function DeskScene() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
       <Canvas
-        dpr={[1, 1.75]}
+        dpr={isMobilePortrait() ? [1, 1] : [1, 1.75]}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
         camera={{ position: [-3.2, 1.7, 4.9], fov: 38 }}
         onCreated={({ scene }) => {
@@ -409,7 +426,7 @@ export default function DeskScene() {
         <pointLight position={[1.0, 1.6, -0.1]} color="#FFE9C4" intensity={4.2} distance={7} decay={2} />
         <pointLight position={[-0.4, 2.3, 1.0]} color="#ffffff" intensity={1.8} distance={7} decay={2} />
         <directionalLight position={[-3, 2, 2]} color="#45506a" intensity={0.35} />
-        <Rig ctl={ctl} />
+        <Rig ctl={ctl} stages={stages} />
       </Canvas>
     </div>
   )

@@ -151,34 +151,6 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* Photo strip */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.9, delay: 0.6 }}
-          style={{
-            height: 'clamp(220px, 56vw, 320px)',
-            position: 'relative', overflow: 'hidden', flexShrink: 0,
-          }}
-        >
-          <img
-            ref={photoRef}
-            src="/preview (1).jpg"
-            alt="Shoryavardhaan Gupta"
-            fetchPriority="high"
-            style={{
-              position: 'absolute', bottom: 0, left: '50%',
-              transform: 'translateX(-50%)',
-              height: '115%', width: 'auto', maxWidth: 'none',
-              objectFit: 'contain', objectPosition: 'bottom center',
-              opacity: 1,
-            }}
-          />
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(to bottom, var(--bg) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 3 }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%', background: 'linear-gradient(to top, var(--bg) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 3 }} />
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '30%', height: '100%', background: 'linear-gradient(to right, var(--bg) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 3 }} />
-          <div style={{ position: 'absolute', top: 0, right: 0, width: '30%', height: '100%', background: 'linear-gradient(to left, var(--bg) 0%, transparent 100%)', pointerEvents: 'none', zIndex: 3 }} />
-        </motion.div>
       </section>
     )
   }

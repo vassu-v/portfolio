@@ -160,12 +160,12 @@ function GramophoneCard({ index }) {
     <motion.div
       ref={ref}
       className="tgo"
-      style={{ gridColumn: 'span 1', gridRow: 'span 2', opacity, y, position: 'relative' }}
+      style={{ gridColumn: 'span 1', gridRow: 'span 2', opacity, y, position: 'relative', minWidth: 0 }}
     >
       <div
         onClick={() => setPlaying(p => !p)}
         style={{
-          height: '100%', aspectRatio: '1 / 1',
+          width: '100%', aspectRatio: '1 / 1',
           background: '#000',
           border: '1px solid var(--go-b)',
           borderRadius: '13px',
@@ -303,12 +303,13 @@ function BentoCard({ card, index }) {
         onMouseEnter={() => { setHovered(true); if (firstImage) setHoveredSrc(firstImage) }}
         onMouseLeave={() => { setHovered(false); setHoveredSrc(null) }}
         style={{
-          gridColumn: `span ${spanCol}`,
-          gridRow: `span ${spanRow}`,
+          gridColumn: `auto / span ${spanCol}`,
+          gridRow: `auto / span ${spanRow}`,
           opacity, y,
           position: 'relative',
           zIndex: hovered && hasImages ? 20 : 1,
           willChange: 'transform',
+          minWidth: 0,
         }}
       >
         {/* Inner: visible card */}
