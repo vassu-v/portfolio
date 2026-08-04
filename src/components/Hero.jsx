@@ -94,6 +94,17 @@ export default function Hero() {
           pointerEvents: 'none', zIndex: 0,
         }} />
 
+        {/* Profile photo — top-right, fades into background */}
+        <div style={{ position: 'absolute', top: 0, right: 0, width: '58%', height: '62%', overflow: 'hidden', zIndex: 1 }}>
+          <img
+            src="/preview (1).jpg"
+            alt="Shoryavardhaan Gupta"
+            fetchPriority="high"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, var(--bg) 0%, transparent 50%), linear-gradient(to top, var(--bg) 0%, transparent 40%)' }} />
+        </div>
+
         {/* Text block */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
@@ -231,7 +242,7 @@ export default function Hero() {
         </div>
       </motion.div>
 
-      <motion.div style={{ y: photoY, opacity: photoOp, scale: photoScale, position: 'relative', overflow: 'hidden', zIndex: 1 }}>
+      <motion.div className="hero-photo-col" style={{ y: photoY, opacity: photoOp, scale: photoScale, position: 'relative', overflow: 'hidden', zIndex: 1 }}>
         <img
           ref={photoRef}
           src="/preview (1).jpg"

@@ -28,7 +28,7 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: auto; overflow-x: hidden; }
+html { scroll-behavior: auto; }
 
 body {
   background: var(--bg);
@@ -90,6 +90,7 @@ body:hover #cursor { opacity: 0.65; }
   a, button, [role="button"] { cursor: pointer !important; }
   #cursor, #sp { display: none !important; }
 
+  .hero-photo-col { display: none !important; }
   .about-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
   .about-grid > div:first-child { max-width: 200px !important; margin: 0 auto !important; }
   .blog-grid  { grid-template-columns: 1fr !important; }
