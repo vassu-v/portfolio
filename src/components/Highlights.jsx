@@ -119,7 +119,7 @@ const CARDS = [
 
 // ── Floating polaroid image ────────────────────────────────────────────────────
 
-function FloatingImg({ src, rotate, top, right, bottom, left, delay, onClick }) {
+function FloatingImg({ src, alt, rotate, top, right, bottom, left, delay, onClick }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.82, rotate: rotate * 0.5 }}
@@ -140,7 +140,7 @@ function FloatingImg({ src, rotate, top, right, bottom, left, delay, onClick }) 
     >
       <img
         src={src}
-        alt=""
+        alt={alt}
         loading="lazy"
         style={{ width: '100%', height: '82px', objectFit: 'cover', display: 'block' }}
       />
@@ -353,6 +353,7 @@ function BentoCard({ card, index }) {
             <FloatingImg
               key={i}
               src={img.src}
+              alt={`${title} photo ${i + 1}`}
               rotate={img.rotate}
               top={img.top}
               right={img.right}

@@ -129,7 +129,7 @@ const STACKED = [
   { x:  1, y: -2, rotate:  9  },
 ]
 
-function ScatterStack({ images }) {
+function ScatterStack({ images, name }) {
   const [out, setOut]           = useState(false)
   const [lightboxSrc, setLightboxSrc] = useState(null)
   const visible = images.slice(0, 3)
@@ -157,7 +157,7 @@ function ScatterStack({ images }) {
                 cursor: 'zoom-in',
               }}
             >
-              <img src={src} alt="" style={{ width: '100%', height: '80px', objectFit: 'cover', display: 'block' }} />
+              <img src={src} alt={`${name} photo ${i + 1}`} style={{ width: '100%', height: '80px', objectFit: 'cover', display: 'block' }} />
             </motion.div>
           )
         })}
@@ -274,7 +274,7 @@ function DetailPanel({ project, onNavigate }) {
       </motion.button>
 
       {/* Photo scatter stack */}
-      {images?.length > 0 && <ScatterStack images={images} />}
+      {images?.length > 0 && <ScatterStack images={images} name={project.name} />}
 
       {/* Bottom rule */}
       <motion.div

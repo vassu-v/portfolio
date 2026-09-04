@@ -207,8 +207,15 @@ function AppShell() {
       if (el && val) el.setAttribute(attr, val)
     }
 
+    let canonicalEl = document.querySelector('link[rel="canonical"]')
+    if (!canonicalEl) {
+      canonicalEl = document.createElement('link')
+      canonicalEl.rel = 'canonical'
+      document.head.appendChild(canonicalEl)
+    }
+    canonicalEl.href = url
+
     setMeta('meta[name="description"]',         'content', desc)
-    setMeta('link[rel="canonical"]',             'href',    url)
     setMeta('meta[property="og:url"]',           'content', url)
     setMeta('meta[property="og:title"]',         'content', title)
     setMeta('meta[property="og:description"]',   'content', desc)

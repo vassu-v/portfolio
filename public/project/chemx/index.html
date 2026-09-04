@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChemX — Shoryavardhaan Gupta</title>
+
+    <meta name="description" content="Physical chemistry reaction simulator: Arduino, LEDs, electromagnet, controlled via browser. First hardware project. Taught constraint thinking before I had words for it." />
+    <meta name="author" content="Shoryavardhaan Gupta" />
+    <link rel="canonical" href="https://shoryavardhaan.vercel.app/project/chemx" />
+
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://shoryavardhaan.vercel.app/project/chemx" />
+    <meta property="og:title"       content="ChemX — Shoryavardhaan Gupta" />
+    <meta property="og:description" content="Physical chemistry simulator controlled from a browser." />
+    <meta property="og:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
+    <meta property="og:site_name"   content="Shoryavardhaan Gupta" />
+
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:url"         content="https://shoryavardhaan.vercel.app/project/chemx" />
+    <meta name="twitter:title"       content="ChemX — Shoryavardhaan Gupta" />
+    <meta name="twitter:description" content="Physical chemistry simulator controlled from a browser." />
+    <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
+    <meta name="twitter:creator"     content="@shoryavardhaan" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CreativeWork",
+          "@id": "https://shoryavardhaan.vercel.app/project/chemx",
+          "name": "ChemX",
+          "description": "Physical chemistry reaction simulator: Arduino, LEDs, electromagnet, controlled via browser. First hardware project. Taught constraint thinking before I had words for it.",
+          "url": "https://shoryavardhaan.vercel.app/project/chemx",
+          "author": { "@type": "Person", "@id": "https://shoryavardhaan.vercel.app/#person", "name": "Shoryavardhaan Gupta" },
+          "keywords": ["Arduino","Electronics","C/C++","Web Interface","IoT"],
+          "codeRepository": "https://github.com/vassu-v/ChemX_001"
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://shoryavardhaan.vercel.app/" },
+            { "@type": "ListItem", "position": 2, "name": "ChemX", "item": "https://shoryavardhaan.vercel.app/project/chemx" }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <article>
+        <h1>ChemX</h1>
+        <p>Physical chemistry simulator controlled from a browser. · Dec 2024 – Feb 2025</p>
+        <p>Tags: Arduino, Electronics, C/C++, Web Interface, IoT</p>
+        <p><strong>Dec 2024 – Feb 2025 · School science exhibition</strong></p>
+
+        <h2>The problem</h2>
+        <p>Chemistry education in school is almost entirely symbolic: equations on a board, molecular diagrams in a textbook. The reactions happen in a flask during a lab session, and then they're over. There's no way to interact with the process, slow it down, reverse it, or ask &quot;what happens if I change this variable.&quot;</p>
+        <p>I wanted to build something you could actually touch and control.</p>
+
+        <h2>What it does</h2>
+        <p>ChemX is a physical simulator where chemical reactions happen in hardware. LEDs represent atomic bonds forming and breaking. An electromagnet simulates molecular attraction and repulsion. A web interface lets you select a reaction, adjust variables, and watch it play out on the physical rig in real time. Actual hardware responding, not a simulation on a screen.</p>
+        <p>It was my first hardware project. I didn't have a framework for thinking about constraint-based building at the time, but this is where I learned it: components don't work the way documentation says they do, and the interesting problems are always at the boundary between the physical and the digital.</p>
+
+        <h2>How it works</h2>
+        <ul>
+          <li><strong>Hardware rig:</strong> Arduino Uno driving a custom PCB with LED arrays and an electromagnet module. Each reaction is encoded as a timed sequence of hardware events.</li>
+          <li><strong>Web interface:</strong> Browser-based control panel served from the Arduino. Select reaction type, trigger it, watch the rig respond in real time.</li>
+          <li><strong>Reactions:</strong> Acid-base neutralisation, oxidation-reduction, and precipitation reactions, each with distinct LED patterns and electromagnet states.</li>
+          <li><strong>Constraint design:</strong> The Arduino's 2KB of RAM meant every byte mattered. Taught me to optimise before I knew what optimisation was.</li>
+        </ul>
+
+        <h2>Impact</h2>
+        <ul>
+          <li>1st — Hardware project ever built</li>
+          <li>✓ — School science exhibition</li>
+          <li>2mo — Built in two months alongside school</li>
+          <li>→ — Led directly to the LiFi network project</li>
+        </ul>
+
+        <p><a href="https://github.com/vassu-v/ChemX_001">GitHub →</a></p>
+        <p><a href="https://shoryavardhaan.vercel.app/">← Back to portfolio</a></p>
+      </article>
+    </noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

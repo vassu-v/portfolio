@@ -30,6 +30,12 @@ Two separate blog renderers exist, on purpose:
 
 **File locations** — template: `public/blog/template.html`; generator: `scripts/generate-blog-static.mjs`; live posts: `public/blog/<slug>/index.html`.
 
+## Static project pages
+
+`public/project/<slug>/index.html` mirrors the blog's static-shell approach for `src/data/projects.js` entries — a noscript-friendly page with real title/meta/OG/Twitter tags and JSON-LD, served before the SPA rewrite. Unlike the blog's GEN-marker patching, these are **fully generated, not hand-written** — `npm run generate:projects` (`scripts/generate-project-static.mjs`) builds any `public/project/<slug>/index.html` that doesn't already exist yet from `projects.js` directly (problem/solution/how/impact fields become the noscript article body). A file that already exists is left alone and treated as hand-maintained from that point on — delete it and re-run the script to regenerate from source.
+
+The same script also regenerates `public/sitemap.xml` from `blog.js` + `projects.js` every run, so a new post or project is never missing from the sitemap. Run `npm run generate:projects` after adding a new project to `PROJECTS`.
+
 ## Design rules
 
 - **Color system via CSS variables** — always use `var(--cu)`, `var(--text)`, `var(--border)` etc. Never hardcode colors except for rgba overlays.
