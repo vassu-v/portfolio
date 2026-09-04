@@ -8,6 +8,28 @@ React + Vite. Framer Motion v12. **Inline styles throughout — no Tailwind util
 
 All content lives in data files and component-level arrays — no logic changes needed to add posts, projects, or experience entries. Read `add-content.md` at the project root before touching any content.
 
+## Static blog system
+
+Two separate blog renderers exist, on purpose:
+
+- **Live SPA** — `src/data/blog.js` + `src/pages/BlogPost.jsx` render what visitors see when browsing the site.
+- **Static SEO shell** — `public/blog/<slug>/index.html` are standalone hand-written HTML files (no React, fully inline CSS) that Vercel serves directly for the same URL before the SPA rewrite fires. Exists purely so crawlers/link-unfurl bots that don't execute JS still get real content.
+
+**Not auto-synced** — editing `blog.js` does not change the static HTML. Article prose in each static file is separately hand-written and must be manually kept in sync when post content changes.
+
+**Auto-synced** — post numbering (`nav-counter`, "N / total"), the hero-ghost category label, and the "More from the log" related-post links are regenerated FROM `blog.js` by running `npm run generate:blog` (`scripts/generate-blog-static.mjs`). This only touches the delimited `<!-- GEN:... -->` regions in each static file — never hand-written body content.
+
+**CRT tag widget** — static posts include a small canvas readout (`.crt-widget` / `#crtCanvas`) showing the post's category in phosphor-green retro terminal style, a vanilla-JS/2D-canvas equivalent of the SPA's 3D `CRTMonitor` (`src/three/CRTMonitor3D.jsx`), deliberately lightweight (no three.js) since these pages are SEO-first. `npm run generate:blog` keeps its `data-tag` attribute synced to category.
+
+**Adding a new post:**
+1. Add an entry to `POSTS` in `src/data/blog.js` — this alone makes it live on the SPA/homepage cards.
+2. Copy `public/blog/template.html` → `public/blog/<new-slug>/index.html`.
+3. Fill every `[FILL: ...]` placeholder (title, meta, OG/Twitter tags, JSON-LD, hero image, article prose, pullquotes).
+4. Remove the `<meta name="robots" content="noindex, nofollow">` line — only `template.html` itself stays noindexed; real posts must not have this.
+5. Run `npm run generate:blog` to auto-fill numbering, hero-ghost, more-posts links, and CRT tag text.
+
+**File locations** — template: `public/blog/template.html`; generator: `scripts/generate-blog-static.mjs`; live posts: `public/blog/<slug>/index.html`.
+
 ## Design rules
 
 - **Color system via CSS variables** — always use `var(--cu)`, `var(--text)`, `var(--border)` etc. Never hardcode colors except for rgba overlays.

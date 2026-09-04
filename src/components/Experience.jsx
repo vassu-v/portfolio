@@ -132,9 +132,9 @@ function Panel({ exp }) {
           <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', letterSpacing: '0.2em', color: 'var(--text3)' }}>
             {n} / {String(TOTAL).padStart(2, '0')}
           </div>
-          {hire && (
+          {hire && cta && (
             <a
-              href={cta?.href}
+              href={cta.href}
               target="_blank"
               rel="noreferrer"
               style={{
@@ -296,9 +296,9 @@ function MobileCard({ exp }) {
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text3)' }}>
             {n}
           </span>
-          {hire && (
+          {hire && cta && (
             <a
-              href={cta?.href}
+              href={cta.href}
               target="_blank"
               rel="noreferrer"
               style={{
@@ -510,6 +510,7 @@ export default function Experience() {
   const snapProgress = useMotionValue(0)
   useEffect(() => {
     const step = 1 / (TOTAL - 1)
+    snapProgress.set(Math.round(scrollYProgress.get() / step) * step)
     return scrollYProgress.on('change', v => {
       const snapped = Math.round(v / step) * step
       snapProgress.set(snapped)
@@ -601,7 +602,7 @@ export default function Experience() {
           <div style={{ flex: 1, height: '1px', background: 'var(--border)', position: 'relative' }}>
             <motion.div style={{ position: 'absolute', left: 0, top: 0, height: '100%', background: 'var(--cu)', width: barWidth }} />
           </div>
-          <ProgressDots scrollYProgress={scrollYProgress} />
+          <ProgressDots scrollYProgress={springProgress} />
         </div>
       </div>
     </div>

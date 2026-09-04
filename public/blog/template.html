@@ -487,6 +487,20 @@
       letter-spacing: 0.06em;
     }
 
+    /* ── CRT tag widget ── */
+    .crt-widget {
+      display: flex;
+      justify-content: center;
+      margin: 36px 0 12px;
+    }
+    .crt-widget canvas {
+      width: 220px;
+      height: 138px;
+      border-radius: 10px;
+      background: #03110a;
+      box-shadow: 0 0 0 1px var(--border), 0 18px 40px -20px rgba(74,222,128,0.25);
+    }
+
     /* ═══════════════════════════════════════════════════════
        RESPONSIVE
        ═══════════════════════════════════════════════════════ */
@@ -516,12 +530,12 @@
       </svg>
       writing
     </a>
-    <span class="nav-counter">[FILL: post number e.g. 01] / 06</span>
+    <span class="nav-counter"><!-- GEN:NAV-COUNTER -->[FILL: post number e.g. 01] / 06<!-- /GEN:NAV-COUNTER --></span>
   </nav>
 
   <!-- HERO -->
   <div class="hero">
-    <div class="hero-ghost" aria-hidden="true">[FILL: category e.g. Reflection]</div>
+    <div class="hero-ghost" aria-hidden="true"><!-- GEN:HERO-GHOST -->[FILL: category e.g. Reflection]<!-- /GEN:HERO-GHOST --></div>
 
     <div class="hero-grid">
       <div>
@@ -544,6 +558,17 @@
       <div class="hero-image-wrap">
         <img src="/[FILL: hero image path]" alt="[FILL: alt text]" loading="eager" />
       </div>
+    </div>
+
+    <!-- CRT TAG WIDGET
+         Vanilla-canvas phosphor-green terminal readout, mirrors the SPA's
+         3D CRTMonitor (src/three/CRTMonitor3D.jsx) but flat 2D — no three.js
+         on static pages. Reads data-tag off the canvas element; the generator
+         script keeps that attribute in sync with the post's category.
+         Delete this whole <div class="crt-widget"> block only if a post truly
+         shouldn't show one — otherwise leave it, generator handles the text. -->
+    <div class="crt-widget">
+      <canvas id="crtCanvas" width="320" height="200" data-tag="[FILL: category]"></canvas>
     </div>
   </div>
 
@@ -626,6 +651,10 @@
     <div class="more-posts">
       <div class="more-posts-label">More from the log</div>
 
+      <!-- GEN:MORE-POSTS
+           Auto-picked by scripts/generate-blog-static.mjs from src/data/blog.js
+           (same category first, then nearest by post number). Hand-edit only
+           if you haven't run `npm run generate:blog` yet. -->
       <a href="/blog/[FILL: other-slug-1]" class="more-post-row">
         <div class="more-post-inner">
           <span class="more-post-n">[FILL: 01]</span>
@@ -647,6 +676,7 @@
         </div>
         <i class="fa-solid fa-arrow-right" style="font-size:0.72rem; color:var(--text3); flex-shrink:0"></i>
       </a>
+      <!-- /GEN:MORE-POSTS -->
     </div>
 
   </article>
@@ -685,6 +715,58 @@
     }
     window.addEventListener('scroll', bright, { passive: true })
     bright()
+
+    // CRT tag widget — flat 2D phosphor-green readout, mirrors
+    // src/three/CRTMonitor3D.jsx's drawScreen(isTag) styling without three.js
+    ;(function () {
+      const cv = document.getElementById('crtCanvas')
+      if (!cv) return
+      const ctx = cv.getContext('2d')
+      const GREEN = '#4ade80'
+      const text = cv.dataset.tag || ''
+      let blinkOn = true
+
+      function draw() {
+        const w = cv.width, h = cv.height
+        const bg = ctx.createRadialGradient(w / 2, h / 2, 24, w / 2, h / 2, w * 0.72)
+        bg.addColorStop(0, '#0b2413')
+        bg.addColorStop(1, '#03110a')
+        ctx.fillStyle = bg
+        ctx.fillRect(0, 0, w, h)
+
+        ctx.shadowColor = GREEN
+        ctx.shadowBlur = 10
+        ctx.fillStyle = GREEN
+        ctx.textBaseline = 'middle'
+        ctx.textAlign = 'left'
+        ctx.font = '500 13px "JetBrains Mono", monospace'
+        ctx.fillText('$ cat tag', 18, 30)
+
+        ctx.textAlign = 'center'
+        ctx.font = '700 26px "JetBrains Mono", monospace'
+        ctx.fillText(text.toUpperCase(), w / 2, h / 2 + 2)
+
+        ctx.font = '500 11px "JetBrains Mono", monospace'
+        ctx.globalAlpha = 0.55
+        ctx.fillText('───────────', w / 2, h / 2 + 32)
+        ctx.globalAlpha = 0.8
+        ctx.fillText('loaded' + (blinkOn ? ' █' : ''), w / 2, h - 24)
+        ctx.globalAlpha = 1
+        ctx.shadowBlur = 0
+
+        ctx.fillStyle = 'rgba(0,0,0,0.35)'
+        for (let y = 0; y < h; y += 3) ctx.fillRect(0, y, w, 1)
+
+        const vig = ctx.createRadialGradient(w / 2, h / 2, h * 0.3, w / 2, h / 2, w * 0.68)
+        vig.addColorStop(0, 'rgba(0,0,0,0)')
+        vig.addColorStop(1, 'rgba(0,0,0,0.55)')
+        ctx.fillStyle = vig
+        ctx.fillRect(0, 0, w, h)
+      }
+
+      draw()
+      setInterval(() => { blinkOn = !blinkOn; draw() }, 620)
+    })()
   </script>
 
 </body>

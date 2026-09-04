@@ -223,10 +223,10 @@ function MorePosts({ currentSlug }) {
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             gap: '16px', padding: '18px 0', width: '100%',
+            background: 'none',
             borderTop: '1px solid var(--border)',
             borderBottom: i === others.length - 1 ? '1px solid var(--border)' : 'none',
-            background: 'none', border: 'none',
-            borderTop: '1px solid var(--border)',
+            borderLeft: 'none', borderRight: 'none',
             cursor: 'none', textAlign: 'left',
             transition: 'background 0.15s',
           }}
@@ -261,6 +261,8 @@ export default function BlogPost({ slug }) {
   const [lightboxSrc, setLightboxSrc] = useState(null)
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroY = useTransform(heroScroll, [0, 1], ['0%', '30%'])
+  const { scrollYProgress: pageProgress } = useScroll()
+  const progressWidth = useSpring(pageProgress, { stiffness: 200, damping: 30 })
 
   useEffect(() => {
     if (post) document.title = `${post.title} — Shoryavardhaan`
@@ -276,15 +278,12 @@ export default function BlogPost({ slug }) {
     )
   }
 
-  const { scrollYProgress: pageProgress } = useScroll()
-  const progressWidth = useSpring(pageProgress, { stiffness: 200, damping: 30 })
-
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
 
       {/* ── Reading progress bar ── */}
       <motion.div style={{
-        position: 'fixed', top: 0, left: 0, height: '2px', zIndex: 100,
+        position: 'fixed', top: 0, left: 0, width: '100%', height: '2px', zIndex: 100,
         background: 'var(--cu)', transformOrigin: 'left',
         scaleX: progressWidth,
       }} />
