@@ -68,7 +68,7 @@ function screenLines(stageId, sub) {
   }
 }
 
-function Screen({ ctl, stages }) {
+function Screen({ ctl, stages, mobile }) {
   const { texture, ctx, canvas } = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 512
@@ -93,10 +93,11 @@ function Screen({ ctl, stages }) {
     }
 
     const isContact = stage.id === 'contact'
+    const isSG = mobile && (stage.id === 'hero' || stage.id === 'about')
     const lines = screenLines(stage.id, sub)
-    const off = stage.off || (stage.id === 'hero')
+    const off = stage.off || (!mobile && stage.id === 'hero')
 
-    const total = isContact ? 40 : lines ? lines.join('\n').length : 0
+    const total = isContact ? 40 : isSG ? 2 : lines ? lines.join('\n').length : 0
     if (s.reveal < total) {
       s.reveal = Math.min(total, s.reveal + delta * 120)
       s.dirty = true
@@ -114,7 +115,18 @@ function Screen({ ctl, stages }) {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     if (!off) {
-      if (isContact) {
+      if (isSG) {
+        const t = Math.min(1, s.reveal / 2)
+        ctx.globalAlpha = t
+        ctx.fillStyle = '#D4983A'
+        ctx.font = 'italic 300 188px "Instrument Serif", serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('SG', canvas.width / 2, canvas.height / 2 + 10)
+        ctx.globalAlpha = 1
+        ctx.textAlign = 'left'
+        ctx.textBaseline = 'alphabetic'
+      } else if (isContact) {
         const t = Math.min(1, s.reveal / 40)
         ctx.globalAlpha = t
         ctx.fillStyle = '#D4983A'
@@ -166,7 +178,7 @@ function Screen({ ctl, stages }) {
   )
 }
 
-function Laptop({ lidRef, glowRef, ctl, stages }) {
+function Laptop({ lidRef, glowRef, ctl, stages, mobile }) {
   return (
     <group position={[0.1, 0, 0.1]}>
       {/* Base */}
@@ -188,7 +200,7 @@ function Laptop({ lidRef, glowRef, ctl, stages }) {
         <RoundedBox args={[1.15, 0.035, 0.76]} radius={0.02} position={[0, 0, 0.375]}>
           <meshStandardMaterial color="#161311" roughness={0.5} metalness={0.55} />
         </RoundedBox>
-        <Screen ctl={ctl} stages={stages} />
+        <Screen ctl={ctl} stages={stages} mobile={mobile} />
       </group>
       {/* Screen light spilling onto the desk */}
       <pointLight ref={glowRef} position={[0, 0.5, 0.7]} color="#D4983A" intensity={0} distance={2.4} decay={2} />
@@ -331,7 +343,7 @@ function Desk() {
   )
 }
 
-function Rig({ ctl, stages }) {
+function Rig({ ctl, stages, mobile }) {
   const lidRef = useRef()
   const glowRef = useRef()
   const { camera } = useThree()
@@ -369,7 +381,7 @@ function Rig({ ctl, stages }) {
   return (
     <>
       <Desk />
-      <Laptop lidRef={lidRef} glowRef={glowRef} ctl={ctl} stages={stages} />
+      <Laptop lidRef={lidRef} glowRef={glowRef} ctl={ctl} stages={stages} mobile={mobile} />
       <Props />
       <DeskPhoto ctl={ctl} stages={stages} />
     </>
@@ -378,7 +390,8 @@ function Rig({ ctl, stages }) {
 
 export default function DeskScene() {
   const ctl = useRef({ stage: 0, exp: 0, proj: 0 })
-  const stages = isMobilePortrait() ? MOBILE_STAGES : STAGES
+  const isMobile = isMobilePortrait()
+  const stages = isMobile ? MOBILE_STAGES : STAGES
 
   useEffect(() => {
     const measure = () => {
@@ -415,7 +428,7 @@ export default function DeskScene() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
       <Canvas
-        dpr={isMobilePortrait() ? [1, 1] : [1, 1.75]}
+        dpr={isMobile ? [1, 1] : [1, 1.75]}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
         camera={{ position: [-3.2, 1.7, 4.9], fov: 38 }}
         onCreated={({ scene }) => {
@@ -426,7 +439,7 @@ export default function DeskScene() {
         <pointLight position={[1.0, 1.6, -0.1]} color="#FFE9C4" intensity={7.5} distance={9} decay={2} />
         <pointLight position={[-0.4, 2.3, 1.0]} color="#ffffff" intensity={2.2} distance={8} decay={2} />
         <directionalLight position={[-3, 2, 2]} color="#45506a" intensity={0.35} />
-        <Rig ctl={ctl} stages={stages} />
+        <Rig ctl={ctl} stages={stages} mobile={isMobile} />
       </Canvas>
     </div>
   )
