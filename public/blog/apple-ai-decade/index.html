@@ -15,7 +15,7 @@
   <meta property="og:url"         content="https://shoryavardhaan.vercel.app/blog/apple-ai-decade" />
   <meta property="og:title"       content="Apple's been playing a different game since 2017" />
   <meta property="og:description" content="While everyone rented Nvidia GPUs and called it infrastructure, Apple quietly built AI silicon before AI was the thing to build for." />
-  <meta property="og:image"       content="https://shoryavardhaan.vercel.app/projects/log_apple_ai.jpeg" />
+  <meta property="og:image"       content="https://shoryavardhaan.vercel.app/blog/apple-ai-decade/hero.jpeg" />
   <meta property="og:site_name"   content="Shoryavardhaan Gupta" />
 
   <!-- Twitter Card -->
@@ -23,7 +23,7 @@
   <meta name="twitter:url"         content="https://shoryavardhaan.vercel.app/blog/apple-ai-decade" />
   <meta name="twitter:title"       content="Apple's been playing a different game since 2017" />
   <meta name="twitter:description" content="While everyone rented Nvidia GPUs and called it infrastructure, Apple quietly built AI silicon before AI was the thing to build for." />
-  <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/projects/log_apple_ai.jpeg" />
+  <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/blog/apple-ai-decade/hero.jpeg" />
   <meta name="twitter:creator"     content="@shoryavardhaan" />
 
   <!-- Structured data -->
@@ -39,7 +39,7 @@
         "url": "https://shoryavardhaan.vercel.app/blog/apple-ai-decade",
         "datePublished": "2026-04-01",
         "dateModified": "2026-04-01",
-        "image": { "@type": "ImageObject", "url": "https://shoryavardhaan.vercel.app/projects/log_apple_ai.jpeg" },
+        "image": { "@type": "ImageObject", "url": "https://shoryavardhaan.vercel.app/blog/apple-ai-decade/hero.jpeg" },
         "author": { "@type": "Person", "@id": "https://shoryavardhaan.vercel.app/#person", "name": "Shoryavardhaan Gupta" },
         "publisher": { "@type": "Person", "name": "Shoryavardhaan Gupta", "url": "https://shoryavardhaan.vercel.app/" },
         "mainEntityOfPage": { "@type": "WebPage", "@id": "https://shoryavardhaan.vercel.app/blog/apple-ai-decade" },
@@ -460,6 +460,19 @@
       .hero-image-wrap { display: none; }
       .continue-reading { flex-direction: column; align-items: flex-start; }
     }
+  
+    .crt-widget {
+      display: flex;
+      justify-content: center;
+      margin: 36px 0 12px;
+    }
+    .crt-widget canvas {
+      width: 220px;
+      height: 138px;
+      border-radius: 10px;
+      background: #03110a;
+      box-shadow: 0 0 0 1px var(--border), 0 18px 40px -20px rgba(74,222,128,0.25);
+    }
   </style>
 </head>
 <body>
@@ -473,11 +486,11 @@
       </svg>
       writing
     </a>
-    <span class="nav-counter">04 / 06</span>
+    <span class="nav-counter"><!-- GEN:NAV-COUNTER -->04 / 06<!-- /GEN:NAV-COUNTER --></span>
   </nav>
 
   <div class="hero">
-    <div class="hero-ghost" aria-hidden="true">Perspective</div>
+    <div class="hero-ghost" aria-hidden="true"><!-- GEN:HERO-GHOST -->Perspective<!-- /GEN:HERO-GHOST --></div>
 
     <div class="hero-grid">
       <div>
@@ -496,10 +509,14 @@
       </div>
 
       <div class="hero-image-wrap">
-        <img src="/projects/log_apple_ai.jpeg" alt="Apple AI silicon strategy" loading="eager" />
+        <img src="/blog/apple-ai-decade/hero.jpeg" alt="Apple AI silicon strategy" loading="eager" />
       </div>
     </div>
-  </div>
+  
+    <div class="crt-widget">
+      <canvas id="crtCanvas" width="320" height="200" data-tag="Perspective"></canvas>
+    </div>
+</div>
 
   <article class="article">
 
@@ -542,6 +559,7 @@
     <div class="more-posts">
       <div class="more-posts-label">More from the log</div>
 
+      <!-- GEN:MORE-POSTS -->
       <a href="/blog/markets-dont-get-disrupted" class="more-post-row">
         <div class="more-post-inner">
           <span class="more-post-n">03</span>
@@ -563,6 +581,7 @@
         </div>
         <i class="fa-solid fa-arrow-right" style="font-size:0.72rem; color:var(--text3); flex-shrink:0"></i>
       </a>
+    <!-- /GEN:MORE-POSTS -->
     </div>
 
   </article>
@@ -597,7 +616,57 @@
     }
     window.addEventListener('scroll', bright, { passive: true })
     bright()
-  </script>
+  
+    ;(function () {
+      const cv = document.getElementById('crtCanvas')
+      if (!cv) return
+      const ctx = cv.getContext('2d')
+      const GREEN = '#4ade80'
+      const text = cv.dataset.tag || ''
+      let blinkOn = true
+
+      function draw() {
+        const w = cv.width, h = cv.height
+        const bg = ctx.createRadialGradient(w / 2, h / 2, 24, w / 2, h / 2, w * 0.72)
+        bg.addColorStop(0, '#0b2413')
+        bg.addColorStop(1, '#03110a')
+        ctx.fillStyle = bg
+        ctx.fillRect(0, 0, w, h)
+
+        ctx.shadowColor = GREEN
+        ctx.shadowBlur = 10
+        ctx.fillStyle = GREEN
+        ctx.textBaseline = 'middle'
+        ctx.textAlign = 'left'
+        ctx.font = '500 13px "JetBrains Mono", monospace'
+        ctx.fillText('$ cat tag', 18, 30)
+
+        ctx.textAlign = 'center'
+        ctx.font = '700 26px "JetBrains Mono", monospace'
+        ctx.fillText(text.toUpperCase(), w / 2, h / 2 + 2)
+
+        ctx.font = '500 11px "JetBrains Mono", monospace'
+        ctx.globalAlpha = 0.55
+        ctx.fillText('───────────', w / 2, h / 2 + 32)
+        ctx.globalAlpha = 0.8
+        ctx.fillText('loaded' + (blinkOn ? ' █' : ''), w / 2, h - 24)
+        ctx.globalAlpha = 1
+        ctx.shadowBlur = 0
+
+        ctx.fillStyle = 'rgba(0,0,0,0.35)'
+        for (let y = 0; y < h; y += 3) ctx.fillRect(0, y, w, 1)
+
+        const vig = ctx.createRadialGradient(w / 2, h / 2, h * 0.3, w / 2, h / 2, w * 0.68)
+        vig.addColorStop(0, 'rgba(0,0,0,0)')
+        vig.addColorStop(1, 'rgba(0,0,0,0.55)')
+        ctx.fillStyle = vig
+        ctx.fillRect(0, 0, w, h)
+      }
+
+      draw()
+      setInterval(() => { blinkOn = !blinkOn; draw() }, 620)
+    })()
+</script>
 
 </body>
 </html>
