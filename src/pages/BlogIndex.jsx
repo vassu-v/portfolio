@@ -387,7 +387,7 @@ export default function BlogIndex() {
             lineHeight: 1.75, maxWidth: '400px', marginBottom: '24px',
           }}
         >
-          Thoughts on building, shipping, and learning in public — from Kolkata.
+          Thoughts on building, shipping, and learning in public. From Kolkata.
         </motion.p>
 
         {/* Personal curation note */}
@@ -409,7 +409,7 @@ export default function BlogIndex() {
             fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
             fontSize: '0.9rem', color: 'var(--text2)', lineHeight: 1.6,
           }}>
-            These aren't posts. They're things I actually had something to say about — stuff I'd still stand behind.
+            These aren't posts. They're things I actually had something to say about. Stuff I'd still stand behind.
           </p>
         </motion.div>
         </div>

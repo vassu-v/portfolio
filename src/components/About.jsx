@@ -78,9 +78,9 @@ export default function About() {
           </ScrollReveal>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <ReadingPara>At 16, in 11th grade navigating PCM — while leading <strong>Bits&amp;Bytes Kolkata</strong>, consulting at <strong>4MQ.org</strong>, and building open-source tools that solve real gaps, not demo projects.</ReadingPara>
+            <ReadingPara>At 16, in 11th grade navigating PCM, while leading <strong>Bits&amp;Bytes Kolkata</strong>, consulting at <strong>4MQ.org</strong>, and building open-source tools that solve real gaps, not demo projects.</ReadingPara>
             <ReadingPara>Work spans hardware (LiFi mesh networks, Arduino reaction simulators), AI research (planning systems and grounding failures on Zenodo), and product — Buy4Chai for India's Stripe exclusion problem, SarkarSathi for civic accountability. The thread: constraint thinking. Building the right thing with what's actually available.</ReadingPara>
-            <ReadingPara>Published research at 15. National ideathon recognition. First international payment from Kolkata. None of it felt like an achievement at the time — it felt like the next thing to figure out.</ReadingPara>
+            <ReadingPara>Published research at 15. National ideathon recognition. First international payment from Kolkata. None of it felt like an achievement at the time. It felt like the next thing to figure out.</ReadingPara>
 
           </div>
         </div>

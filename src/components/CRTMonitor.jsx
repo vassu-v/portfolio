@@ -6,7 +6,6 @@ export default function CRTMonitor({ text, isTag = false }) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    if (window.matchMedia('(max-width: 1023px)').matches) return
     setReady(true)
   }, [])
 

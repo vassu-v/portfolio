@@ -5,8 +5,8 @@ import CRTMonitor from './CRTMonitor'
 
 const HoveredImageContext = createContext({ hoveredSrc: null, setHoveredSrc: () => {} })
 
-function useCountUp(target, prefix = '', duration = 2000, start = false) {
-  const [val, setVal] = useState(prefix + '0')
+function useCountUp(target, prefix = '', suffix = '', duration = 2000, start = false) {
+  const [val, setVal] = useState(prefix + '0' + suffix)
   useEffect(() => {
     if (!start) return
     let startTime = null
@@ -14,19 +14,19 @@ function useCountUp(target, prefix = '', duration = 2000, start = false) {
       if (!startTime) startTime = ts
       const p = Math.min((ts - startTime) / duration, 1)
       const ease = p * (2 - p)
-      setVal(prefix + Math.floor(ease * target).toLocaleString())
+      setVal(prefix + Math.floor(ease * target).toLocaleString() + suffix)
       if (p < 1) requestAnimationFrame(run)
-      else setVal(prefix + target.toLocaleString())
+      else setVal(prefix + target.toLocaleString() + suffix)
     }
     requestAnimationFrame(run)
   }, [start])
   return val
 }
 
-function StatCard({ target, prefix, color, id }) {
+function StatCard({ target, prefix = '', suffix = '', color, id }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.6 })
-  const val = useCountUp(target, prefix, id === 'c-li' ? 2000 : 1400, inView)
+  const val = useCountUp(target, prefix, suffix, id === 'c-li' ? 2000 : 1400, inView)
   return (
     <div ref={ref}>
       <span style={{
@@ -51,9 +51,20 @@ const CARDS = [
     ],
   },
   {
-    cls: 'tcu r2', label: 'LinkedIn', title: 'Followers',
+    cls: 'tcu r2', label: 'LinkedIn + Instagram', title: 'Followers',
     desc: '8 months. No algorithm chasing. One post hit 15,000+ impressions.',
-    bottom: <StatCard id="c-li" target={1249} prefix="" color="var(--cu)" />,
+    bottom: (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', letterSpacing: '0.14em', color: 'var(--cu)', marginBottom: '2px' }}>LINKEDIN</div>
+          <StatCard id="c-li" target={1300} suffix="+" color="var(--cu)" />
+        </div>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', letterSpacing: '0.14em', color: 'var(--text3)', marginBottom: '2px' }}>INSTAGRAM</div>
+          <StatCard id="c-ig" target={110} suffix="+" color="var(--text2)" />
+        </div>
+      </div>
+    ),
     border: 'var(--cu-b)', bg: 'var(--cu-d)',
   },
   { gram: true, cls: 'r2' },
@@ -73,7 +84,7 @@ const CARDS = [
   },
   {
     cls: 'c2', label: 'Zenodo · Jan 2026', title: 'Published Research Preprint',
-    desc: 'Object Commitment as a Diagnostic Pressure Point in Grounded Planning — exposing failure modes that high success rates hide.',
+    desc: 'Object Commitment as a Diagnostic Pressure Point in Grounded Planning. Exposing failure modes that high success rates hide.',
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
       { src: '/preprint.jpg', rotate: -7, top: '-42px', right: '-16px' },
@@ -97,7 +108,7 @@ const CARDS = [
   },
   {
     cls: 'c2', label: 'Amazon KDP · Age 14', title: 'Published Author',
-    desc: "Wrote, formatted, designed the cover, navigated Amazon's publishing at 14 — no AI. Zero sales. Redesigned it a year later. Then sold copies. The lesson wasn't the book. It was finishing.",
+    desc: "Wrote, formatted, designed the cover, navigated Amazon's publishing at 14. No AI. Zero sales. Redesigned it a year later. Then sold copies. The lesson wasn't the book. It was finishing.",
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
       { src: '/amzn.jpeg', rotate: 7, top: '-44px', right: '-18px' },

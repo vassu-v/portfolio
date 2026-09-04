@@ -6,7 +6,6 @@ export default function DeskBackdrop() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    if (window.matchMedia('(max-width: 1023px)').matches) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const idle = window.requestIdleCallback
     const id = idle

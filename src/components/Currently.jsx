@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 const CARDS = [
   {
     tag: 'Community', org: 'Bits&Bytes Kolkata',
-    desc: 'Kolkata Fork Lead. Building the Eastern India chapter — hackathons, builder events, core team formation. Launched Apr 2026.',
+    desc: 'Kolkata Fork Lead. Building the Eastern India chapter: hackathons, builder events, core team formation. Launched Apr 2026.',
     pill: 'Active',
   },
   {

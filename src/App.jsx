@@ -112,7 +112,7 @@ function AppShell() {
     if (projectMatch) {
       const proj = PROJECTS.find(p => p.slug === projectMatch[1])
       if (proj) {
-        title = `${proj.name} — ${BASE}`
+        title = `${proj.name} | ${BASE}`
         desc  = proj.tagline
         url   = `${BASE_URL}/project/${proj.slug}`
         img   = proj.images?.[0] ? `${BASE_URL}${proj.images[0]}` : BASE_IMG
@@ -141,7 +141,7 @@ function AppShell() {
     } else if (blogMatch) {
       const post = POSTS.find(p => p.slug === blogMatch[1])
       if (post) {
-        title = `${post.title} — ${BASE}`
+        title = `${post.title} | ${BASE}`
         desc  = post.subtitle
         url   = `${BASE_URL}/blog/${post.slug}`
         img   = post.hero ? `${BASE_URL}${post.hero}` : BASE_IMG
@@ -173,13 +173,13 @@ function AppShell() {
         is404 = true
       }
     } else if (isBlogIndex) {
-      title = `Log — ${BASE}`
+      title = `Log | ${BASE}`
       desc  = 'Writing on building, technology, and thinking clearly. Essays on civic tech, hardware, AI, and what it means to ship real things.'
       url   = `${BASE_URL}/blog`
       jsonld = {
         '@context': 'https://schema.org',
         '@type': 'Blog',
-        name: `Log — ${BASE}`,
+        name: `Log | ${BASE}`,
         url,
         author: { '@type': 'Person', '@id': `${BASE_URL}/#person` },
         inLanguage: 'en-IN',

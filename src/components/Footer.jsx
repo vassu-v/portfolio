@@ -174,7 +174,7 @@ export default function Footer() {
           <LiquidHeading scrollYProgress={scrollYProgress} />
 
           <p style={{ fontSize: '0.87rem', color: 'var(--text3)', marginBottom: '40px' }}>
-            Open for collaborations, projects, and conversations worth having.
+            Got something to build? I'm open for work. Let's make it happen.
           </p>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '52px' }}>

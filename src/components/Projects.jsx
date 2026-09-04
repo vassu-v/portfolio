@@ -8,7 +8,7 @@ const INTERVAL = 3200
 
 // ─── Left: name row ────────────────────────────────────────────────────────────
 
-function NameRow({ project, isActive, progressKey, onEnter, onNavigate }) {
+function NameRow({ project, isActive, isHovering, progressKey, onEnter, onNavigate }) {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 95%', 'start 50%'] })
   const opacity = useTransform(scrollYProgress, [0, 1], [0, 1])
@@ -93,8 +93,8 @@ function NameRow({ project, isActive, progressKey, onEnter, onNavigate }) {
           />
         </div>
 
-        {/* Auto-advance progress bar — re-mounts on each activation */}
-        {isActive && (
+        {/* Auto-advance progress bar — only animates when not hover-paused */}
+        {isActive && !isHovering && (
           <motion.div
             key={progressKey}
             initial={{ scaleX: 0 }}
@@ -297,6 +297,7 @@ function DetailPanel({ project, onNavigate }) {
 export default function Projects() {
   const [activeIdx, setActiveIdx]     = useState(0)
   const [progressKey, setProgressKey] = useState(0)
+  const [isHovering, setIsHovering]   = useState(false)
   const { navigate } = useRoute()
   const timerRef   = useRef(null)
   const sectionRef = useRef(null)
@@ -306,6 +307,7 @@ export default function Projects() {
 
   const startTimer = () => {
     clearInterval(timerRef.current)
+    setProgressKey(k => k + 1)
     timerRef.current = setInterval(() => {
       setActiveIdx(i => (i + 1) % PROJECTS.length)
       setProgressKey(k => k + 1)
@@ -322,8 +324,13 @@ export default function Projects() {
   }, [activeIdx])
 
   const handleEnter = (i) => {
+    clearInterval(timerRef.current)
     setActiveIdx(i)
-    setProgressKey(k => k + 1)
+    setIsHovering(true)
+  }
+
+  const handleLeave = () => {
+    setIsHovering(false)
     startTimer()
   }
 
@@ -339,12 +346,13 @@ export default function Projects() {
       <div className="proj-grid" style={{ display: 'grid', gridTemplateColumns: '45% 1fr', gap: 'clamp(40px, 6vw, 100px)', alignItems: 'start' }}>
 
         {/* Left — name index */}
-        <div className="proj-names">
+        <div className="proj-names" onMouseLeave={handleLeave}>
           {PROJECTS.map((p, i) => (
             <NameRow
               key={p.n}
               project={p}
               isActive={activeIdx === i}
+              isHovering={isHovering}
               progressKey={`${i}-${progressKey}`}
               onEnter={() => handleEnter(i)}
               onNavigate={() => goTo(p.slug)}

@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValue, useSpring, useVelocity } from 'framer-motion'
 import { useMobile, PORTRAIT_QUERY } from '../hooks/useMobile'
 
 const TABLET_LANDSCAPE_QUERY =
@@ -13,7 +13,7 @@ export const EXP = [
     primaryRole: 'Kolkata Fork Lead',
     type: 'Community',
     period: 'Apr 2026 – Present',
-    desc: 'Leading Bits&Bytes in Kolkata — a teen-led builder community running hackathons and shipping real projects. Bringing the same energy to Eastern India that the rest of the country already has.',
+    desc: 'Leading Bits&Bytes in Kolkata, a teen-led builder community running hackathons and shipping real projects. Bringing the same energy to Eastern India that the rest of the country already has.',
     skills: ['Leadership', 'Community Building', 'Events'],
     extra: null,
   },
@@ -24,7 +24,7 @@ export const EXP = [
     primaryRole: 'Youth Partner',
     type: 'Full-time · Equity',
     period: 'Apr 2026 – Present',
-    desc: 'First Youth Partner. Own the Antigravity Workflow — knowledge system powering how 4MQ synthesizes content. Co-authored episodes with Richard on money and behavior. I suggest what we build, then build it.',
+    desc: 'First Youth Partner. Own the Antigravity Workflow, the knowledge system powering how 4MQ synthesizes content. Co-authored episodes with Richard on money and behavior. I suggest what we build, then build it.',
     skills: ['Content Strategy', 'Financial Literacy', 'Systems'],
     extra: [
       { title: 'Consultant',   period: 'May 2026 – Present', type: 'Part-time' },
@@ -38,8 +38,10 @@ export const EXP = [
     primaryRole: 'UI & Landing Page Design',
     type: 'Freelance',
     period: 'Mar 2026 – Present',
-    desc: 'Building landing pages and UI systems for lead conversion. 50/50 revenue split. Brand positioning, conversion optimization, maintenance-based pricing.',
+    desc: 'Building landing pages and UI systems for lead conversion. Brand positioning, conversion optimization, maintenance-based pricing.',
     skills: ['UI Design', 'Conversion', 'Brand Positioning'],
+    cta: { label: 'Book a call', href: 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true' },
+    hire: true,
     extra: null,
   },
   {
@@ -104,7 +106,7 @@ function ProgressDots({ scrollYProgress }) {
 }
 
 function Panel({ exp }) {
-  const { n, org, live, primaryRole, type, period, desc, skills, extra } = exp
+  const { n, org, live, primaryRole, type, period, desc, skills, extra, cta, hire } = exp
 
   return (
     <div style={{
@@ -126,8 +128,30 @@ function Panel({ exp }) {
       </div>
 
       <div style={{ maxWidth: '620px', position: 'relative', zIndex: 1 }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', letterSpacing: '0.2em', color: 'var(--text3)', marginBottom: '32px' }}>
-          {n} / {String(TOTAL).padStart(2, '0')}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', letterSpacing: '0.2em', color: 'var(--text3)' }}>
+            {n} / {String(TOTAL).padStart(2, '0')}
+          </div>
+          {hire && (
+            <a
+              href={cta?.href}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem',
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: 'var(--cu)', background: 'var(--cu-d)',
+                border: '1px solid var(--cu-b)',
+                padding: '4px 12px', borderRadius: '100px',
+                textDecoration: 'none',
+                transition: 'background 0.2s, border-color 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(197,123,43,0.18)'; e.currentTarget.style.borderColor = 'var(--cu)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--cu-d)'; e.currentTarget.style.borderColor = 'var(--cu-b)' }}
+            >
+              ✦ Looking to hire?
+            </a>
+          )}
         </div>
 
         <h2 style={{
@@ -208,6 +232,30 @@ function Panel({ exp }) {
             </span>
           ))}
         </div>
+
+        {cta && (
+          <a
+            href={cta.href}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '10px',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem',
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+              color: '#0a0a0a', background: 'var(--cu)',
+              padding: '12px 24px', borderRadius: '6px',
+              textDecoration: 'none', marginTop: '24px',
+              border: '1px solid transparent',
+              transition: 'background 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--go)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(197,123,43,0.28)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--cu)'; e.currentTarget.style.boxShadow = 'none' }}
+          >
+            <i className="fa-solid fa-calendar-days" />
+            {cta.label}
+            <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.55rem' }} />
+          </a>
+        )}
       </div>
     </div>
   )
@@ -217,7 +265,7 @@ function Panel({ exp }) {
 
 function MobileCard({ exp }) {
   const cardRef = useRef(null)
-  const { n, org, live, primaryRole, type, period, desc, skills, extra } = exp
+  const { n, org, live, primaryRole, type, period, desc, skills, extra, cta, hire } = exp
 
   const { scrollYProgress } = useScroll({
     target: cardRef,
@@ -244,13 +292,28 @@ function MobileCard({ exp }) {
         }}>
           {org}
         </h3>
-        <span style={{
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem',
-          letterSpacing: '0.15em', color: 'var(--text3)',
-          flexShrink: 0, paddingTop: '6px',
-        }}>
-          {n}
-        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0, paddingTop: '6px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', letterSpacing: '0.15em', color: 'var(--text3)' }}>
+            {n}
+          </span>
+          {hire && (
+            <a
+              href={cta?.href}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                fontFamily: 'JetBrains Mono, monospace', fontSize: '0.46rem',
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: 'var(--cu)', background: 'var(--cu-d)',
+                border: '1px solid var(--cu-b)',
+                padding: '3px 9px', borderRadius: '100px',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              ✦ Hire me
+            </a>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: '7px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -316,6 +379,27 @@ function MobileCard({ exp }) {
           </span>
         ))}
       </div>
+
+      {cta && (
+        <a
+          href={cta.href}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '9px',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: '#0a0a0a', background: 'var(--cu)',
+            padding: '10px 20px', borderRadius: '6px',
+            textDecoration: 'none', marginTop: '18px',
+            border: '1px solid transparent',
+          }}
+        >
+          <i className="fa-solid fa-calendar-days" />
+          {cta.label}
+          <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.52rem' }} />
+        </a>
+      )}
     </motion.div>
   )
 }
@@ -423,8 +507,21 @@ export default function Experience() {
     offset: ['start start', 'end end'],
   })
 
-  const x        = useTransform(scrollYProgress, [0, 1], ['0vw', `${-(TOTAL - 1) * 100}vw`])
-  const barWidth = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
+  const snapProgress = useMotionValue(0)
+  useEffect(() => {
+    const step = 1 / (TOTAL - 1)
+    return scrollYProgress.on('change', v => {
+      const snapped = Math.round(v / step) * step
+      snapProgress.set(snapped)
+    })
+  }, [scrollYProgress, snapProgress])
+  const springProgress = useSpring(snapProgress, { stiffness: 280, damping: 32, mass: 0.8 })
+  const x        = useTransform(springProgress, [0, 1], ['0vw', `${-(TOTAL - 1) * 100}vw`])
+  const barWidth = useTransform(springProgress, [0, 1], ['0%', '100%'])
+
+  const velocity = useVelocity(springProgress)
+  const tilt = useTransform(velocity, [-0.8, 0, 0.8], [6, 0, -6])
+  const springTilt = useSpring(tilt, { stiffness: 200, damping: 25 })
 
   // ── Portrait (phone + portrait tablet): stacked cards ─────────────────────
   if (isMobile) {
@@ -458,7 +555,7 @@ export default function Experience() {
   // ── Desktop: horizontal sticky scroll ─────────────────────────────────────
   return (
     <div id="experience" ref={containerRef} style={{ height: `${TOTAL * 100}vh`, position: 'relative' }}>
-      <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
+      <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', perspective: '1200px' }}>
         <div style={{
           position: 'absolute', top: '28px', left: 'var(--pad)',
           fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
@@ -483,6 +580,7 @@ export default function Experience() {
 
         <motion.div style={{
           x,
+          rotateY: springTilt,
           display: 'flex',
           width: `${TOTAL * 100}vw`,
           height: '100%',

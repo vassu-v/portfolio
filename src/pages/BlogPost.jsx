@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, AnimatePresence, useSpring } from 'framer-motion'
 import { useRoute } from '../router'
 import { POSTS, getPost } from '../data/blog'
 import Lightbox from '../components/Lightbox'
@@ -138,11 +138,11 @@ function BackButton() {
         display: 'inline-flex', alignItems: 'center', gap: '10px',
         fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem',
         letterSpacing: '0.1em', textTransform: 'uppercase',
-        color: 'var(--text3)', background: 'none', border: 'none',
-        cursor: 'none', padding: 0, transition: 'color 0.2s',
+        color: 'var(--cu)', background: 'none', border: 'none',
+        cursor: 'none', padding: 0, transition: 'color 0.2s', opacity: 0.85,
       }}
-      onMouseEnter={e => e.currentTarget.style.color = 'var(--cu)'}
-      onMouseLeave={e => e.currentTarget.style.color = 'var(--text3)'}
+      onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.opacity = '1' }}
+      onMouseLeave={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.opacity = '0.85' }}
     >
       <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
         <path d="M5 1L1 5M1 5L5 9M1 5H15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -276,8 +276,18 @@ export default function BlogPost({ slug }) {
     )
   }
 
+  const { scrollYProgress: pageProgress } = useScroll()
+  const progressWidth = useSpring(pageProgress, { stiffness: 200, damping: 30 })
+
   return (
     <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+
+      {/* ── Reading progress bar ── */}
+      <motion.div style={{
+        position: 'fixed', top: 0, left: 0, height: '2px', zIndex: 100,
+        background: 'var(--cu)', transformOrigin: 'left',
+        scaleX: progressWidth,
+      }} />
 
       {/* ── Fixed nav bar ── */}
       <div style={{
