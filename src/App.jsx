@@ -141,7 +141,7 @@ function AppShell() {
     } else if (blogMatch) {
       const post = POSTS.find(p => p.slug === blogMatch[1])
       if (post) {
-        title = `${post.title} | ${BASE}`
+        title = `${BASE} — ${post.title}`
         desc  = post.subtitle
         url   = `${BASE_URL}/blog/${post.slug}`
         img   = post.hero ? `${BASE_URL}${post.hero}` : BASE_IMG

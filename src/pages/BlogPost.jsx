@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useInView, AnimatePresence, useSpring } from 'framer-motion'
 import { useRoute } from '../router'
 import { POSTS, getPost } from '../data/blog'
@@ -201,6 +201,42 @@ function ContinueReading({ url, platform }) {
   )
 }
 
+// ── Author bio ─────────────────────────────────────────────────────────────────
+
+function AuthorBio() {
+  const links = [
+    { href: 'https://github.com/vassu-v', icon: 'fa-brands fa-github', label: 'GitHub' },
+    { href: 'https://www.linkedin.com/in/shoryavardhaan', icon: 'fa-brands fa-linkedin', label: 'LinkedIn' },
+    { href: 'https://x.com/shoryavardhaan', icon: 'fa-brands fa-x-twitter', label: 'X' },
+    { href: 'https://zenodo.org/records/18196407', icon: 'fa-solid fa-book', label: 'Zenodo' },
+  ]
+  return (
+    <div style={{ marginTop: '64px', paddingTop: '28px', borderTop: '1px solid var(--border)' }}>
+      <div style={{
+        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
+        letterSpacing: '0.2em', textTransform: 'uppercase',
+        color: 'var(--text3)', marginBottom: '12px',
+      }}>
+        Written by
+      </div>
+      <p style={{ fontSize: '0.86rem', lineHeight: 1.75, color: 'var(--text2)', maxWidth: '620px' }}>
+        <a href="/" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>Shoryavardhaan Gupta</a> is a 16-year-old builder and developer from Kolkata, India, shipping civic tech, hardware, and AI projects — including <a href="/project/buy4chai" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>Buy4Chai</a> and <a href="/project/sarkarsathi" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>SarkarSathi</a>. He published AI planning research on Zenodo at 15 and leads the Kolkata fork of Bits&Bytes.
+      </p>
+      <div style={{ display: 'flex', gap: '16px', marginTop: '14px' }}>
+        {links.map(l => (
+          <a key={l.href} href={l.href} target="_blank" rel="noreferrer" aria-label={l.label}
+            style={{ color: 'var(--text3)', fontSize: '0.95rem', transition: 'color 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--cu)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text3)'}
+          >
+            <i className={l.icon} />
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── More posts ─────────────────────────────────────────────────────────────────
 
 function MorePosts({ currentSlug }) {
@@ -263,11 +299,6 @@ export default function BlogPost({ slug }) {
   const heroY = useTransform(heroScroll, [0, 1], ['0%', '30%'])
   const { scrollYProgress: pageProgress } = useScroll()
   const progressWidth = useSpring(pageProgress, { stiffness: 200, damping: 30 })
-
-  useEffect(() => {
-    if (post) document.title = `${post.title} — Shoryavardhaan`
-    return () => { document.title = 'Shoryavardhaan Gupta' }
-  }, [post])
 
   if (!post) {
     return (
@@ -420,6 +451,7 @@ export default function BlogPost({ slug }) {
         <div>
           {renderContent(post.content)}
           <ContinueReading url={post.externalUrl} platform={post.platform} />
+          <AuthorBio />
           <MorePosts currentSlug={slug} />
         </div>
         <div className="bp-spacer" /> {/* right spacer */}
