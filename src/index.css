@@ -90,11 +90,12 @@ body:hover #cursor { opacity: 0.65; }
   a, button, [role="button"] { cursor: pointer !important; }
   #cursor, #sp { display: none !important; }
 
+  .hero-photo-col { display: none !important; }
   .about-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
   .about-grid > div:first-child { max-width: 200px !important; margin: 0 auto !important; }
   .blog-grid  { grid-template-columns: 1fr !important; }
   .curr-grid  { grid-template-columns: 1fr !important; }
-  .hl-grid     { grid-template-columns: repeat(2, 1fr) !important; }
+  .hl-grid     { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .hl-grid > * { grid-column: span 1 !important; grid-row: span 1 !important; }
   .bi-grid     { grid-template-columns: 1fr !important; }
 
@@ -128,7 +129,7 @@ body:hover #cursor { opacity: 0.65; }
   .blog-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .curr-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .bi-grid   { grid-template-columns: repeat(2, 1fr) !important; }
-  .hl-grid     { grid-template-columns: repeat(2, 1fr) !important; }
+  .hl-grid     { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .hl-grid > * { grid-column: span 1 !important; grid-row: span 1 !important; }
 
   /* Projects: still stacked (detail first) */

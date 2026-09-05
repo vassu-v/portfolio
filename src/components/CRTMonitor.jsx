@@ -11,7 +11,7 @@ export default function CRTMonitor({ text, isTag = false }) {
 
   if (!ready) return null
   return (
-    <Suspense fallback={<div style={{ width: '320px', height: '360px' }} />}>
+    <Suspense fallback={<div style={{ width: '100%', maxWidth: '320px', height: '360px' }} />}>
       <CRTMonitor3D text={text} isTag={isTag} />
     </Suspense>
   )

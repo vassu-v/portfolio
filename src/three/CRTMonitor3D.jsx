@@ -196,7 +196,7 @@ function Monitor({ text, isTag }) {
 
 export default function CRTMonitor3D({ text, isTag = false }) {
   return (
-    <div style={{ width: '320px', height: '360px', background: 'radial-gradient(closest-side, rgba(74,222,128,0.07), transparent 72%)' }}>
+    <div style={{ width: '100%', maxWidth: '320px', height: '360px', background: 'radial-gradient(closest-side, rgba(74,222,128,0.07), transparent 72%)' }}>
       <Canvas
         dpr={[1, 2]}
         gl={{ alpha: true, antialias: true }}
