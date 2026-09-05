@@ -207,6 +207,7 @@ function AuthorBio() {
   const links = [
     { href: 'https://github.com/vassu-v', icon: 'fa-brands fa-github', label: 'GitHub' },
     { href: 'https://www.linkedin.com/in/shoryavardhaan', icon: 'fa-brands fa-linkedin', label: 'LinkedIn' },
+    { href: 'https://www.instagram.com/let_shorya.be/', icon: 'fa-brands fa-instagram', label: 'Instagram' },
     { href: 'https://x.com/shoryavardhaan', icon: 'fa-brands fa-x-twitter', label: 'X' },
     { href: 'https://zenodo.org/records/18196407', icon: 'fa-solid fa-book', label: 'Zenodo' },
   ]
