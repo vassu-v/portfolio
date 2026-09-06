@@ -199,6 +199,16 @@ for (let i = 0; i < POSTS.length; i++) {
   }
 
   // ── CRT WIDGET ──
+  // NOTE — bootstrap exception: unlike every other section of this generator,
+  // the `else` branch below does NOT stay inside a <!-- GEN:... --> region.
+  // It's a one-time structural insert (hero markup + CSS block + inline
+  // script) for a post file that predates the CRT widget. Every current post
+  // and public/blog/template.html already ship with #crtCanvas, so in normal
+  // use ("copy template.html for a new post") this branch never runs — the
+  // `if` branch's single data-tag patch is what actually executes on every
+  // `npm run generate:blog`. Each inserted piece is still wrapped in its own
+  // GEN marker so it's identifiable as script-owned if this path ever does
+  // fire. See CLAUDE.md "Static blog system" for the documented exception.
   if (html.includes('id="crtCanvas"')) {
     html = html.replace(/(<canvas id="crtCanvas"[^>]*data-tag=")([^"]*)("[^>]*>)/,
       (_m, pre, _old, post_) => `${pre}${escapeHtml(ghostText)}${post_}`)
@@ -217,7 +227,8 @@ for (let i = 0; i < POSTS.length; i++) {
         const heroGridCloseMatch = beforeHeroClose.match(/<\/div>\s*$/)
         if (heroGridCloseMatch) {
           const insertPos = beforeHeroClose.length
-          html = html.slice(0, insertPos) + CRT_HTML(ghostText) + html.slice(insertPos)
+          const markup = `<!-- GEN:CRT-BOOTSTRAP -->${CRT_HTML(ghostText)}<!-- /GEN:CRT-BOOTSTRAP -->`
+          html = html.slice(0, insertPos) + markup + html.slice(insertPos)
           inserted = true
         }
       }
@@ -229,7 +240,8 @@ for (let i = 0; i < POSTS.length; i++) {
     // Insert CSS block before closing </style>, if not already present
     if (!html.includes('.crt-widget')) {
       if (html.includes('</style>')) {
-        html = html.replace('</style>', '\n' + CRT_STYLE + '  </style>')
+        const css = `\n    /* GEN:CRT-BOOTSTRAP */\n${CRT_STYLE}    /* /GEN:CRT-BOOTSTRAP */\n  `
+        html = html.replace('</style>', css + '</style>')
       } else {
         console.warn(`WARN [${post.slug}]: no </style> tag found to insert crt-widget CSS`)
       }
@@ -245,7 +257,8 @@ for (let i = 0; i < POSTS.length; i++) {
       while ((m = inlineScriptRe.exec(html)) !== null) lastMatch = m
       if (lastMatch) {
         const closeIdx = lastMatch.index + lastMatch[0].lastIndexOf('</script>')
-        html = html.slice(0, closeIdx) + CRT_SCRIPT + html.slice(closeIdx)
+        const script = `\n      // GEN:CRT-BOOTSTRAP${CRT_SCRIPT}\n      // /GEN:CRT-BOOTSTRAP`
+        html = html.slice(0, closeIdx) + script + html.slice(closeIdx)
       } else {
         console.warn(`WARN [${post.slug}]: no inline page <script> found to insert crt-widget script`)
       }

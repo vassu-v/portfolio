@@ -34,7 +34,9 @@ function paragraphs(text) {
 function projectHtml(project) {
   const url = `${BASE_URL}/project/${project.slug}`
   const type = schemaType(project)
-  const ogTitle = `${project.name} — ${BASE_NAME}`
+  // Must match the SPA's per-route meta in src/App.jsx exactly — same canonical
+  // URL, so crawlers with and without JS need to see the same title/description.
+  const title = `${project.name} | ${BASE_NAME}`
   const links = []
   if (project.github) links.push(`<p><a href="${escapeHtml(project.github)}">GitHub →</a></p>`)
   if (project.live) links.push(`<p><a href="${escapeHtml(project.live)}">${escapeHtml(project.liveLabel ?? 'View live →')}</a></p>`)
@@ -45,22 +47,22 @@ function projectHtml(project) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHtml(project.name)} — ${escapeHtml(BASE_NAME)}</title>
+    <title>${escapeHtml(title)}</title>
 
-    <meta name="description" content="${escapeHtml(project.desc)}" />
+    <meta name="description" content="${escapeHtml(project.tagline)}" />
     <meta name="author" content="${escapeHtml(BASE_NAME)}" />
     <link rel="canonical" href="${url}" />
 
     <meta property="og:type"        content="website" />
     <meta property="og:url"         content="${url}" />
-    <meta property="og:title"       content="${escapeHtml(ogTitle)}" />
+    <meta property="og:title"       content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(project.tagline)}" />
     <meta property="og:image"       content="${project.images?.[0] ? BASE_URL + project.images[0] : BASE_URL + '/og-image.png'}" />
     <meta property="og:site_name"   content="${escapeHtml(BASE_NAME)}" />
 
     <meta name="twitter:card"        content="summary_large_image" />
     <meta name="twitter:url"         content="${url}" />
-    <meta name="twitter:title"       content="${escapeHtml(ogTitle)}" />
+    <meta name="twitter:title"       content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(project.tagline)}" />
     <meta name="twitter:image"       content="${project.images?.[0] ? BASE_URL + project.images[0] : BASE_URL + '/og-image.png'}" />
     <meta name="twitter:creator"     content="@shoryavardhaan" />
@@ -150,12 +152,17 @@ function sitemapUrl(loc, lastmod, changefreq, priority) {
   return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`
 }
 
-const today = new Date().toISOString().slice(0, 10)
+// Bump this by hand when the homepage, blog index, or a project actually
+// changes — NOT on every generator run. Using new Date() here would stamp
+// every URL as "modified today" on every run regardless of real content
+// changes, which is misleading to crawlers. Individual posts still use
+// their own p.isoDate; projects fall back to p.lastmod if set, else this.
+const SITE_LAST_UPDATED = '2026-09-06'
 const entries = [
-  sitemapUrl(`${BASE_URL}/`, today, 'weekly', '1.0'),
-  sitemapUrl(`${BASE_URL}/blog`, today, 'weekly', '0.8'),
-  ...POSTS.map(p => sitemapUrl(`${BASE_URL}/blog/${p.slug}`, p.isoDate ?? today, 'monthly', p.n === '01' ? '0.9' : '0.7')),
-  ...PROJECTS.map(p => sitemapUrl(`${BASE_URL}/project/${p.slug}`, today, 'monthly', p.featured ? '0.8' : '0.7')),
+  sitemapUrl(`${BASE_URL}/`, SITE_LAST_UPDATED, 'weekly', '1.0'),
+  sitemapUrl(`${BASE_URL}/blog`, SITE_LAST_UPDATED, 'weekly', '0.8'),
+  ...POSTS.map(p => sitemapUrl(`${BASE_URL}/blog/${p.slug}`, p.isoDate ?? SITE_LAST_UPDATED, 'monthly', p.n === '01' ? '0.9' : '0.7')),
+  ...PROJECTS.map(p => sitemapUrl(`${BASE_URL}/project/${p.slug}`, p.lastmod ?? SITE_LAST_UPDATED, 'monthly', p.featured ? '0.8' : '0.7')),
 ]
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n\n${entries.join('\n\n')}\n\n</urlset>\n`

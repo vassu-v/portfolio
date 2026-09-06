@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useMemo, useEffect, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
@@ -390,11 +390,12 @@ function Rig({ ctl, stages, mobile }) {
 
 export default function DeskScene() {
   const ctl = useRef({ stage: 0, exp: 0, proj: 0 })
-  const isMobile = isMobilePortrait()
+  const [isMobile, setIsMobile] = useState(isMobilePortrait)
   const stages = isMobile ? MOBILE_STAGES : STAGES
 
   useEffect(() => {
     const measure = () => {
+      setIsMobile(isMobilePortrait())
       let idx = 0
       const threshold = window.innerHeight * 0.45
       for (let i = 0; i < SECTION_IDS.length; i++) {
