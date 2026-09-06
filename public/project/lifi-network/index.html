@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Disaster-Resilient LiFi Network | Shoryavardhaan Gupta</title>
+
+    <meta name="description" content="Off-grid IR mesh that turns street lamps into emergency nodes." />
+    <meta name="author" content="Shoryavardhaan Gupta" />
+    <link rel="canonical" href="https://shoryavardhaan.vercel.app/project/lifi-network" />
+
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://shoryavardhaan.vercel.app/project/lifi-network" />
+    <meta property="og:title"       content="Disaster-Resilient LiFi Network | Shoryavardhaan Gupta" />
+    <meta property="og:description" content="Off-grid IR mesh that turns street lamps into emergency nodes." />
+    <meta property="og:image"       content="https://shoryavardhaan.vercel.app/projects/lifi_exhibit.jpeg" />
+    <meta property="og:site_name"   content="Shoryavardhaan Gupta" />
+
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:url"         content="https://shoryavardhaan.vercel.app/project/lifi-network" />
+    <meta name="twitter:title"       content="Disaster-Resilient LiFi Network | Shoryavardhaan Gupta" />
+    <meta name="twitter:description" content="Off-grid IR mesh that turns street lamps into emergency nodes." />
+    <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/projects/lifi_exhibit.jpeg" />
+    <meta name="twitter:creator"     content="@shoryavardhaan" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CreativeWork",
+          "@id": "https://shoryavardhaan.vercel.app/project/lifi-network",
+          "name": "Disaster-Resilient LiFi Network",
+          "description": "Mesh network retrofitted onto solar street lamps using IR transceivers. Hop-based routing delivers emergency messages when power grids and mobile networks fail simultaneously.",
+          "url": "https://shoryavardhaan.vercel.app/project/lifi-network",
+          "author": { "@type": "Person", "@id": "https://shoryavardhaan.vercel.app/#person", "name": "Shoryavardhaan Gupta" },
+          "keywords": ["IoT","Hardware","C","Arduino","ESP8266","LiFi","Mesh Networks"],
+          "codeRepository": "https://github.com/vassu-v/D-LiFi-Proto"
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://shoryavardhaan.vercel.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Disaster-Resilient LiFi Network", "item": "https://shoryavardhaan.vercel.app/project/lifi-network" }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <article>
+        <h1>Disaster-Resilient LiFi Network</h1>
+        <p>Off-grid IR mesh that turns street lamps into emergency nodes. · Dec 2025 – Jan 2026</p>
+        <p>Tags: IoT, Hardware, C, Arduino, ESP8266, LiFi, Mesh Networks</p>
+        <p><strong>CBSE Regional Science Exhibition 2025–26 · 6 GitHub stars · Stable multi-hop in live testing</strong></p>
+
+        <h2>The problem</h2>
+        <p>During disasters (floods, earthquakes, cyclones) power grids and mobile networks fail at the same time. Emergency coordination becomes impossible precisely when it's needed most. Battery-powered radios require infrastructure, and internet-dependent systems are the first to go.</p>
+        <p>The street lamps are already there. Most of them run on solar. The question was whether you could turn them into a communication mesh without modifying the existing infrastructure permanently.</p>
+
+        <h2>What it does</h2>
+        <p>D-LiFi-Proto retrofits solar street lamps with ESP8266 microcontrollers and IR transceivers. Each lamp becomes a mesh node. Messages hop between nodes using gradient-based routing, finding the optimal path through the network in real time, without any central server.</p>
+        <p>The system operates entirely off-grid. No power grid dependency. No mobile network. Just the solar panels that are already charging the lamps, and line-of-sight IR between nodes.</p>
+
+        <h2>How it works</h2>
+        <ul>
+          <li><strong>Hardware:</strong> ESP8266 microcontrollers with IR transceivers clipped to existing lamp fixtures. No permanent modification required.</li>
+          <li><strong>Routing:</strong> Gradient-based routing calculates the best path through the mesh dynamically. Nodes that fail simply get routed around.</li>
+          <li><strong>Power:</strong> Each node draws from the lamp's existing solar battery. Works even if the grid is down and the lamp's LED circuit isn't.</li>
+          <li><strong>Protocol:</strong> Custom hop-based messaging in C. Messages include priority levels so emergency alerts preempt normal traffic.</li>
+        </ul>
+
+        <h2>Impact</h2>
+        <ul>
+          <li>6 — GitHub stars</li>
+          <li>4 — Forks</li>
+          <li>✓ — Stable multi-hop in live testing</li>
+          <li>2025 — CBSE Regional Science Exhibition</li>
+        </ul>
+
+        <p><a href="https://github.com/vassu-v/D-LiFi-Proto">GitHub →</a></p>
+        <p><a href="https://shoryavardhaan.vercel.app/">← Back to portfolio</a></p>
+      </article>
+    </noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

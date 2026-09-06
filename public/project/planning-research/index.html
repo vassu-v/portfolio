@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grounded Planning Research | Shoryavardhaan Gupta</title>
+
+    <meta name="description" content="Exposing brittle AI reasoning that high success rates hide." />
+    <meta name="author" content="Shoryavardhaan Gupta" />
+    <link rel="canonical" href="https://shoryavardhaan.vercel.app/project/planning-research" />
+
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://shoryavardhaan.vercel.app/project/planning-research" />
+    <meta property="og:title"       content="Grounded Planning Research | Shoryavardhaan Gupta" />
+    <meta property="og:description" content="Exposing brittle AI reasoning that high success rates hide." />
+    <meta property="og:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
+    <meta property="og:site_name"   content="Shoryavardhaan Gupta" />
+
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:url"         content="https://shoryavardhaan.vercel.app/project/planning-research" />
+    <meta name="twitter:title"       content="Grounded Planning Research | Shoryavardhaan Gupta" />
+    <meta name="twitter:description" content="Exposing brittle AI reasoning that high success rates hide." />
+    <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
+    <meta name="twitter:creator"     content="@shoryavardhaan" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "ScholarlyArticle",
+          "@id": "https://shoryavardhaan.vercel.app/project/planning-research",
+          "name": "Grounded Planning Research",
+          "description": "How forcing agents to explicitly commit to objects during planning exposes brittle reasoning that high success rates hide. Shows structured, repeatable failure modes, the kind that only surface under real pressure.",
+          "url": "https://shoryavardhaan.vercel.app/project/planning-research",
+          "author": { "@type": "Person", "@id": "https://shoryavardhaan.vercel.app/#person", "name": "Shoryavardhaan Gupta" },
+          "keywords": ["AI Research","Planning Systems","Python","Ablation Study","Zenodo"],
+          "codeRepository": "https://github.com/vassu-v/action-vs-object-planning"
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://shoryavardhaan.vercel.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Grounded Planning Research", "item": "https://shoryavardhaan.vercel.app/project/planning-research" }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <article>
+        <h1>Grounded Planning Research</h1>
+        <p>Exposing brittle AI reasoning that high success rates hide. · Late 2025 – Jan 2026</p>
+        <p>Tags: AI Research, Planning Systems, Python, Ablation Study, Zenodo</p>
+        <p><strong>Published on Zenodo · Jan 9, 2026 · 3 GitHub stars</strong></p>
+
+        <h2>The problem</h2>
+        <p>AI planning benchmarks are saturating. Agents report 90%+ success rates on standard tasks. The assumption is that high success rates mean robust planning, but success rates measure outcomes, not the reasoning that produced them.</p>
+        <p>An agent can get to the right answer through fundamentally brittle logic, and you won't know until it fails on a slightly different problem. The question I wanted to answer: is there a pressure point that makes the brittleness visible before it fails in deployment?</p>
+
+        <h2>What it does</h2>
+        <p>Object commitment is that pressure point. When you force an agent to explicitly name which objects it's operating on before selecting actions (rather than letting it discover them opportunistically) you expose something important: agents that were planning correctly stay correct, and agents that were guessing in the right direction fall apart.</p>
+        <p>The study runs a controlled ablation in a deterministic filesystem environment. Action-only variant vs. object-centric variant. Same tasks, same success criteria. The failure modes in the object-centric variant are structured and repeatable. You can predict where they'll occur, which means you can actually debug the reasoning.</p>
+
+        <h2>How it works</h2>
+        <ul>
+          <li><strong>Environment:</strong> Deterministic filesystem tasks: file operations, directory traversal, conditional logic. Clean ground truth, no ambiguity in success/failure.</li>
+          <li><strong>Ablation design:</strong> Action-only: agent selects an action and a target is inferred. Object-centric: agent must commit to the specific object before selecting the action.</li>
+          <li><strong>Failure analysis:</strong> Object-centric variant surfaces consistent failure patterns tied to specific object relationships. These patterns don't appear in aggregate success metrics.</li>
+          <li><strong>Implication:</strong> High-level success rates are insufficient diagnostics. Object commitment as a forced step is a practical technique for surfacing latent planning failures before deployment.</li>
+        </ul>
+
+        <h2>Impact</h2>
+        <ul>
+          <li>3 — GitHub stars</li>
+          <li>Jan 9 — Published on Zenodo, 2026</li>
+          <li>Age 15 — Written and published at 15</li>
+          <li>MIT — Open licensed</li>
+        </ul>
+
+        <p><a href="https://github.com/vassu-v/action-vs-object-planning">GitHub →</a></p>
+        <p><a href="https://zenodo.org/records/19513284">Read on Zenodo</a></p>
+        <p><a href="https://shoryavardhaan.vercel.app/">← Back to portfolio</a></p>
+      </article>
+    </noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

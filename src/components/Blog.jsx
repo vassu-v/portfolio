@@ -31,7 +31,7 @@ function PostCard({ post, index }) {
         {post.hero && (
           <motion.img
             src={post.hero}
-            alt=""
+            alt={post.title}
             animate={{ scale: hovered ? 1.06 : 1 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}

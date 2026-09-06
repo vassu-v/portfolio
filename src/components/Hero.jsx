@@ -138,7 +138,7 @@ export default function Hero() {
             fontSize: 'clamp(15px, 4.5vw, 20px)', color: 'var(--text2)', lineHeight: 1.5,
             marginBottom: '24px', maxWidth: '340px',
           }}>
-            Building <em style={{ fontStyle: 'normal', color: 'var(--text)' }}>something that might matter</em> — from a desk in Kolkata.
+            Building <em style={{ fontStyle: 'normal', color: 'var(--text)' }}>something that might matter</em>, from a desk in Kolkata.
           </motion.p>
 
           <motion.div {...fade(0.9)} style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
@@ -216,7 +216,7 @@ export default function Hero() {
             fontSize: 'clamp(16px, 1.9vw, 24px)', color: 'var(--text2)', lineHeight: 1.45,
             marginBottom: '36px', maxWidth: '500px',
           }}>
-            Building <em style={{ fontStyle: 'normal', color: 'var(--text)' }}>something that might matter</em> —<br />
+            Building <em style={{ fontStyle: 'normal', color: 'var(--text)' }}>something that might matter</em>,<br />
             from a desk in Kolkata.
           </motion.p>
 

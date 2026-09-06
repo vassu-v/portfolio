@@ -112,7 +112,7 @@ function AppShell() {
     if (projectMatch) {
       const proj = PROJECTS.find(p => p.slug === projectMatch[1])
       if (proj) {
-        title = `${proj.name} — ${BASE}`
+        title = `${proj.name} | ${BASE}`
         desc  = proj.tagline
         url   = `${BASE_URL}/project/${proj.slug}`
         img   = proj.images?.[0] ? `${BASE_URL}${proj.images[0]}` : BASE_IMG
@@ -141,7 +141,7 @@ function AppShell() {
     } else if (blogMatch) {
       const post = POSTS.find(p => p.slug === blogMatch[1])
       if (post) {
-        title = `${post.title} — ${BASE}`
+        title = `${BASE} — ${post.title}`
         desc  = post.subtitle
         url   = `${BASE_URL}/blog/${post.slug}`
         img   = post.hero ? `${BASE_URL}${post.hero}` : BASE_IMG
@@ -173,13 +173,13 @@ function AppShell() {
         is404 = true
       }
     } else if (isBlogIndex) {
-      title = `Log — ${BASE}`
+      title = `Log | ${BASE}`
       desc  = 'Writing on building, technology, and thinking clearly. Essays on civic tech, hardware, AI, and what it means to ship real things.'
       url   = `${BASE_URL}/blog`
       jsonld = {
         '@context': 'https://schema.org',
         '@type': 'Blog',
-        name: `Log — ${BASE}`,
+        name: `Log | ${BASE}`,
         url,
         author: { '@type': 'Person', '@id': `${BASE_URL}/#person` },
         inLanguage: 'en-IN',
@@ -207,8 +207,15 @@ function AppShell() {
       if (el && val) el.setAttribute(attr, val)
     }
 
+    let canonicalEl = document.querySelector('link[rel="canonical"]')
+    if (!canonicalEl) {
+      canonicalEl = document.createElement('link')
+      canonicalEl.rel = 'canonical'
+      document.head.appendChild(canonicalEl)
+    }
+    canonicalEl.href = url
+
     setMeta('meta[name="description"]',         'content', desc)
-    setMeta('link[rel="canonical"]',             'href',    url)
     setMeta('meta[property="og:url"]',           'content', url)
     setMeta('meta[property="og:title"]',         'content', title)
     setMeta('meta[property="og:description"]',   'content', desc)
