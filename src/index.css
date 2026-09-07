@@ -28,14 +28,21 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: auto; overflow-x: hidden; }
+/* overflow-x: clip, NOT hidden — hidden forces the browser to compute
+   overflow-y as auto too (CSS overflow spec coupling rule), which turns
+   html/body into their own scroll containers and breaks every
+   position: sticky element on the page (see Experience.jsx's horizontal
+   sticky-scroll section). clip suppresses the horizontal scrollbar without
+   that side effect. Do not change back to hidden — this exact regression
+   has happened twice already (306a581 fixed it, ad52e23 undid the fix). */
+html { scroll-behavior: auto; overflow-x: clip; }
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Space Grotesk', sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
   cursor: none;
 }
 

@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform, useMotionValue, useSpring, useVelocity } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring, useVelocity } from 'framer-motion'
 import { useMobile, PORTRAIT_QUERY } from '../hooks/useMobile'
 
 const TABLET_LANDSCAPE_QUERY =
@@ -506,16 +506,8 @@ export default function Experience() {
     target: containerRef,
     offset: ['start start', 'end end'],
   })
-
-  const snapProgress = useMotionValue(0)
-  useEffect(() => {
-    const step = 1 / (TOTAL - 1)
-    snapProgress.set(Math.round(scrollYProgress.get() / step) * step)
-    return scrollYProgress.on('change', v => {
-      const snapped = Math.round(v / step) * step
-      snapProgress.set(snapped)
-    })
-  }, [scrollYProgress, snapProgress])
+  const step = 1 / (TOTAL - 1)
+  const snapProgress = useTransform(scrollYProgress, v => Math.round(v / step) * step)
   const springProgress = useSpring(snapProgress, { stiffness: 280, damping: 32, mass: 0.8 })
   const x        = useTransform(springProgress, [0, 1], ['0vw', `${-(TOTAL - 1) * 100}vw`])
   const barWidth = useTransform(springProgress, [0, 1], ['0%', '100%'])
