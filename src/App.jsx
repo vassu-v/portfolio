@@ -280,6 +280,7 @@ function AppShell() {
 
 export default function App() {
   const cursorRef = useRef(null)
+  const dotRef    = useRef(null)
   const spRef     = useRef(null)
   const isHover   = useRef(false)
   const curColor  = useRef({ ...COPPER })
@@ -397,8 +398,16 @@ export default function App() {
   useEffect(() => {
     let mx = 0, my = 0, cx = 0, cy = 0, rafId
     const cur = cursorRef.current
+    const dot = dotRef.current
 
-    const onMove = e => { mx = e.clientX; my = e.clientY }
+    // The pointer tracks the raw cursor position every move event — no
+    // lerp, no lag. Its tip (not its center) is the hotspot, so the offset
+    // matches where the SVG path's point actually sits in its viewBox — the
+    // glow orb below still eases toward it separately in the raf loop.
+    const paintDot = () => {
+      if (dot) dot.style.transform = `translate(${mx - 3}px,${my - 3}px) scale(${isHover.current ? 0.7 : 1})`
+    }
+    const onMove = e => { mx = e.clientX; my = e.clientY; paintDot() }
 
     ;(function raf() {
       // Position
@@ -418,7 +427,6 @@ export default function App() {
         cur.style.transform  = `translate(${cx - 50}px,${cy - 50}px) scale(${scale})`
         cur.style.background = `radial-gradient(circle, rgb(${r|0},${g|0},${b|0}) 0%, rgba(${r|0},${g|0},${b|0},0.3) 40%, transparent 70%)`
       }
-
       rafId = requestAnimationFrame(raf)
     })()
 
@@ -426,12 +434,14 @@ export default function App() {
       if (!isHover.current && e.target.closest('a, button, [role="button"]')) {
         isHover.current = true
         if (cur) cur.style.opacity = '0.9'
+        paintDot()
       }
     }
     const onOut = e => {
       if (isHover.current && e.target.closest('a, button, [role="button"]')) {
         isHover.current = false
         if (cur) cur.style.opacity = '0.65'
+        paintDot()
       }
     }
 
@@ -482,6 +492,15 @@ export default function App() {
       <DotGrid />
       <div id="sp" ref={spRef} />
       <div id="cursor" ref={cursorRef} />
+      <div id="cursor-dot" ref={dotRef}>
+        <svg width="20" height="24" viewBox="0 0 20 24" fill="none" style={{ display: 'block' }}>
+          <path
+            d="M3 3 L3 17 L7 13.8 L9.8 19.6 L12.6 18.2 L9.8 12.4 L16 12.4 Z"
+            fill="#ffffff" stroke="#ffffff" strokeWidth="2"
+            strokeLinejoin="round" strokeLinecap="round"
+          />
+        </svg>
+      </div>
 
       <AnimatePresence>
         {preloaderVisible && <Preloader key="loader" progress={loadProgress} />}

@@ -74,6 +74,23 @@ body::before {
 }
 body:hover #cursor { opacity: 0.65; }
 
+/* Soft rounded triangular pointer sitting on top of the glow orb — tracks
+   the raw mouse position every frame (see App.jsx paintDot), no lerp lag.
+   Its tip is the hotspot, not its center. The orb stays exactly as it was;
+   this just gives the exact pointer position a small, cute, white mark. */
+#cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 901;
+  opacity: 0;
+  transform-origin: 3px 3px;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+  transition: opacity 0.3s, scale 0.2s ease;
+  will-change: transform;
+}
+body:hover #cursor-dot { opacity: 1; }
+
 #sp {
   position: fixed;
   top: 0; left: 0;
@@ -95,7 +112,7 @@ body:hover #cursor { opacity: 0.65; }
 
   body { cursor: auto; }
   a, button, [role="button"] { cursor: pointer !important; }
-  #cursor, #sp { display: none !important; }
+  #cursor, #cursor-dot, #sp { display: none !important; }
 
   .hero-photo-col { display: none !important; }
   .about-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
@@ -126,7 +143,7 @@ body:hover #cursor { opacity: 0.65; }
 
   body { cursor: auto; }
   a, button, [role="button"] { cursor: pointer !important; }
-  #cursor, #sp { display: none !important; }
+  #cursor, #cursor-dot, #sp { display: none !important; }
 
   /* About: single col, photo a bit bigger than phone */
   .about-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
@@ -163,7 +180,7 @@ body:hover #cursor { opacity: 0.65; }
   /* Touch-primary — hide custom cursor */
   body { cursor: auto; }
   a, button, [role="button"] { cursor: pointer !important; }
-  #cursor, #sp { display: none !important; }
+  #cursor, #cursor-dot, #sp { display: none !important; }
 
   /* About: keep 2-col but tighten gap and cap photo */
   .about-grid { gap: 48px !important; }
