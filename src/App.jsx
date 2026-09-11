@@ -299,6 +299,16 @@ export default function App() {
 
     const onTouch = () => { targetY = window.scrollY }
     const onNavigate = () => { targetY = 0 }
+    // Any code that wants to programmatically scroll (e.g. a "skip" button)
+    // MUST go through this instead of window.scrollTo() directly — raw
+    // scrollTo only sets scrollTop for one frame, and tick() below
+    // immediately overwrites it back toward the stale targetY on the very
+    // next frame, silently undoing it. Dispatch window.dispatchEvent(new
+    // CustomEvent('programmatic-scroll-to', { detail: y })) instead.
+    const onProgrammaticScrollTo = e => {
+      const maxY = document.documentElement.scrollHeight - window.innerHeight
+      targetY = clamp(e.detail, 0, maxY)
+    }
 
     const tick = () => {
       const diff = targetY - window.scrollY
@@ -314,6 +324,7 @@ export default function App() {
     window.addEventListener('touchstart', onTouch, { passive: true })
     window.addEventListener('touchmove',  onTouch, { passive: true })
     window.addEventListener('spa-navigate', onNavigate)
+    window.addEventListener('programmatic-scroll-to', onProgrammaticScrollTo)
     rafId = requestAnimationFrame(tick)
 
     return () => {
@@ -321,6 +332,7 @@ export default function App() {
       window.removeEventListener('touchstart', onTouch)
       window.removeEventListener('touchmove',  onTouch)
       window.removeEventListener('spa-navigate', onNavigate)
+      window.removeEventListener('programmatic-scroll-to', onProgrammaticScrollTo)
       cancelAnimationFrame(rafId)
     }
   }, [])

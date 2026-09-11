@@ -520,8 +520,10 @@ export default function Experience() {
   // height), so give people a way out. It jumps to the LAST panel (the
   // freelance/hire pitch), not past the section entirely — the one thing
   // in here that shouldn't be skippable.
-  const skipOpacity = useTransform(scrollYProgress, [0.15, 0.22, 0.85, 0.93], [0, 1, 1, 0])
-  const skipPointerEvents = useTransform(scrollYProgress, v => (v > 0.15 && v < 0.93) ? 'auto' : 'none')
+  // Each panel is 1/TOTAL of progress (0.20 for 5 panels) — fully visible
+  // well before the first panel ends, not partway into the second.
+  const skipOpacity = useTransform(scrollYProgress, [0.04, 0.14, 0.85, 0.93], [0, 1, 1, 0])
+  const skipPointerEvents = useTransform(scrollYProgress, v => (v > 0.04 && v < 0.93) ? 'auto' : 'none')
   const skipToEnd = () => {
     const el = containerRef.current
     if (!el) return
@@ -529,10 +531,17 @@ export default function Experience() {
     // exactly — that calculation can undershoot the scroll range Framer
     // Motion's own useScroll measured internally by a few px, which stops
     // scrollYProgress from ever reaching a clean 1.0 and leaves the last
-    // panel not fully snapped in. window.scrollTo clamps to the real max
-    // automatically, so overshooting is always safe.
+    // panel not fully snapped in. The event handler in App.jsx clamps to
+    // the real max, so overshooting here is always safe.
+    //
+    // Must go through this custom event, NOT window.scrollTo() directly —
+    // App.jsx runs its own RAF-driven smooth-scroll loop on desktop that
+    // tracks a private targetY and forcibly overwrites scrollTop toward it
+    // every frame. A raw scrollTo() gets silently fought and undone almost
+    // immediately by that loop; dispatching this event updates targetY
+    // itself so the two systems agree instead of fighting.
     const target = el.offsetTop + el.offsetHeight
-    window.scrollTo({ top: target, behavior: 'smooth' })
+    window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: target }))
   }
 
   // ── Portrait (phone + portrait tablet): stacked cards ─────────────────────
