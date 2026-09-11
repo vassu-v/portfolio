@@ -129,6 +129,7 @@ function AppShell() {
               author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE, url: BASE_URL },
               applicationCategory: 'WebApplication',
               operatingSystem: 'Any',
+              keywords: proj.keywords ?? proj.tags ?? [],
             },
             { '@type': 'BreadcrumbList', itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },

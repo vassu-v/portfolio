@@ -64,7 +64,7 @@ function metaFor(project) {
         description: project.desc,
         url,
         author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE_NAME, url: BASE_URL },
-        keywords: project.tags ?? [],
+        keywords: project.keywords ?? project.tags ?? [],
         ...(project.github ? { codeRepository: project.github } : {}),
       },
       {
