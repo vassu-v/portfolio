@@ -59,11 +59,12 @@ function metaFor(post) {
         datePublished: post.isoDate ?? post.date,
         dateModified: post.isoDate ?? post.date,
         image: { '@type': 'ImageObject', url: img },
-        author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE_NAME },
+        author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE_NAME, url: BASE_URL },
         publisher: { '@type': 'Person', name: BASE_NAME, url: BASE_URL },
         mainEntityOfPage: { '@type': 'WebPage', '@id': url },
         inLanguage: 'en-IN',
         keywords: post.keywords ?? [],
+        speakable: { '@type': 'SpeakableSpecification', cssSelector: ['#post-subtitle'] },
       },
       {
         '@type': 'BreadcrumbList',

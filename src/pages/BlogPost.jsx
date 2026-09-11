@@ -390,7 +390,7 @@ export default function BlogPost({ slug }) {
         </motion.h1>
 
         {/* Subtitle */}
-        <motion.p {...fade(0.16)} style={{
+        <motion.p id="post-subtitle" {...fade(0.16)} style={{
           fontSize: 'clamp(0.88rem, 1.3vw, 1.05rem)',
           color: 'var(--text2)', lineHeight: 1.65,
           maxWidth: '560px', marginBottom: '48px',
