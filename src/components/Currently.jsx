@@ -61,9 +61,9 @@ export default function Currently() {
   return (
     <section id="currently" className="sec-section" style={{ padding: '0 var(--pad) 80px', position: 'relative', zIndex: 1 }}>
       <span style={{
-        display: 'block', marginBottom: '20px',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
-        letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--text3)',
+        display: 'block', marginBottom: '24px',
+        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: 500,
+        letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text)',
       }}>
         Currently
       </span>
