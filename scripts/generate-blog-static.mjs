@@ -1,277 +1,176 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs'
+// Generates public/blog/<slug>/index.html for every post in src/data/blog.js.
+//
+// This is a full rewrite of the old GEN-marker patcher. There is no more
+// hand-written article prose living in these files at all — the entire
+// <body> is the REAL src/pages/BlogPost.jsx component, rendered to static
+// HTML at build time via scripts/prerender.mjs (Vite SSR, see that file
+// for how/why it's safe). src/data/blog.js is now the only place post
+// content exists; these files are fully regenerated from it every run, and
+// safe to delete and regenerate at any time — there is nothing hand-authored
+// left in them to lose.
+//
+// Adding a new post is now just: add an entry to POSTS, run this script.
+// There is no template to copy and no [FILL:...] placeholders to fill in —
+// public/blog/template.html has been retired.
+import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { createPrerenderer } from './prerender.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = join(__dirname, '..')
 const blogDir = join(root, 'public', 'blog')
+const BASE_URL = 'https://shoryavardhaan.vercel.app'
+const BASE_NAME = 'Shoryavardhaan Gupta'
+const BASE_IMG = `${BASE_URL}/og-image.png`
 
 const { POSTS } = await import(pathToFileURL(join(root, 'src', 'data', 'blog.js')).href)
 
-const CRT_STYLE = `    .crt-widget {
-      display: flex;
-      justify-content: center;
-      margin: 36px 0 12px;
-    }
-    .crt-widget canvas {
-      width: 220px;
-      height: 138px;
-      border-radius: 10px;
-      background: #03110a;
-      box-shadow: 0 0 0 1px var(--border), 0 18px 40px -20px rgba(74,222,128,0.25);
-    }
-`
-
-const CRT_HTML = (category) => `
-    <div class="crt-widget">
-      <canvas id="crtCanvas" width="320" height="200" data-tag="${escapeHtml(category)}"></canvas>
-    </div>
-`
-
-const CRT_SCRIPT = `
-    ;(function () {
-      const cv = document.getElementById('crtCanvas')
-      if (!cv) return
-      const ctx = cv.getContext('2d')
-      const GREEN = '#4ade80'
-      const text = cv.dataset.tag || ''
-      let blinkOn = true
-
-      function draw() {
-        const w = cv.width, h = cv.height
-        const bg = ctx.createRadialGradient(w / 2, h / 2, 24, w / 2, h / 2, w * 0.72)
-        bg.addColorStop(0, '#0b2413')
-        bg.addColorStop(1, '#03110a')
-        ctx.fillStyle = bg
-        ctx.fillRect(0, 0, w, h)
-
-        ctx.shadowColor = GREEN
-        ctx.shadowBlur = 10
-        ctx.fillStyle = GREEN
-        ctx.textBaseline = 'middle'
-        ctx.textAlign = 'left'
-        ctx.font = '500 13px "JetBrains Mono", monospace'
-        ctx.fillText('$ cat tag', 18, 30)
-
-        ctx.textAlign = 'center'
-        ctx.font = '700 26px "JetBrains Mono", monospace'
-        ctx.fillText(text.toUpperCase(), w / 2, h / 2 + 2)
-
-        ctx.font = '500 11px "JetBrains Mono", monospace'
-        ctx.globalAlpha = 0.55
-        ctx.fillText('───────────', w / 2, h / 2 + 32)
-        ctx.globalAlpha = 0.8
-        ctx.fillText('loaded' + (blinkOn ? ' █' : ''), w / 2, h - 24)
-        ctx.globalAlpha = 1
-        ctx.shadowBlur = 0
-
-        ctx.fillStyle = 'rgba(0,0,0,0.35)'
-        for (let y = 0; y < h; y += 3) ctx.fillRect(0, y, w, 1)
-
-        const vig = ctx.createRadialGradient(w / 2, h / 2, h * 0.3, w / 2, h / 2, w * 0.68)
-        vig.addColorStop(0, 'rgba(0,0,0,0)')
-        vig.addColorStop(1, 'rgba(0,0,0,0.55)')
-        ctx.fillStyle = vig
-        ctx.fillRect(0, 0, w, h)
-      }
-
-      draw()
-      setInterval(() => { blinkOn = !blinkOn; draw() }, 620)
-    })()
-`
-
 function escapeHtml(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-function pad(n) {
-  return String(n).padStart(2, '0')
-}
+// Pulled straight from src/index.css so the pre-hydration paint (the instant
+// before main.jsx's bundle finishes loading and the real stylesheet takes
+// over) uses the exact same design tokens as the live site — single source
+// of truth, can't drift the way a hand-copied :root block could.
+const indexCss = readFileSync(join(root, 'src', 'index.css'), 'utf8')
+const rootBlockMatch = indexCss.match(/:root\s*\{[\s\S]*?\n\}/)
+if (!rootBlockMatch) throw new Error('Could not find :root block in src/index.css')
+const rootBlock = rootBlockMatch[0]
 
-function computeMorePosts(post, index) {
-  const sameCategory = POSTS.filter((p, i) => i !== index && p.category === post.category)
-  const picked = []
-  for (const p of sameCategory) {
-    if (picked.length >= 2) break
-    picked.push(p)
+// The mobile/tablet --pad overrides live in their own @media blocks in
+// index.css, not inside :root — without them the pre-hydration paint uses
+// desktop --pad (56px) at every viewport width until the real stylesheet
+// loads and corrects it.
+const mobileBlockMatch = indexCss.match(/@media \(max-width: 767px\)\s*\{[\s\S]*?\n\}/)
+if (!mobileBlockMatch) throw new Error('Could not find mobile @media block in src/index.css')
+const padLineMatch = mobileBlockMatch[0].match(/:root\s*\{[^}]*\}/)
+if (!padLineMatch) throw new Error('Could not find mobile --pad :root override in src/index.css')
+const padMediaBlock = `@media (max-width: 767px) { ${padLineMatch[0]} }`
+
+// Mirrors the blog-post branch of the SPA's per-route meta effect in
+// src/App.jsx exactly — same canonical URL, so a crawler with or without JS
+// must see identical title/description/JSON-LD either way.
+function metaFor(post) {
+  const title = `${BASE_NAME} — ${post.title}`
+  const desc = post.subtitle
+  const url = `${BASE_URL}/blog/${post.slug}`
+  const img = post.hero ? `${BASE_URL}${post.hero}` : BASE_IMG
+  const jsonld = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'BlogPosting',
+        '@id': url,
+        headline: post.title,
+        description: post.subtitle,
+        url,
+        datePublished: post.isoDate ?? post.date,
+        dateModified: post.isoDate ?? post.date,
+        image: { '@type': 'ImageObject', url: img },
+        author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE_NAME, url: BASE_URL },
+        publisher: { '@type': 'Person', name: BASE_NAME, url: BASE_URL },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+        inLanguage: 'en-IN',
+        keywords: post.keywords ?? [],
+        speakable: { '@type': 'SpeakableSpecification', cssSelector: ['#post-subtitle'] },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+          { '@type': 'ListItem', position: 2, name: 'Log', item: `${BASE_URL}/blog` },
+          { '@type': 'ListItem', position: 3, name: post.title, item: url },
+        ],
+      },
+    ],
   }
-  if (picked.length < 2) {
-    // nearest by array index, wrapping around, excluding self and already picked
-    const total = POSTS.length
-    for (let offset = 1; offset < total && picked.length < 2; offset++) {
-      // Try the earlier neighbor first (-1), then the later one — so the true
-      // adjacent post is preferred over a wrap-around match at the same offset.
-      for (const dir of [-1, 1]) {
-        const idx = (index + dir * offset + total) % total
-        const candidate = POSTS[idx]
-        if (candidate.slug === post.slug) continue
-        if (picked.some(p => p.slug === candidate.slug)) continue
-        picked.push(candidate)
-        if (picked.length >= 2) break
-      }
-    }
-  }
-  return picked.slice(0, 2).map(p => ({ slug: p.slug, n: p.n, category: p.category, title: p.title }))
+  return { title, desc, url, img, jsonld }
 }
 
-function morePostsHtml(morePosts) {
-  return morePosts.map(p => `
-      <a href="/blog/${p.slug}" class="more-post-row">
-        <div class="more-post-inner">
-          <span class="more-post-n">${escapeHtml(p.n)}</span>
-          <div>
-            <div class="more-post-cat">${escapeHtml(p.category)}</div>
-            <span class="more-post-title">${escapeHtml(p.title)}</span>
-          </div>
-        </div>
-        <i class="fa-solid fa-arrow-right" style="font-size:0.72rem; color:var(--text3); flex-shrink:0"></i>
-      </a>`).join('\n') + '\n    '
+function pageHtml({ title, desc, url, img, jsonld, bodyHtml }) {
+  return `<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(desc)}" />
+  <meta name="author" content="${escapeHtml(BASE_NAME)}" />
+  <link rel="canonical" href="${url}" />
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="${url}" />
+  <meta property="og:title"       content="${escapeHtml(title)}" />
+  <meta property="og:description" content="${escapeHtml(desc)}" />
+  <meta property="og:image"       content="${img}" />
+  <meta property="og:site_name"   content="${escapeHtml(BASE_NAME)}" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:url"         content="${url}" />
+  <meta name="twitter:title"       content="${escapeHtml(title)}" />
+  <meta name="twitter:description" content="${escapeHtml(desc)}" />
+  <meta name="twitter:image"       content="${img}" />
+  <meta name="twitter:creator"     content="@shoryavardhaan" />
+  <script type="application/ld+json">
+${JSON.stringify(jsonld, null, 2)}
+  </script>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    ${rootBlock}
+    ${padMediaBlock}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip;cursor:auto}
+  </style>
+</head>
+<body>
+  <div id="root">${bodyHtml}</div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
+`
 }
 
-function replaceGenRegion(html, marker, newInner, file) {
-  // Opener uses a non-greedy [\s\S]*? up to the first '-->' rather than [^>]*,
-  // so a literal '>' inside the marker's own explanatory comment text can't
-  // break the match (it previously would, since '[^>]*' stops at any '>').
-  const re = new RegExp(`(<!-- GEN:${marker}[\\s\\S]*?-->)([\\s\\S]*?)(<!-- /GEN:${marker} -->)`)
-  if (re.test(html)) {
-    return html.replace(re, (_m, open, _inner, close) => `${open}${newInner}${close}`)
-  }
-  return null // signals: no marker found
+const onlySlug = process.argv[2]
+const targets = onlySlug ? POSTS.filter(p => p.slug === onlySlug) : POSTS
+if (onlySlug && targets.length === 0) {
+  console.error(`No post with slug "${onlySlug}" found in blog.js`)
+  process.exit(1)
 }
 
-let anyChanged = false
+const { renderPost, close } = await createPrerenderer()
 
-for (let i = 0; i < POSTS.length; i++) {
-  const post = POSTS[i]
-  const file = join(blogDir, post.slug, 'index.html')
-  if (!existsSync(file)) {
-    console.log(`Skip (no static file): ${post.slug}`)
-    continue
-  }
+let created = 0, updated = 0, unchanged = 0
+for (const post of targets) {
+  const meta = metaFor(post)
+  const bodyHtml = await renderPost(post.slug)
+  const html = pageHtml({ ...meta, bodyHtml })
 
-  let html = readFileSync(file, 'utf8')
-  const original = html
-  const counterText = `${post.n} / ${pad(POSTS.length)}`
-  const ghostText = post.category
-  const morePosts = computeMorePosts(post, i)
+  const dir = join(blogDir, post.slug)
+  mkdirSync(dir, { recursive: true })
+  const file = join(dir, 'index.html')
+  const existing = existsSync(file) ? readFileSync(file, 'utf8') : null
 
-  // ── NAV COUNTER ──
-  let updated = replaceGenRegion(html, 'NAV-COUNTER', counterText, file)
-  if (updated !== null) {
-    html = updated
+  if (existing === html) {
+    console.log(`Unchanged: blog/${post.slug}/index.html`)
+    unchanged++
   } else {
-    const navRe = /(<span class="nav-counter">)([^<]*)(<\/span>)/
-    if (navRe.test(html)) {
-      html = html.replace(navRe, (_m, open, _inner, close) =>
-        `${open}<!-- GEN:NAV-COUNTER -->${counterText}<!-- /GEN:NAV-COUNTER -->${close}`)
-    } else {
-      console.warn(`WARN [${post.slug}]: could not locate nav-counter region`)
-    }
-  }
-
-  // ── HERO GHOST ──
-  updated = replaceGenRegion(html, 'HERO-GHOST', escapeHtml(ghostText), file)
-  if (updated !== null) {
-    html = updated
-  } else {
-    const ghostRe = /(<div class="hero-ghost" aria-hidden="true">)([^<]*)(<\/div>)/
-    if (ghostRe.test(html)) {
-      html = html.replace(ghostRe, (_m, open, _inner, close) =>
-        `${open}<!-- GEN:HERO-GHOST -->${escapeHtml(ghostText)}<!-- /GEN:HERO-GHOST -->${close}`)
-    } else {
-      console.warn(`WARN [${post.slug}]: could not locate hero-ghost region`)
-    }
-  }
-
-  // ── MORE POSTS ──
-  const morePostsInner = morePostsHtml(morePosts)
-  updated = replaceGenRegion(html, 'MORE-POSTS', morePostsInner, file)
-  if (updated !== null) {
-    html = updated
-  } else {
-    const mpRe = /(<div class="more-posts">\s*<div class="more-posts-label">More from the log<\/div>\s*)([\s\S]*?)(\s*<\/div>\s*(?:<\/article>|<\/div>\s*<\/article>))/
-    if (mpRe.test(html)) {
-      html = html.replace(mpRe, (_m, open, _inner, close) =>
-        `${open}<!-- GEN:MORE-POSTS -->${morePostsInner}<!-- /GEN:MORE-POSTS -->${close}`)
-    } else {
-      console.warn(`WARN [${post.slug}]: could not locate more-posts region`)
-    }
-  }
-
-  // ── CRT WIDGET ──
-  // NOTE — bootstrap exception: unlike every other section of this generator,
-  // the `else` branch below does NOT stay inside a <!-- GEN:... --> region.
-  // It's a one-time structural insert (hero markup + CSS block + inline
-  // script) for a post file that predates the CRT widget. Every current post
-  // and public/blog/template.html already ship with #crtCanvas, so in normal
-  // use ("copy template.html for a new post") this branch never runs — the
-  // `if` branch's single data-tag patch is what actually executes on every
-  // `npm run generate:blog`. Each inserted piece is still wrapped in its own
-  // GEN marker so it's identifiable as script-owned if this path ever does
-  // fire. See CLAUDE.md "Static blog system" for the documented exception.
-  if (html.includes('id="crtCanvas"')) {
-    html = html.replace(/(<canvas id="crtCanvas"[^>]*data-tag=")([^"]*)("[^>]*>)/,
-      (_m, pre, _old, post_) => `${pre}${escapeHtml(ghostText)}${post_}`)
-  } else {
-    // Insert markup right after hero-grid's closing </div>, before hero's closing </div>.
-    // Walk backwards from <article class="article">: the div immediately before it is
-    // the hero's own closing </div>; the one before that is hero-grid's closing </div>.
-    const articleIdx = html.indexOf('<article class="article">')
-    let inserted = false
-    if (articleIdx !== -1) {
-      const before = html.slice(0, articleIdx)
-      const heroCloseMatch = before.match(/<\/div>\s*$/)
-      if (heroCloseMatch) {
-        const closeTagIdx = before.length - heroCloseMatch[0].length + heroCloseMatch[0].indexOf('</div>')
-        const beforeHeroClose = before.slice(0, closeTagIdx)
-        const heroGridCloseMatch = beforeHeroClose.match(/<\/div>\s*$/)
-        if (heroGridCloseMatch) {
-          const insertPos = beforeHeroClose.length
-          const markup = `<!-- GEN:CRT-BOOTSTRAP -->${CRT_HTML(ghostText)}<!-- /GEN:CRT-BOOTSTRAP -->`
-          html = html.slice(0, insertPos) + markup + html.slice(insertPos)
-          inserted = true
-        }
-      }
-    }
-    if (!inserted) {
-      console.warn(`WARN [${post.slug}]: could not locate hero-grid close to insert crt-widget markup`)
-    }
-
-    // Insert CSS block before closing </style>, if not already present
-    if (!html.includes('.crt-widget')) {
-      if (html.includes('</style>')) {
-        const css = `\n    /* GEN:CRT-BOOTSTRAP */\n${CRT_STYLE}    /* /GEN:CRT-BOOTSTRAP */\n  `
-        html = html.replace('</style>', css + '</style>')
-      } else {
-        console.warn(`WARN [${post.slug}]: no </style> tag found to insert crt-widget CSS`)
-      }
-    }
-
-    // Insert drawing script before the closing </script> of the last INLINE page
-    // script (no src/type="application/ld+json" attributes) — never the JSON-LD
-    // block or an external <script src="..."> tag, regardless of block order.
-    if (!html.includes("getElementById('crtCanvas')")) {
-      const inlineScriptRe = /<script(?![^>]*\bsrc=)(?![^>]*application\/ld\+json)[^>]*>[\s\S]*?<\/script>/g
-      let lastMatch = null
-      let m
-      while ((m = inlineScriptRe.exec(html)) !== null) lastMatch = m
-      if (lastMatch) {
-        const closeIdx = lastMatch.index + lastMatch[0].lastIndexOf('</script>')
-        const script = `\n      // GEN:CRT-BOOTSTRAP${CRT_SCRIPT}\n      // /GEN:CRT-BOOTSTRAP`
-        html = html.slice(0, closeIdx) + script + html.slice(closeIdx)
-      } else {
-        console.warn(`WARN [${post.slug}]: no inline page <script> found to insert crt-widget script`)
-      }
-    }
-  }
-
-  if (html !== original) {
     writeFileSync(file, html)
-    console.log(`Updated: ${post.slug}/index.html`)
-    anyChanged = true
-  } else {
-    console.log(`Unchanged: ${post.slug}/index.html`)
+    console.log(`${existing === null ? 'Created' : 'Updated'}: blog/${post.slug}/index.html`)
+    existing === null ? created++ : updated++
   }
 }
 
-console.log(anyChanged ? 'Done — static posts patched.' : 'Done — nothing to change (already up to date).')
+await close()
+
+// template.html is retired — there's nothing to copy/fill-in anymore.
+const templatePath = join(blogDir, 'template.html')
+if (existsSync(templatePath)) {
+  rmSync(templatePath)
+  console.log('Removed: blog/template.html (retired — see CLAUDE.md "Static blog system")')
+}
+
+console.log(`Done — ${created} created, ${updated} updated, ${unchanged} unchanged.`)

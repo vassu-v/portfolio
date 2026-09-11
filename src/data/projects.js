@@ -6,6 +6,7 @@ export const PROJECTS = [
     name: 'Buy4Chai',
     tagline: 'Self-hosted supporter page for devs Stripe locked out of.',
     tags: ['Open Source', 'Razorpay / UPI', 'Vercel', 'MIT', 'JavaScript'],
+    keywords: ['how to accept international payments India developer', 'Stripe alternative for Indian freelancers', 'self hosted Buy Me a Coffee alternative', 'UPI donation page for developers', 'no platform fee supporter page', 'teen developer open source India', 'Kolkata developer side project'],
     desc: 'Self-hosted supporter page for developers Stripe locked out of. Razorpay and UPI native, zero platform fees, deploys to Vercel in 10 minutes. Built after a Reddit thread surfaced 29 upvotes of people who\'d resigned themselves to janky workarounds.',
     stat: '16+ GitHub stars · 7 forks · MIT license',
     github: 'https://github.com/vassu-v/Buy4Chai',
@@ -29,9 +30,9 @@ The name is deliberately local. A cup of chai is what you actually get in Kolkat
     ],
 
     images: [
-      '/projects/buy4chai_live.png',
-      '/projects/buy4chai_readme.png',
-      '/projects/buy4chai_community.png',
+      { src: '/projects/buy4chai_live.png', alt: 'Buy4Chai live supporter page showing the "Buy me a chai" checkout button and profile header' },
+      { src: '/projects/buy4chai_readme.png', alt: 'Buy4Chai GitHub README with the project tagline, tech stack badges, and quick-start links' },
+      { src: '/projects/buy4chai_community.png', alt: 'Reddit and X posts from developers reacting positively to Buy4Chai after its launch' },
     ],
 
     impact: [
@@ -49,6 +50,7 @@ The name is deliberately local. A cup of chai is what you actually get in Kolkat
     name: 'SarkarSathi',
     tagline: 'AI co-pilot for municipal accountability in India.',
     tags: ['AI', 'Civic Tech', 'Python', 'FastAPI', 'Gemini AI', 'Vector DB'],
+    keywords: ['AI civic complaint tool India', 'how to escalate municipal complaint India', 'civic tech for local government accountability', 'AI tool for elected representatives India', 'complaint tracking dashboard for MLA', 'teen founder civic tech India', 'India Innovates finalist student team'],
     desc: 'AI co-pilot for municipal accountability. Helps citizens structure and escalate complaints to local government. Led as sole technical member of a 5-person remote team during board exams.',
     stat: 'India Innovates 2026 · Top 1,000 / 26,000+ entries · National media coverage',
     github: 'https://github.com/vassu-v/india-innovates-CivicNTech',
@@ -73,7 +75,7 @@ Built this as the sole technical member on a 5-person remote team. During board 
     ],
 
     images: [
-      '/projects/sarkarsathi_cm.jpg',
+      { src: '/projects/sarkarsathi_cm.jpg', alt: 'Team demoing SarkarSathi on laptops to West Bengal officials at the India Innovates 2026 exhibition' },
     ],
 
     impact: [
@@ -91,6 +93,7 @@ Built this as the sole technical member on a 5-person remote team. During board 
     name: 'Disaster-Resilient LiFi Network',
     tagline: 'Off-grid IR mesh that turns street lamps into emergency nodes.',
     tags: ['IoT', 'Hardware', 'C', 'Arduino', 'ESP8266', 'LiFi', 'Mesh Networks'],
+    keywords: ['emergency communication when networks fail', 'off grid mesh network disaster relief', 'solar street lamp mesh network', 'IR communication without internet', 'disaster resilient communication system India', 'high school science exhibition hardware project', 'student built mesh networking prototype'],
     desc: 'Mesh network retrofitted onto solar street lamps using IR transceivers. Hop-based routing delivers emergency messages when power grids and mobile networks fail simultaneously.',
     stat: 'CBSE Regional Science Exhibition 2025–26 · 6 GitHub stars · Stable multi-hop in live testing',
     github: 'https://github.com/vassu-v/D-LiFi-Proto',
@@ -113,9 +116,9 @@ The system operates entirely off-grid. No power grid dependency. No mobile netwo
     ],
 
     images: [
-      '/projects/lifi_exhibit.jpeg',
-      '/projects/lifi_slide.jpeg',
-      '/projects/lifi_report.png',
+      { src: '/projects/lifi_exhibit.jpeg', alt: 'D-LiFi-Proto exhibition table with the mesh-node prototype, laptop demo, and printed project poster' },
+      { src: '/projects/lifi_slide.jpeg', alt: 'Title slide for the Disaster-Resilient Communication System presentation, South Point High School' },
+      { src: '/projects/lifi_report.png', alt: 'Excerpt from the project report listing the rationale, scientific principles, and hardware materials used' },
     ],
 
     impact: [
@@ -133,6 +136,7 @@ The system operates entirely off-grid. No power grid dependency. No mobile netwo
     name: 'ChemX',
     tagline: 'Physical chemistry simulator controlled from a browser.',
     tags: ['Arduino', 'Electronics', 'C/C++', 'Web Interface', 'IoT'],
+    keywords: ['browser controlled chemistry simulator', 'interactive chemistry teaching hardware', 'Arduino chemistry reaction model', 'first hardware project student builder', 'physical computing for education India', 'school science exhibition electronics project'],
     desc: 'Physical chemistry reaction simulator: Arduino, LEDs, electromagnet, controlled via browser. First hardware project. Taught constraint thinking before I had words for it.',
     stat: 'Dec 2024 – Feb 2025 · School science exhibition',
     github: 'https://github.com/vassu-v/ChemX_001',
@@ -169,6 +173,7 @@ It was my first hardware project. I didn't have a framework for thinking about c
     name: 'Grounded Planning Research',
     tagline: 'Exposing brittle AI reasoning that high success rates hide.',
     tags: ['AI Research', 'Planning Systems', 'Python', 'Ablation Study', 'Zenodo'],
+    keywords: ['why AI planning benchmarks are misleading', 'brittle reasoning in AI agents', 'object commitment ablation study', 'AI agent failure modes research', 'evaluating AI planning beyond success rate', 'teen AI researcher published paper', '15 year old AI research Zenodo'],
     desc: 'How forcing agents to explicitly commit to objects during planning exposes brittle reasoning that high success rates hide. Shows structured, repeatable failure modes, the kind that only surface under real pressure.',
     stat: 'Published on Zenodo · Jan 9, 2026 · 3 GitHub stars',
     github: 'https://github.com/vassu-v/action-vs-object-planning',

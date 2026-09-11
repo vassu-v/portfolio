@@ -3,10 +3,13 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { AGE, YEAR } from '../utils/meta'
 
 const LINKS = [
-  { icon: 'fa-brands fa-linkedin',  label: 'LinkedIn',     href: 'https://linkedin.com/in/shoryavardhaan' },
+  { icon: 'fa-brands fa-linkedin',  label: 'LinkedIn',     href: 'https://www.linkedin.com/in/shoryavardhaan' },
   { icon: 'fa-brands fa-github',    label: 'GitHub',       href: 'https://github.com/vassu-v' },
   { icon: 'fa-brands fa-x-twitter', label: 'X / Twitter',  href: 'https://x.com/shoryavardhaan' },
   { icon: 'fa-brands fa-instagram', label: 'Instagram',    href: 'https://www.instagram.com/let_shorya.be/' },
+  { icon: 'fa-brands fa-medium',    label: 'Medium',       href: 'https://medium.com/@shoryavardhaans2' },
+  { icon: 'fa-solid fa-book',       label: 'Zenodo',       href: 'https://zenodo.org/records/18196407' },
+  { icon: 'fa-brands fa-orcid',     label: 'ORCID',        href: 'https://orcid.org/0009-0009-1370-5230' },
   { icon: 'fa-solid fa-envelope',   label: 'shoryavardhaans2@gmail.com', href: 'mailto:shoryavardhaans2@gmail.com' },
 ]
 
@@ -17,7 +20,9 @@ function LiquidHeading({ scrollYProgress }) {
   const dispRef = useRef(null)
   const blurRef = useRef(null)
   const h2Ref   = useRef(null)
-  const inView  = useInView(h2Ref, { once: true, amount: 0.7 })
+  // amount 0.7 + a bottom margin so the mark only draws once the line is
+  // actually settled in view, not while it's still rising up the screen.
+  const inView  = useInView(h2Ref, { once: true, amount: 0.7, margin: '0px 0px -15% 0px' })
 
   useEffect(() => {
     if (window.matchMedia('(max-width: 767px)').matches) {
@@ -126,7 +131,7 @@ function MagneticCTA({ href, icon, label, secondary }) {
         display: 'inline-flex', alignItems: 'center', gap: '14px',
         fontFamily: 'JetBrains Mono, monospace', fontSize: '0.76rem',
         fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: secondary ? 'var(--cu)' : '#0a0a0a',
+        color: secondary ? 'var(--cu)' : 'var(--bg)',
         background: secondary ? 'transparent' : 'var(--cu)',
         border: secondary ? '1px solid var(--cu-b)' : '1px solid transparent',
         padding: '18px 40px', borderRadius: '6px', textDecoration: 'none',
@@ -179,7 +184,7 @@ export default function Footer() {
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '52px' }}>
             <MagneticCTA href="mailto:shoryavardhaans2@gmail.com" icon="fa-solid fa-envelope" label="get in touch" />
-            <MagneticCTA href="https://cal.com/shoryavardhaan" icon="fa-solid fa-calendar-days" label="hop on a call" secondary />
+            <MagneticCTA href="https://cal.com/shoryavardhaan/30min?overlayCalendar=true" icon="fa-solid fa-calendar-days" label="hop on a call" secondary />
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '22px', marginBottom: '60px' }}>

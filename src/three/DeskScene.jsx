@@ -4,6 +4,7 @@ import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { EXP } from '../components/Experience'
 import { PROJECTS } from '../data/projects'
+import { AGE } from '../utils/meta'
 
 // Screen world position when lid is open (-1.95 rad): used for the zoom-in stages
 const SCREEN_POS = new THREE.Vector3(0.1, 0.4, -0.41)
@@ -54,14 +55,14 @@ const slug = s => s.toLowerCase().replace(/\s+/g, '-')
 function screenLines(stageId, sub) {
   switch (stageId) {
     case 'about':
-      return ['$ whoami', '16 · kolkata · builder', '', '$ ls work/', ...EXP.map(e => slug(e.org) + '/')]
+      return ['$ whoami', `${AGE} · kolkata · builder`, '', '$ ls work/', ...EXP.map(e => slug(e.org))]
     case 'experience': {
       const e = EXP[sub] || EXP[0]
-      return ['$ cd work/' + slug(e.org), '$ ls', '', 'role → ' + e.primaryRole.toLowerCase(), 'time → ' + e.period.toLowerCase()]
+      return ['$ cd work', '$ cat ' + slug(e.org), e.primaryRole.toLowerCase(), e.period.toLowerCase()]
     }
     case 'projects': {
       const p = PROJECTS[sub] || PROJECTS[0]
-      return ['$ open ' + p.slug + '/', '', p.name.toLowerCase(), ...wrap(p.tagline.toLowerCase())]
+      return ['$ cd projects', '$ cat ' + p.slug, p.name.toLowerCase(), ...wrap(p.tagline.toLowerCase())]
     }
     default:
       return null
@@ -216,7 +217,7 @@ function DeskPhoto({ ctl, stages }) {
   const textures = useMemo(() => {
     const loader = new THREE.TextureLoader()
     return PROJECTS.map(p => {
-      const src = p.images?.[0]
+      const src = p.images?.[0]?.src
       if (!src) return null
       const t = loader.load(src)
       t.colorSpace = THREE.SRGBColorSpace

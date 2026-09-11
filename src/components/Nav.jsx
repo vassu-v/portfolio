@@ -9,9 +9,23 @@ const NUMS = ['01',    '02',       '03',          '04']
 function NavLink({ id, index, isActive }) {
   const [hovered, setHovered] = useState(false)
 
+  // Must go through the custom 'programmatic-scroll-to' event, not the
+  // browser's native anchor jump — App.jsx runs its own RAF-driven
+  // smooth-scroll loop on desktop that tracks a private targetY and
+  // forcibly overwrites scrollTop toward it every frame. A native anchor
+  // jump changes scrollY without updating targetY, so the loop immediately
+  // fights it and snaps the page back. See App.jsx's onProgrammaticScrollTo.
+  const handleClick = e => {
+    e.preventDefault()
+    const el = document.getElementById(id)
+    if (!el) return
+    window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: el.offsetTop - 62 }))
+  }
+
   return (
     <motion.a
       href={`#${id}`}
+      onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{ position: 'relative', display: 'inline-block', paddingBottom: '3px', textDecoration: 'none' }}
@@ -27,7 +41,7 @@ function NavLink({ id, index, isActive }) {
             style={{
               position: 'absolute', right: '100%', paddingRight: '6px',
               top: '50%', transform: 'translateY(-50%)',
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--text3)', letterSpacing: '0.1em',
               whiteSpace: 'nowrap', pointerEvents: 'none',
             }}

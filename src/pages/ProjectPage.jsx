@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useRoute } from '../router'
 import { PROJECTS, getProject } from '../data/projects'
@@ -110,9 +110,9 @@ function RelatedProjects({ currentSlug, navigate }) {
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               gap: '16px', padding: '16px 0',
+              background: 'none', border: 'none',
               borderTop: i === 0 ? '1px solid var(--border)' : 'none',
               borderBottom: '1px solid var(--border)',
-              background: 'none', border: 'none', borderTop: '1px solid var(--border)',
               cursor: 'none', textAlign: 'left', width: '100%',
               transition: 'background 0.15s',
             }}
@@ -135,11 +135,6 @@ export default function ProjectPage({ slug }) {
   const { navigate } = useRoute()
   const project = getProject(slug)
   const [lightboxSrc, setLightboxSrc] = useState(null)
-
-  useEffect(() => {
-    if (project) document.title = `${project.name} — Shoryavardhaan`
-    return () => { document.title = 'Shoryavardhaan Gupta' }
-  }, [project])
 
   if (!project) {
     return (
@@ -198,7 +193,7 @@ export default function ProjectPage({ slug }) {
           </span>
           {featured && (
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--cu)', border: '1px solid var(--cu-b)',
               padding: '2px 8px', borderRadius: '100px', letterSpacing: '0.08em',
             }}>
@@ -250,7 +245,7 @@ export default function ProjectPage({ slug }) {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '10px',
                 fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem',
-                letterSpacing: '0.06em', color: '#0a0a0a',
+                letterSpacing: '0.06em', color: 'var(--bg)',
                 background: 'var(--cu)', padding: '12px 26px', borderRadius: '5px',
                 textDecoration: 'none', transition: 'background 0.2s, transform 0.2s',
               }}
@@ -346,7 +341,7 @@ export default function ProjectPage({ slug }) {
                 In the wild
               </div>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                {project.images.map((src, i) => (
+                {project.images.map(({ src, alt }, i) => (
                   <motion.div
                     key={src}
                     initial={{ opacity: 0, y: 16 }}
@@ -365,7 +360,7 @@ export default function ProjectPage({ slug }) {
                     }}
                   >
                     <img
-                      src={src} alt={`${name} — image ${i + 1}`}
+                      src={src} alt={alt}
                       loading="lazy"
                       style={{ width: '220px', height: '140px', objectFit: 'cover', display: 'block' }}
                     />

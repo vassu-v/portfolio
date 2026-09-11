@@ -19,6 +19,8 @@ import DeskBackdrop from './three/DeskBackdrop'
 import ProjectPage from './pages/ProjectPage'
 import BlogPost from './pages/BlogPost'
 import BlogIndex from './pages/BlogIndex'
+import { AGE } from './utils/meta'
+import { projectJsonLdNode } from './utils/projectSeo'
 
 // Section → cursor RGB color map
 const SECTION_COLORS = {
@@ -35,38 +37,62 @@ function ZoneDivider() {
   )
 }
 
-function Preloader() {
+function Preloader({ progress }) {
   return (
     <motion.div
       initial={{ clipPath: 'inset(0% 0% 0% 0%)' }}
       animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
-      exit={{ clipPath: 'inset(100% 0% 0% 0%)', transition: { duration: 0.75, ease: [0.76, 0, 0.24, 1] } }}
+      exit={{
+        clipPath: 'inset(100% 0% 0% 0%)',
+        filter: 'blur(8px)',
+        transition: { duration: 0.75, ease: [0.76, 0, 0.24, 1] },
+      }}
       style={{
         position: 'fixed', inset: 0,
         background: 'var(--bg)',
         zIndex: 9999,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexDirection: 'column', gap: '8px',
+        flexDirection: 'column', gap: '18px',
       }}
     >
-      <span style={{
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem',
-        fontWeight: 500, color: 'var(--cu)', letterSpacing: '0.1em',
-        display: 'flex', alignItems: 'center',
-      }}>
+      <motion.span
+        animate={{ opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '1.3rem',
+          fontWeight: 500, color: 'var(--cu)', letterSpacing: '0.1em',
+          display: 'flex', alignItems: 'center',
+        }}
+      >
         SG
         <span style={{
           display: 'inline-block', width: '2px', height: '1.1em',
           background: 'var(--cu)', marginLeft: '3px', verticalAlign: 'middle',
           animation: 'blink 1.1s step-end infinite',
         }} />
-      </span>
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: '48px' }}
-        transition={{ duration: 0.7, ease: 'easeInOut' }}
-        style={{ height: '1px', background: 'var(--cu)', opacity: 0.35 }}
-      />
+      </motion.span>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <div style={{
+          width: '64px', height: '2px', borderRadius: '2px',
+          background: 'var(--border2)', position: 'relative', overflow: 'hidden',
+        }}>
+          <motion.div
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+            style={{
+              position: 'absolute', inset: '0 auto 0 0', height: '100%',
+              background: 'var(--cu)', borderRadius: '2px',
+            }}
+          />
+        </div>
+        <span style={{
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
+          letterSpacing: '0.16em', color: 'var(--text3)', fontVariantNumeric: 'tabular-nums',
+        }}>
+          {String(Math.round(progress)).padStart(3, '0')}%
+        </span>
+      </div>
     </motion.div>
   )
 }
@@ -103,7 +129,7 @@ function AppShell() {
   useEffect(() => {
     const BASE      = 'Shoryavardhaan Gupta'
     const BASE_URL  = 'https://shoryavardhaan.vercel.app'
-    const BASE_DESC = '16-year-old builder from Kolkata shipping civic tech, hardware, and AI. Projects live in the real world, not just on GitHub.'
+    const BASE_DESC = `${AGE}-year-old builder from Kolkata shipping civic tech, hardware, and AI. Projects live in the real world, not just on GitHub.`
     const BASE_IMG  = `${BASE_URL}/og-image.png`
 
     let title = BASE, desc = BASE_DESC, url = BASE_URL, img = BASE_IMG, jsonld = null
@@ -115,20 +141,11 @@ function AppShell() {
         title = `${proj.name} | ${BASE}`
         desc  = proj.tagline
         url   = `${BASE_URL}/project/${proj.slug}`
-        img   = proj.images?.[0] ? `${BASE_URL}${proj.images[0]}` : BASE_IMG
+        img   = proj.images?.[0] ? `${BASE_URL}${proj.images[0].src}` : BASE_IMG
         jsonld = {
           '@context': 'https://schema.org',
           '@graph': [
-            {
-              '@type': 'SoftwareApplication',
-              '@id': url,
-              name: proj.name,
-              description: proj.desc,
-              url,
-              author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE },
-              applicationCategory: 'WebApplication',
-              operatingSystem: 'Any',
-            },
+            projectJsonLdNode(proj, { baseUrl: BASE_URL, baseName: BASE, url }),
             { '@type': 'BreadcrumbList', itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
               { '@type': 'ListItem', position: 2, name: proj.name, item: url },
@@ -157,10 +174,12 @@ function AppShell() {
               datePublished: post.isoDate ?? post.date,
               dateModified: post.isoDate ?? post.date,
               image: { '@type': 'ImageObject', url: img },
-              author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE },
+              author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE, url: BASE_URL },
               publisher: { '@type': 'Person', name: BASE, url: BASE_URL },
               mainEntityOfPage: { '@type': 'WebPage', '@id': url },
               inLanguage: 'en-IN',
+              keywords: post.keywords ?? [],
+              speakable: { '@type': 'SpeakableSpecification', cssSelector: ['#post-subtitle'] },
             },
             { '@type': 'BreadcrumbList', itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
@@ -183,6 +202,12 @@ function AppShell() {
         url,
         author: { '@type': 'Person', '@id': `${BASE_URL}/#person` },
         inLanguage: 'en-IN',
+        blogPost: POSTS.map(p => ({
+          '@type': 'BlogPosting',
+          headline: p.title,
+          url: `${BASE_URL}/blog/${p.slug}`,
+          datePublished: p.isoDate ?? p.date,
+        })),
       }
     } else if (path !== '/') {
       is404 = true
@@ -255,16 +280,58 @@ function AppShell() {
 
 export default function App() {
   const cursorRef = useRef(null)
+  const dotRef    = useRef(null)
   const spRef     = useRef(null)
   const isHover   = useRef(false)
   const curColor  = useRef({ ...COPPER })
   const curTarget = useRef({ ...COPPER })
-  const [preloaderVisible, setPreloaderVisible] = useState(true)
+  // Only the homepage gets the "SG" boot splash — a direct load of /blog or
+  // /project/:slug shouldn't pay for it. The progress bar tracks REAL
+  // readiness (web fonts + the hero portrait actually decoded), not a flat
+  // timer — see the effect below.
+  const [preloaderVisible, setPreloaderVisible] = useState(() => window.location.pathname === '/')
+  const [loadProgress, setLoadProgress] = useState(0)
 
-  // Preloader
   useEffect(() => {
-    const t = setTimeout(() => setPreloaderVisible(false), 300)
-    return () => clearTimeout(t)
+    if (!preloaderVisible) return
+
+    const MIN_VISIBLE = 900   // long enough for the animation to read as intentional
+    const MAX_WAIT     = 4500 // never hold a slow connection hostage
+    const start = performance.now()
+    let settled = false
+    let rafId, hideT
+
+    // Drift the bar toward ~92% while the real signals below are still
+    // pending, so it never sits static — it only reaches 100% once loading
+    // is actually confirmed (or MAX_WAIT forces it).
+    const driftProgress = () => {
+      if (settled) return
+      const elapsed = performance.now() - start
+      const eased = 1 - Math.exp(-elapsed / 900)
+      setLoadProgress(Math.min(92, eased * 92))
+      rafId = requestAnimationFrame(driftProgress)
+    }
+    rafId = requestAnimationFrame(driftProgress)
+
+    const heroImageReady = new Promise(resolve => {
+      const img = new Image()
+      img.onload = img.onerror = resolve
+      img.src = '/preview (1).jpg'
+    })
+    const fontsReady = document.fonts?.ready ?? Promise.resolve()
+
+    Promise.race([
+      Promise.all([heroImageReady, fontsReady]),
+      new Promise(resolve => setTimeout(resolve, MAX_WAIT)),
+    ]).then(() => {
+      settled = true
+      cancelAnimationFrame(rafId)
+      setLoadProgress(100)
+      const wait = Math.max(0, MIN_VISIBLE - (performance.now() - start))
+      hideT = setTimeout(() => setPreloaderVisible(false), wait + 220) // brief pause so 100% registers
+    })
+
+    return () => { cancelAnimationFrame(rafId); clearTimeout(hideT) }
   }, [])
 
   // ── Smooth scroll (wheel-driven, Lenis-style) ────────────────────────────
@@ -289,6 +356,16 @@ export default function App() {
 
     const onTouch = () => { targetY = window.scrollY }
     const onNavigate = () => { targetY = 0 }
+    // Any code that wants to programmatically scroll (e.g. a "skip" button)
+    // MUST go through this instead of window.scrollTo() directly — raw
+    // scrollTo only sets scrollTop for one frame, and tick() below
+    // immediately overwrites it back toward the stale targetY on the very
+    // next frame, silently undoing it. Dispatch window.dispatchEvent(new
+    // CustomEvent('programmatic-scroll-to', { detail: y })) instead.
+    const onProgrammaticScrollTo = e => {
+      const maxY = document.documentElement.scrollHeight - window.innerHeight
+      targetY = clamp(e.detail, 0, maxY)
+    }
 
     const tick = () => {
       const diff = targetY - window.scrollY
@@ -304,6 +381,7 @@ export default function App() {
     window.addEventListener('touchstart', onTouch, { passive: true })
     window.addEventListener('touchmove',  onTouch, { passive: true })
     window.addEventListener('spa-navigate', onNavigate)
+    window.addEventListener('programmatic-scroll-to', onProgrammaticScrollTo)
     rafId = requestAnimationFrame(tick)
 
     return () => {
@@ -311,6 +389,7 @@ export default function App() {
       window.removeEventListener('touchstart', onTouch)
       window.removeEventListener('touchmove',  onTouch)
       window.removeEventListener('spa-navigate', onNavigate)
+      window.removeEventListener('programmatic-scroll-to', onProgrammaticScrollTo)
       cancelAnimationFrame(rafId)
     }
   }, [])
@@ -319,8 +398,16 @@ export default function App() {
   useEffect(() => {
     let mx = 0, my = 0, cx = 0, cy = 0, rafId
     const cur = cursorRef.current
+    const dot = dotRef.current
 
-    const onMove = e => { mx = e.clientX; my = e.clientY }
+    // The pointer tracks the raw cursor position every move event — no
+    // lerp, no lag. Its tip (not its center) is the hotspot, so the offset
+    // matches where the SVG path's point actually sits in its viewBox — the
+    // glow orb below still eases toward it separately in the raf loop.
+    const paintDot = () => {
+      if (dot) dot.style.transform = `translate(${mx - 3}px,${my - 3}px) scale(${isHover.current ? 0.7 : 1})`
+    }
+    const onMove = e => { mx = e.clientX; my = e.clientY; paintDot() }
 
     ;(function raf() {
       // Position
@@ -340,7 +427,6 @@ export default function App() {
         cur.style.transform  = `translate(${cx - 50}px,${cy - 50}px) scale(${scale})`
         cur.style.background = `radial-gradient(circle, rgb(${r|0},${g|0},${b|0}) 0%, rgba(${r|0},${g|0},${b|0},0.3) 40%, transparent 70%)`
       }
-
       rafId = requestAnimationFrame(raf)
     })()
 
@@ -348,12 +434,14 @@ export default function App() {
       if (!isHover.current && e.target.closest('a, button, [role="button"]')) {
         isHover.current = true
         if (cur) cur.style.opacity = '0.9'
+        paintDot()
       }
     }
     const onOut = e => {
       if (isHover.current && e.target.closest('a, button, [role="button"]')) {
         isHover.current = false
         if (cur) cur.style.opacity = '0.65'
+        paintDot()
       }
     }
 
@@ -404,9 +492,18 @@ export default function App() {
       <DotGrid />
       <div id="sp" ref={spRef} />
       <div id="cursor" ref={cursorRef} />
+      <div id="cursor-dot" ref={dotRef}>
+        <svg width="20" height="24" viewBox="0 0 20 24" fill="none" style={{ display: 'block' }}>
+          <path
+            d="M3 3 L3 17 L7 13.8 L9.8 19.6 L12.6 18.2 L9.8 12.4 L16 12.4 Z"
+            fill="#ffffff" stroke="#ffffff" strokeWidth="2"
+            strokeLinejoin="round" strokeLinecap="round"
+          />
+        </svg>
+      </div>
 
       <AnimatePresence>
-        {preloaderVisible && <Preloader key="loader" />}
+        {preloaderVisible && <Preloader key="loader" progress={loadProgress} />}
       </AnimatePresence>
 
       <AppShell />

@@ -13,9 +13,9 @@ const CARDS = [
     pill: 'Active',
   },
   {
-    tag: 'Building', org: 'Buy4Chai',
-    desc: 'Maintaining the open-source Razorpay/UPI supporter page. Responding to community issues. Planning v2 from contributor feedback.',
-    pill: 'Shipping · Open source',
+    tag: 'Building', org: 'Personal Brand',
+    desc: 'Growing on Instagram and freelancing on the side — UI design, landing pages, brand positioning for early-stage founders.',
+    pill: 'Active · Freelance',
   },
 ]
 
@@ -60,6 +60,14 @@ function CurrCard({ c, i }) {
 export default function Currently() {
   return (
     <section id="currently" className="sec-section" style={{ padding: '0 var(--pad) 80px', position: 'relative', zIndex: 1 }}>
+      <h2 style={{
+        display: 'block', marginBottom: '24px',
+        fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
+        fontSize: 'clamp(1.6rem, 2.8vw, 2.6rem)',
+        letterSpacing: '-0.025em', lineHeight: 1.05, color: 'var(--text2)',
+      }}>
+        Currently
+      </h2>
       <div className="curr-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
         {CARDS.map((c, i) => <CurrCard key={i} c={c} i={i} />)}
       </div>

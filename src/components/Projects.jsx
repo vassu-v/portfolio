@@ -74,7 +74,7 @@ function NameRow({ project, isActive, isHovering, progressKey, onEnter, onNaviga
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {featured && (
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--cu)', border: '1px solid var(--cu-b)',
               padding: '2px 8px', borderRadius: '100px', letterSpacing: '0.08em',
               whiteSpace: 'nowrap',
@@ -129,7 +129,7 @@ const STACKED = [
   { x:  1, y: -2, rotate:  9  },
 ]
 
-function ScatterStack({ images, name }) {
+function ScatterStack({ images }) {
   const [out, setOut]           = useState(false)
   const [lightboxSrc, setLightboxSrc] = useState(null)
   const visible = images.slice(0, 3)
@@ -140,7 +140,7 @@ function ScatterStack({ images, name }) {
         onMouseEnter={() => setOut(true)}
         onMouseLeave={() => setOut(false)}
       >
-        {visible.map((src, i) => {
+        {visible.map(({ src, alt }, i) => {
           const pos = out ? SCATTERED[i] : STACKED[i]
           return (
             <motion.div
@@ -157,7 +157,7 @@ function ScatterStack({ images, name }) {
                 cursor: 'zoom-in',
               }}
             >
-              <img src={src} alt={`${name} photo ${i + 1}`} style={{ width: '100%', height: '80px', objectFit: 'cover', display: 'block' }} />
+              <img src={src} alt={alt} style={{ width: '100%', height: '80px', objectFit: 'cover', display: 'block' }} />
             </motion.div>
           )
         })}
@@ -274,7 +274,7 @@ function DetailPanel({ project, onNavigate }) {
       </motion.button>
 
       {/* Photo scatter stack */}
-      {images?.length > 0 && <ScatterStack images={images} name={project.name} />}
+      {images?.length > 0 && <ScatterStack images={images} />}
 
       {/* Bottom rule */}
       <motion.div

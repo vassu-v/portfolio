@@ -33,19 +33,6 @@ export const EXP = [
   },
   {
     n: '03',
-    org: 'Freelance',
-    live: true,
-    primaryRole: 'UI & Landing Page Design',
-    type: 'Freelance',
-    period: 'Mar 2026 – Present',
-    desc: 'Building landing pages and UI systems for lead conversion. Brand positioning, conversion optimization, maintenance-based pricing.',
-    skills: ['UI Design', 'Conversion', 'Brand Positioning'],
-    cta: { label: 'Book a call', href: 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true' },
-    hire: true,
-    extra: null,
-  },
-  {
-    n: '04',
     org: 'Beyond Rote',
     live: false,
     primaryRole: 'Research & Outreach Lead',
@@ -56,7 +43,7 @@ export const EXP = [
     extra: null,
   },
   {
-    n: '05',
+    n: '04',
     org: 'Utsavy',
     live: false,
     primaryRole: 'Experience Designer, UI/UX',
@@ -64,6 +51,19 @@ export const EXP = [
     period: 'Jun – Jul 2025',
     desc: 'Designed UX workflows and interface templates for an event management platform. Custom designs increased inquiry submissions by 20%. Designed AI prompts and onboarding flows. Trained incoming interns on the design system.',
     skills: ['UX Design', 'AI Prompting', 'Mentoring'],
+    extra: null,
+  },
+  {
+    n: '05',
+    org: 'Freelance',
+    live: true,
+    primaryRole: 'UI & Landing Page Design',
+    type: 'Freelance',
+    period: 'Mar 2026 – Present',
+    desc: 'Building landing pages and UI systems for lead conversion. Brand positioning, conversion optimization, maintenance-based pricing.',
+    skills: ['UI Design', 'Conversion', 'Brand Positioning'],
+    cta: { label: 'Book a call', href: 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true' },
+    hire: true,
     extra: null,
   },
 ]
@@ -215,7 +215,7 @@ function Panel({ exp }) {
             {extra.map(r => (
               <div key={r.title} style={{ border: '1px solid var(--border)', borderRadius: '4px', padding: '5px 12px' }}>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', letterSpacing: '0.07em', color: 'var(--text2)', marginBottom: '2px' }}>{r.title}</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.48rem', letterSpacing: '0.05em', color: 'var(--text3)' }}>{r.period} · {r.type}</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', letterSpacing: '0.05em', color: 'var(--text3)' }}>{r.period} · {r.type}</div>
               </div>
             ))}
           </div>
@@ -242,7 +242,7 @@ function Panel({ exp }) {
               display: 'inline-flex', alignItems: 'center', gap: '10px',
               fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem',
               letterSpacing: '0.08em', textTransform: 'uppercase',
-              color: '#0a0a0a', background: 'var(--cu)',
+              color: 'var(--bg)', background: 'var(--cu)',
               padding: '12px 24px', borderRadius: '6px',
               textDecoration: 'none', marginTop: '24px',
               border: '1px solid transparent',
@@ -302,7 +302,7 @@ function MobileCard({ exp }) {
               target="_blank"
               rel="noreferrer"
               style={{
-                fontFamily: 'JetBrains Mono, monospace', fontSize: '0.46rem',
+                fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
                 letterSpacing: '0.08em', textTransform: 'uppercase',
                 color: 'var(--cu)', background: 'var(--cu-d)',
                 border: '1px solid var(--cu-b)',
@@ -320,7 +320,7 @@ function MobileCard({ exp }) {
         {live ? (
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: '5px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             letterSpacing: '0.08em', color: 'var(--cu)',
             background: 'var(--cu-d)', border: '1px solid var(--cu-b)',
             padding: '3px 9px', borderRadius: '100px',
@@ -329,7 +329,7 @@ function MobileCard({ exp }) {
           </span>
         ) : (
           <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             letterSpacing: '0.08em', color: 'var(--text3)',
             border: '1px solid var(--border)', padding: '3px 9px', borderRadius: '100px',
           }}>
@@ -337,7 +337,7 @@ function MobileCard({ exp }) {
           </span>
         )}
         <span style={{
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
           letterSpacing: '0.05em', color: 'var(--text3)',
         }}>
           {primaryRole} · {type}
@@ -361,8 +361,8 @@ function MobileCard({ exp }) {
         <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
           {extra.map(r => (
             <div key={r.title} style={{ border: '1px solid var(--border)', borderRadius: '4px', padding: '4px 10px' }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem', letterSpacing: '0.07em', color: 'var(--text2)', marginBottom: '2px' }}>{r.title}</div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.46rem', color: 'var(--text3)' }}>{r.period} · {r.type}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.07em', color: 'var(--text2)', marginBottom: '2px' }}>{r.title}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', color: 'var(--text3)' }}>{r.period} · {r.type}</div>
             </div>
           ))}
         </div>
@@ -371,7 +371,7 @@ function MobileCard({ exp }) {
       <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
         {skills.map(s => (
           <span key={s} style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             letterSpacing: '0.08em', color: 'var(--text3)',
             border: '1px solid var(--border)', borderRadius: '3px', padding: '2px 7px',
           }}>
@@ -389,7 +389,7 @@ function MobileCard({ exp }) {
             display: 'inline-flex', alignItems: 'center', gap: '9px',
             fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: '#0a0a0a', background: 'var(--cu)',
+            color: 'var(--bg)', background: 'var(--cu)',
             padding: '10px 20px', borderRadius: '6px',
             textDecoration: 'none', marginTop: '18px',
             border: '1px solid transparent',
@@ -451,16 +451,17 @@ function TabletExperience() {
   const [activeIdx, setActiveIdx] = useState(0)
 
   return (
-    <div id="experience" style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
 
-      <div style={{
-        position: 'absolute', top: '28px', left: 'var(--pad)',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
-        letterSpacing: '0.22em', textTransform: 'uppercase',
-        color: 'var(--text3)', zIndex: 10, pointerEvents: 'none',
+      <h2 style={{
+        position: 'absolute', top: '24px', left: 'var(--pad)',
+        fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
+        fontSize: 'clamp(1.4rem, 2.4vw, 2rem)',
+        letterSpacing: '-0.025em', lineHeight: 1,
+        color: 'var(--text2)', zIndex: 10, pointerEvents: 'none',
       }}>
         Experience
-      </div>
+      </h2>
 
       <motion.div
         animate={{ x: `${-activeIdx * 100}vw` }}
@@ -516,20 +517,54 @@ export default function Experience() {
   const tilt = useTransform(velocity, [-0.8, 0, 0.8], [6, 0, -6])
   const springTilt = useSpring(tilt, { stiffness: 200, damping: 25 })
 
+  // Skip control — this section is scroll-jacked (5x a normal section's
+  // height), so give people a way out. It jumps to the LAST panel (the
+  // freelance/hire pitch), not past the section entirely — the one thing
+  // in here that shouldn't be skippable.
+  // Each panel is 1/TOTAL of progress (0.20 for 5 panels) — fully visible
+  // well before the first panel ends, not partway into the second.
+  const skipOpacity = useTransform(scrollYProgress, [0.04, 0.14, 0.85, 0.93], [0, 1, 1, 0])
+  const skipPointerEvents = useTransform(scrollYProgress, v => (v > 0.04 && v < 0.93) ? 'auto' : 'none')
+  const skipToEnd = () => {
+    const el = containerRef.current
+    if (!el) return
+    // el.offsetTop + el.offsetHeight - innerHeight is exactly progress 1.0
+    // within this pinned section — do NOT overshoot past that. An earlier
+    // version deliberately overshot (offsetTop + offsetHeight, no
+    // - innerHeight) on the theory that Framer Motion's own scroll
+    // measurement could undershoot by a few px — that was a misdiagnosis.
+    // The real bug at the time was the RAF-loop-fighting issue below; once
+    // that was fixed, the imperfect snap went away too. The overshoot then
+    // became actively harmful: the clamp in App.jsx's event handler clamps
+    // to the whole PAGE's max scroll, which is well past the end of this
+    // section (Projects/Blog/etc. still follow it), so it was scrolling
+    // straight out of the section instead of landing on the last panel.
+    //
+    // Must go through this custom event, NOT window.scrollTo() directly —
+    // App.jsx runs its own RAF-driven smooth-scroll loop on desktop that
+    // tracks a private targetY and forcibly overwrites scrollTop toward it
+    // every frame. A raw scrollTo() gets silently fought and undone almost
+    // immediately by that loop; dispatching this event updates targetY
+    // itself so the two systems agree instead of fighting.
+    const target = el.offsetTop + el.offsetHeight - window.innerHeight
+    window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: target }))
+  }
+
   // ── Portrait (phone + portrait tablet): stacked cards ─────────────────────
   if (isMobile) {
     return (
-      <div id="experience" style={{ paddingBottom: '8px' }}>
+      <div style={{ paddingBottom: '8px' }}>
         <div style={{
           padding: '48px var(--pad) 24px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
         }}>
-          <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
-            letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--text3)',
+          <h2 style={{
+            fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
+            fontSize: 'clamp(1.6rem, 6vw, 2rem)',
+            letterSpacing: '-0.025em', lineHeight: 1, color: 'var(--text2)',
           }}>
             Experience
-          </span>
+          </h2>
           <span style={{
             fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem',
             letterSpacing: '0.08em', color: 'var(--text3)',
@@ -549,14 +584,15 @@ export default function Experience() {
   return (
     <div id="experience" ref={containerRef} style={{ height: `${TOTAL * 100}vh`, position: 'relative' }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', perspective: '1200px' }}>
-        <div style={{
-          position: 'absolute', top: '28px', left: 'var(--pad)',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
-          letterSpacing: '0.22em', textTransform: 'uppercase',
-          color: 'var(--text3)', zIndex: 10, pointerEvents: 'none',
+        <h2 style={{
+          position: 'absolute', top: '24px', left: 'var(--pad)',
+          fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 'clamp(1.4rem, 2.4vw, 2rem)',
+          letterSpacing: '-0.025em', lineHeight: 1,
+          color: 'var(--text2)', zIndex: 10, pointerEvents: 'none',
         }}>
           Experience
-        </div>
+        </h2>
 
         <div style={{
           position: 'absolute', top: '26px', right: 'var(--pad)',
@@ -595,6 +631,26 @@ export default function Experience() {
             <motion.div style={{ position: 'absolute', left: 0, top: 0, height: '100%', background: 'var(--cu)', width: barWidth }} />
           </div>
           <ProgressDots scrollYProgress={springProgress} />
+          <motion.button
+            onClick={skipToEnd}
+            style={{
+              opacity: skipOpacity, pointerEvents: skipPointerEvents,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+              color: 'var(--text3)', background: 'none',
+              border: '1px solid var(--border)', borderRadius: '100px',
+              padding: '10px 18px', minHeight: '40px', cursor: 'none', flexShrink: 0,
+              transition: 'color 0.2s, border-color 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu-b)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+          >
+            skip
+            <svg width="10" height="9" viewBox="0 0 22 9" fill="none">
+              <path d="M1 4.5h20M16 1l5 3.5-5 3.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.button>
         </div>
       </div>
     </div>

@@ -155,7 +155,7 @@ export default function Hero() {
               <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--text2)' }}>
                 {AGE}
               </span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text3)' }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text3)' }}>
                 y/o
               </span>
             </div>
@@ -234,7 +234,7 @@ export default function Hero() {
               <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.05rem', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--text2)' }}>
                 {AGE}
               </span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text3)' }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text3)' }}>
                 y/o
               </span>
             </div>

@@ -14,6 +14,12 @@ export function Router({ children }) {
   const navigate = (to) => {
     window.history.pushState({}, '', to)
     setPath(to)
+    // window.scrollTo() here is safe (unlike a raw scrollTo in most other
+    // places) because App.jsx's smooth-scroll RAF loop doesn't run at all on
+    // mobile/portrait-tablet — that's the ONLY listener for scroll reset
+    // there, so it must stay. On desktop, 'spa-navigate' below resets the
+    // RAF loop's own targetY to 0 synchronously right after, before the next
+    // tick can fight this call, so the two don't race.
     window.scrollTo({ top: 0, behavior: 'instant' })
     window.dispatchEvent(new Event('spa-navigate'))
   }
