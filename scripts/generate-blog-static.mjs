@@ -39,6 +39,16 @@ const rootBlockMatch = indexCss.match(/:root\s*\{[\s\S]*?\n\}/)
 if (!rootBlockMatch) throw new Error('Could not find :root block in src/index.css')
 const rootBlock = rootBlockMatch[0]
 
+// The mobile/tablet --pad overrides live in their own @media blocks in
+// index.css, not inside :root — without them the pre-hydration paint uses
+// desktop --pad (56px) at every viewport width until the real stylesheet
+// loads and corrects it.
+const mobileBlockMatch = indexCss.match(/@media \(max-width: 767px\)\s*\{[\s\S]*?\n\}/)
+if (!mobileBlockMatch) throw new Error('Could not find mobile @media block in src/index.css')
+const padLineMatch = mobileBlockMatch[0].match(/:root\s*\{[^}]*\}/)
+if (!padLineMatch) throw new Error('Could not find mobile --pad :root override in src/index.css')
+const padMediaBlock = `@media (max-width: 767px) { ${padLineMatch[0]} }`
+
 // Mirrors the blog-post branch of the SPA's per-route meta effect in
 // src/App.jsx exactly — same canonical URL, so a crawler with or without JS
 // must see identical title/description/JSON-LD either way.
@@ -111,6 +121,7 @@ ${JSON.stringify(jsonld, null, 2)}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
     ${rootBlock}
+    ${padMediaBlock}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip;cursor:auto}
   </style>
