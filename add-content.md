@@ -337,6 +337,7 @@ No router config to update — slugs in the data files are the URLs.
 3. Prepend a new object to `POSTS` (copy the template from Section 1 above)
 4. Fill: `n` (next number), `slug` (kebab-case), `title`, `subtitle`, `category`, `date`, `readTime`, `hero`, `personal`, `content` blocks
 5. Save — the post appears on `/blog`, the portfolio card section, and `/blog/your-slug`
+6. Run `npm run generate:blog` — generates the static, crawler-visible `public/blog/your-slug/index.html` and re-syncs the sitemap (see CLAUDE.md "Static blog system")
 
 ## Quick Reference: Adding a Project End-to-End
 

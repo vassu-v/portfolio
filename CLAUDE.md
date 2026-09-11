@@ -10,29 +10,23 @@ All content lives in data files and component-level arrays — no logic changes 
 
 ## Static blog system
 
-Two separate blog renderers exist, on purpose:
+**One source of truth: `src/data/blog.js` + `src/pages/BlogPost.jsx`.** There is no hand-written HTML anywhere in the blog pipeline anymore. `public/blog/<slug>/index.html` is fully generated at build time by server-rendering the real `BlogPost` React component — the exact same component the live SPA uses — via `react-dom/server`'s `renderToStaticMarkup`, run in Node through Vite's `ssrLoadModule` (`scripts/prerender-blog.mjs`). The static file's `<div id="root">` is pre-filled with that real output, so a crawler or a browser with JS disabled gets fully-formed, correctly-styled content immediately; `<script src="/src/main.jsx">` then boots the SPA on top, which re-renders over it via the normal `createRoot().render()` client mount — same content, now interactive.
 
-- **Live SPA** — `src/data/blog.js` + `src/pages/BlogPost.jsx` render what visitors see when browsing the site.
-- **Static SEO shell** — `public/blog/<slug>/index.html` are standalone hand-written HTML files (no React, fully inline CSS) that Vercel serves directly for the same URL before the SPA rewrite fires. Exists purely so crawlers/link-unfurl bots that don't execute JS still get real content.
-
-**Not auto-synced** — editing `blog.js` does not change the static HTML. Article prose in each static file is separately hand-written and must be manually kept in sync when post content changes.
-
-**Auto-synced** — post numbering (`nav-counter`, "N / total"), the hero-ghost category label, and the "More from the log" related-post links are regenerated FROM `blog.js` by running `npm run generate:blog` (`scripts/generate-blog-static.mjs`). This only touches the delimited `<!-- GEN:... -->` regions in each static file — never hand-written body content — **with one bootstrap exception, see CRT tag widget below.**
-
-**CRT tag widget** — static posts include a small canvas readout (`.crt-widget` / `#crtCanvas`) showing the post's category in phosphor-green retro terminal style, a vanilla-JS/2D-canvas equivalent of the SPA's 3D `CRTMonitor` (`src/three/CRTMonitor3D.jsx`), deliberately lightweight (no three.js) since these pages are SEO-first. `npm run generate:blog` keeps its `data-tag` attribute synced to category. **Bootstrap exception:** if a static file is missing `#crtCanvas` entirely (i.e. it predates the widget), the generator inserts the canvas markup, its CSS, and its drawing script directly into the page shell — outside any GEN region — wrapping each insertion in its own `GEN:CRT-BOOTSTRAP` marker so it's still identifiable as script-owned. `template.html` and every current post already include the widget, so this path is dormant under the normal "copy the template" workflow below; it only exists as a one-time upgrade path for an older file.
+This replaced an earlier design (hand-written static HTML + a GEN-marker patcher) that could drift from the live SPA and required copying `template.html` for every new post. Both are gone. There is nothing left to hand-author or keep in sync.
 
 **Adding a new post:**
-1. Add an entry to `POSTS` in `src/data/blog.js` — this alone makes it live on the SPA/homepage cards.
-2. Copy `public/blog/template.html` → `public/blog/<new-slug>/index.html`.
-3. Fill every `[FILL: ...]` placeholder (title, meta, OG/Twitter tags, JSON-LD, hero image, article prose, pullquotes).
-4. Remove the `<meta name="robots" content="noindex, nofollow">` line — only `template.html` itself stays noindexed; real posts must not have this.
-5. Run `npm run generate:blog` to auto-fill numbering, hero-ghost, more-posts links, and CRT tag text.
+1. Add an entry to `POSTS` in `src/data/blog.js` (content as `content: [{ type: 'paragraph' | 'heading' | 'pullquote' | 'divider', text }]` blocks).
+2. Run `npm run generate:blog`.
 
-**File locations** — template: `public/blog/template.html`; generator: `scripts/generate-blog-static.mjs`; live posts: `public/blog/<slug>/index.html`.
+That's it — the new `public/blog/<slug>/index.html` is created from scratch, meta/OG/JSON-LD are derived from the same fields `App.jsx`'s SPA route effect uses (so static and live meta can never disagree), every other post's numbering/cross-links are re-synced, and `npm run generate:projects` regenerates `public/sitemap.xml` to include it. Every file is safe to delete and regenerate at any time — regenerating never has anything hand-written to lose. Run `npm run generate:blog` again any time `blog.js` changes to pick it up.
+
+**Why this is safe to prerender in plain Node (no jsdom needed):** every component in `BlogPost.jsx`'s tree is SSR-safe by construction — no unguarded `window`/`document` calls outside effects, and the 3D CRT widget (`src/components/CRTMonitor.jsx`) simply renders `null` until a client-only `useEffect` flips it on, so it never touches three.js/WebGL during prerendering. Framer Motion is designed to render safely with no browser present, using each animated value's initial/resting state.
+
+**File locations** — prerenderer: `scripts/prerender-blog.mjs`; generator: `scripts/generate-blog-static.mjs`; live posts: `public/blog/<slug>/index.html`.
 
 ## Static project pages
 
-`public/project/<slug>/index.html` mirrors the blog's static-shell approach for `src/data/projects.js` entries — a noscript-friendly page with real title/meta/OG/Twitter tags and JSON-LD, served before the SPA rewrite. Unlike the blog's GEN-marker patching, these are **fully generated, not hand-written** — `npm run generate:projects` (`scripts/generate-project-static.mjs`) builds any `public/project/<slug>/index.html` that doesn't already exist yet from `projects.js` directly (problem/solution/how/impact fields become the noscript article body). A file that already exists is left alone and treated as hand-maintained from that point on — delete it and re-run the script to regenerate from source.
+`public/project/<slug>/index.html` takes a lighter-weight version of the same idea as the blog's static shell: a noscript-friendly page with real title/meta/OG/Twitter tags and JSON-LD, served before the SPA rewrite. Unlike blog (which prerenders the real React component), project pages leave `#root` empty and put crawler content in a hand-written `<noscript>` block instead — `npm run generate:projects` (`scripts/generate-project-static.mjs`) builds any `public/project/<slug>/index.html` that doesn't already exist yet from `projects.js` directly (problem/solution/how/impact fields become the noscript article body). A file that already exists is left alone and treated as hand-maintained from that point on — delete it and re-run the script to regenerate from source. (Bringing project pages onto the same real-prerender approach as blog is a reasonable future cleanup, not yet done.)
 
 The same script also regenerates `public/sitemap.xml` from `blog.js` + `projects.js` every run, so a new post or project is never missing from the sitemap. Run `npm run generate:projects` after adding a new project to `PROJECTS`.
 
