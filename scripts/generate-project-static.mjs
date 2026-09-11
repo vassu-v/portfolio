@@ -25,18 +25,10 @@ const BASE_NAME = 'Shoryavardhaan Gupta'
 
 const { PROJECTS } = await import(pathToFileURL(join(root, 'src', 'data', 'projects.js')).href)
 const { POSTS } = await import(pathToFileURL(join(root, 'src', 'data', 'blog.js')).href)
+const { projectJsonLdNode } = await import(pathToFileURL(join(root, 'src', 'utils', 'projectSeo.js')).href)
 
 function escapeHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
-
-// schema.org has no clean "hardware project" type — map by tag signal instead
-// of forcing everything into SoftwareApplication.
-function schemaType(project) {
-  const tags = project.tags ?? []
-  if (tags.includes('AI Research')) return 'ScholarlyArticle'
-  if (tags.includes('Hardware') || tags.includes('IoT') || tags.includes('Electronics')) return 'CreativeWork'
-  return 'SoftwareApplication'
 }
 
 // Pulled straight from src/index.css so the pre-hydration paint uses the
@@ -57,16 +49,7 @@ function metaFor(project) {
   const jsonld = {
     '@context': 'https://schema.org',
     '@graph': [
-      {
-        '@type': schemaType(project),
-        '@id': url,
-        name: project.name,
-        description: project.desc,
-        url,
-        author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE_NAME, url: BASE_URL },
-        keywords: project.keywords ?? project.tags ?? [],
-        ...(project.github ? { codeRepository: project.github } : {}),
-      },
+      projectJsonLdNode(project, { baseUrl: BASE_URL, baseName: BASE_NAME, url }),
       {
         '@type': 'BreadcrumbList',
         itemListElement: [

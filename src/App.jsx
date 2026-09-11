@@ -20,6 +20,7 @@ import ProjectPage from './pages/ProjectPage'
 import BlogPost from './pages/BlogPost'
 import BlogIndex from './pages/BlogIndex'
 import { AGE } from './utils/meta'
+import { projectJsonLdNode } from './utils/projectSeo'
 
 // Section → cursor RGB color map
 const SECTION_COLORS = {
@@ -120,17 +121,7 @@ function AppShell() {
         jsonld = {
           '@context': 'https://schema.org',
           '@graph': [
-            {
-              '@type': 'SoftwareApplication',
-              '@id': url,
-              name: proj.name,
-              description: proj.desc,
-              url,
-              author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE, url: BASE_URL },
-              applicationCategory: 'WebApplication',
-              operatingSystem: 'Any',
-              keywords: proj.keywords ?? proj.tags ?? [],
-            },
+            projectJsonLdNode(proj, { baseUrl: BASE_URL, baseName: BASE, url }),
             { '@type': 'BreadcrumbList', itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
               { '@type': 'ListItem', position: 2, name: proj.name, item: url },
@@ -269,12 +260,27 @@ export default function App() {
   const isHover   = useRef(false)
   const curColor  = useRef({ ...COPPER })
   const curTarget = useRef({ ...COPPER })
-  const [preloaderVisible, setPreloaderVisible] = useState(true)
+  // Only the homepage gets the "SG" boot splash — a direct load of /blog or
+  // /project/:slug shouldn't pay for it. Gated on the real window 'load'
+  // event (fonts/images/scripts actually settled), not a flat timer, with a
+  // small minimum-visible floor so it never looks like a single-frame flash.
+  const [preloaderVisible, setPreloaderVisible] = useState(() => window.location.pathname === '/')
 
-  // Preloader
   useEffect(() => {
-    const t = setTimeout(() => setPreloaderVisible(false), 300)
-    return () => clearTimeout(t)
+    if (!preloaderVisible) return
+    const MIN_VISIBLE = 300
+    const start = performance.now()
+    let t
+    const hide = () => {
+      const wait = Math.max(0, MIN_VISIBLE - (performance.now() - start))
+      t = setTimeout(() => setPreloaderVisible(false), wait)
+    }
+    if (document.readyState === 'complete') {
+      hide()
+    } else {
+      window.addEventListener('load', hide, { once: true })
+    }
+    return () => { window.removeEventListener('load', hide); clearTimeout(t) }
   }, [])
 
   // ── Smooth scroll (wheel-driven, Lenis-style) ────────────────────────────

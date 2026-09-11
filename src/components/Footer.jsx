@@ -129,7 +129,7 @@ function MagneticCTA({ href, icon, label, secondary }) {
         display: 'inline-flex', alignItems: 'center', gap: '14px',
         fontFamily: 'JetBrains Mono, monospace', fontSize: '0.76rem',
         fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: secondary ? 'var(--cu)' : '#0a0a0a',
+        color: secondary ? 'var(--cu)' : 'var(--bg)',
         background: secondary ? 'transparent' : 'var(--cu)',
         border: secondary ? '1px solid var(--cu-b)' : '1px solid transparent',
         padding: '18px 40px', borderRadius: '6px', textDecoration: 'none',
@@ -182,7 +182,7 @@ export default function Footer() {
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '52px' }}>
             <MagneticCTA href="mailto:shoryavardhaans2@gmail.com" icon="fa-solid fa-envelope" label="get in touch" />
-            <MagneticCTA href="https://cal.com/shoryavardhaan" icon="fa-solid fa-calendar-days" label="hop on a call" secondary />
+            <MagneticCTA href="https://cal.com/shoryavardhaan/30min?overlayCalendar=true" icon="fa-solid fa-calendar-days" label="hop on a call" secondary />
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '22px', marginBottom: '60px' }}>

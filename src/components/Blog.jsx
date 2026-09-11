@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { POSTS } from '../data/blog'
 import { useRoute } from '../router'
 
-function PostCard({ post, index }) {
+function PostCard({ post }) {
   const [hovered, setHovered] = useState(false)
   const { navigate } = useRoute()
   const ref = useRef(null)
@@ -59,7 +59,7 @@ function PostCard({ post, index }) {
           {post.personal === 'best' && (
             <span style={{
               fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
-              color: '#0a0a0a', background: 'var(--cu)',
+              color: 'var(--bg)', background: 'var(--cu)',
               padding: '3px 8px', borderRadius: '100px', letterSpacing: '0.06em',
             }}>
               my best

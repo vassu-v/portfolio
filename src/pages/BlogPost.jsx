@@ -4,6 +4,7 @@ import { useRoute } from '../router'
 import { POSTS, getPost } from '../data/blog'
 import Lightbox from '../components/Lightbox'
 import CRTMonitor from '../components/CRTMonitor'
+import { AGE } from '../utils/meta'
 
 // ── Scroll-brightening paragraph (same mechanic as About) ─────────────────────
 
@@ -187,7 +188,7 @@ function ContinueReading({ url, platform }) {
           display: 'inline-flex', alignItems: 'center', gap: '9px', flexShrink: 0,
           fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem',
           letterSpacing: '0.08em', textTransform: 'uppercase',
-          color: '#0a0a0a', background: 'var(--cu)',
+          color: 'var(--bg)', background: 'var(--cu)',
           padding: '12px 22px', borderRadius: '4px', textDecoration: 'none',
           transition: 'background 0.2s',
         }}
@@ -221,7 +222,7 @@ function AuthorBio() {
         Written by
       </div>
       <p style={{ fontSize: '0.86rem', lineHeight: 1.75, color: 'var(--text2)', maxWidth: '620px' }}>
-        <a href="/" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>Shoryavardhaan Gupta</a> is a 16-year-old builder and developer from Kolkata, India, shipping civic tech, hardware, and AI projects — including <a href="/project/buy4chai" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>Buy4Chai</a> and <a href="/project/sarkarsathi" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>SarkarSathi</a>. He published AI planning research on Zenodo at 15 and leads the Kolkata fork of Bits&Bytes.
+        <a href="/" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>Shoryavardhaan Gupta</a> is a {AGE}-year-old builder and developer from Kolkata, India, shipping civic tech, hardware, and AI projects — including <a href="/project/buy4chai" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>Buy4Chai</a> and <a href="/project/sarkarsathi" style={{ color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid var(--cu)' }}>SarkarSathi</a>. He published AI planning research on Zenodo at 15 and leads the Kolkata fork of Bits&Bytes.
       </p>
       <div style={{ display: 'flex', gap: '16px', marginTop: '14px' }}>
         {links.map(l => (

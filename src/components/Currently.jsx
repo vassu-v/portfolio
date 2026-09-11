@@ -60,13 +60,14 @@ function CurrCard({ c, i }) {
 export default function Currently() {
   return (
     <section id="currently" className="sec-section" style={{ padding: '0 var(--pad) 80px', position: 'relative', zIndex: 1 }}>
-      <span style={{
+      <h2 style={{
         display: 'block', marginBottom: '24px',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: 500,
-        letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text)',
+        fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
+        fontSize: 'clamp(1.6rem, 2.8vw, 2.6rem)',
+        letterSpacing: '-0.025em', lineHeight: 1.05, color: 'var(--text2)',
       }}>
         Currently
-      </span>
+      </h2>
       <div className="curr-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
         {CARDS.map((c, i) => <CurrCard key={i} c={c} i={i} />)}
       </div>

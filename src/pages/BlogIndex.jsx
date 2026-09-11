@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { POSTS, LAST_UPDATED } from '../data/blog'
 import { YEAR } from '../utils/meta'
@@ -87,7 +87,7 @@ function FeaturedPost({ post }) {
         {post.personal === 'best' && (
           <span style={{
             fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
-            color: '#0a0a0a', background: 'var(--cu)',
+            color: 'var(--bg)', background: 'var(--cu)',
             padding: '3px 10px', borderRadius: '100px', letterSpacing: '0.1em',
           }}>
             my best
@@ -135,7 +135,7 @@ function FeaturedPost({ post }) {
           fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
           fontSize: 'clamp(1.8rem, 3.8vw, 3.8rem)',
           letterSpacing: '-0.025em', lineHeight: 1.07,
-          color: '#fff', marginBottom: '12px',
+          color: 'var(--text)', marginBottom: '12px',
           maxWidth: '680px',
         }}>
           {post.title}
@@ -217,7 +217,7 @@ function SmallCard({ post, delay }) {
           {post.personal === 'best' && (
             <span style={{
               fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
-              color: '#0a0a0a', background: 'var(--cu)',
+              color: 'var(--bg)', background: 'var(--cu)',
               padding: '3px 8px', borderRadius: '100px', letterSpacing: '0.06em',
             }}>
               my best
@@ -285,11 +285,6 @@ function SmallCard({ post, delay }) {
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function BlogIndex() {
-  useEffect(() => {
-    document.title = 'Writing — Shoryavardhaan'
-    return () => { document.title = 'Shoryavardhaan Gupta' }
-  }, [])
-
   const [featured, ...rest] = POSTS
 
   return (

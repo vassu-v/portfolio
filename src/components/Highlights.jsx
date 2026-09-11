@@ -11,15 +11,17 @@ function useCountUp(target, prefix = '', suffix = '', duration = 2000, start = f
   useEffect(() => {
     if (!start) return
     let startTime = null
+    let raf
     const run = (ts) => {
       if (!startTime) startTime = ts
       const p = Math.min((ts - startTime) / duration, 1)
       const ease = p * (2 - p)
       setVal(prefix + Math.floor(ease * target).toLocaleString() + suffix)
-      if (p < 1) requestAnimationFrame(run)
+      if (p < 1) raf = requestAnimationFrame(run)
       else setVal(prefix + target.toLocaleString() + suffix)
     }
-    requestAnimationFrame(run)
+    raf = requestAnimationFrame(run)
+    return () => cancelAnimationFrame(raf)
   }, [start])
   return val
 }

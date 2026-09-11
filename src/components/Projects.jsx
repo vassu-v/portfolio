@@ -129,7 +129,7 @@ const STACKED = [
   { x:  1, y: -2, rotate:  9  },
 ]
 
-function ScatterStack({ images, name }) {
+function ScatterStack({ images }) {
   const [out, setOut]           = useState(false)
   const [lightboxSrc, setLightboxSrc] = useState(null)
   const visible = images.slice(0, 3)
@@ -274,7 +274,7 @@ function DetailPanel({ project, onNavigate }) {
       </motion.button>
 
       {/* Photo scatter stack */}
-      {images?.length > 0 && <ScatterStack images={images} name={project.name} />}
+      {images?.length > 0 && <ScatterStack images={images} />}
 
       {/* Bottom rule */}
       <motion.div

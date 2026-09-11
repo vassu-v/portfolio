@@ -242,7 +242,7 @@ function Panel({ exp }) {
               display: 'inline-flex', alignItems: 'center', gap: '10px',
               fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem',
               letterSpacing: '0.08em', textTransform: 'uppercase',
-              color: '#0a0a0a', background: 'var(--cu)',
+              color: 'var(--bg)', background: 'var(--cu)',
               padding: '12px 24px', borderRadius: '6px',
               textDecoration: 'none', marginTop: '24px',
               border: '1px solid transparent',
@@ -389,7 +389,7 @@ function MobileCard({ exp }) {
             display: 'inline-flex', alignItems: 'center', gap: '9px',
             fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: '#0a0a0a', background: 'var(--cu)',
+            color: 'var(--bg)', background: 'var(--cu)',
             padding: '10px 20px', borderRadius: '6px',
             textDecoration: 'none', marginTop: '18px',
             border: '1px solid transparent',
@@ -451,16 +451,17 @@ function TabletExperience() {
   const [activeIdx, setActiveIdx] = useState(0)
 
   return (
-    <div id="experience" style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
 
-      <div style={{
+      <h2 style={{
         position: 'absolute', top: '24px', left: 'var(--pad)',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: 500,
-        letterSpacing: '0.18em', textTransform: 'uppercase',
-        color: 'var(--text)', zIndex: 10, pointerEvents: 'none',
+        fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
+        fontSize: 'clamp(1.4rem, 2.4vw, 2rem)',
+        letterSpacing: '-0.025em', lineHeight: 1,
+        color: 'var(--text2)', zIndex: 10, pointerEvents: 'none',
       }}>
         Experience
-      </div>
+      </h2>
 
       <motion.div
         animate={{ x: `${-activeIdx * 100}vw` }}
@@ -552,17 +553,18 @@ export default function Experience() {
   // ── Portrait (phone + portrait tablet): stacked cards ─────────────────────
   if (isMobile) {
     return (
-      <div id="experience" style={{ paddingBottom: '8px' }}>
+      <div style={{ paddingBottom: '8px' }}>
         <div style={{
           padding: '48px var(--pad) 24px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
         }}>
-          <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: 500,
-            letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text)',
+          <h2 style={{
+            fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
+            fontSize: 'clamp(1.6rem, 6vw, 2rem)',
+            letterSpacing: '-0.025em', lineHeight: 1, color: 'var(--text2)',
           }}>
             Experience
-          </span>
+          </h2>
           <span style={{
             fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem',
             letterSpacing: '0.08em', color: 'var(--text3)',
@@ -582,14 +584,15 @@ export default function Experience() {
   return (
     <div id="experience" ref={containerRef} style={{ height: `${TOTAL * 100}vh`, position: 'relative' }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', perspective: '1200px' }}>
-        <div style={{
+        <h2 style={{
           position: 'absolute', top: '24px', left: 'var(--pad)',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: 500,
-          letterSpacing: '0.18em', textTransform: 'uppercase',
-          color: 'var(--text)', zIndex: 10, pointerEvents: 'none',
+          fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300,
+          fontSize: 'clamp(1.4rem, 2.4vw, 2rem)',
+          letterSpacing: '-0.025em', lineHeight: 1,
+          color: 'var(--text2)', zIndex: 10, pointerEvents: 'none',
         }}>
           Experience
-        </div>
+        </h2>
 
         <div style={{
           position: 'absolute', top: '26px', right: 'var(--pad)',

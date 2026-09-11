@@ -245,7 +245,7 @@ export default function ProjectPage({ slug }) {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '10px',
                 fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem',
-                letterSpacing: '0.06em', color: '#0a0a0a',
+                letterSpacing: '0.06em', color: 'var(--bg)',
                 background: 'var(--cu)', padding: '12px 26px', borderRadius: '5px',
                 textDecoration: 'none', transition: 'background 0.2s, transform 0.2s',
               }}
