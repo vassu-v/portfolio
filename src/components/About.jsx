@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRoute } from '../router'
+import { AGE } from '../utils/meta'
 
 function ScrollReveal({ children, yFrom = 36, xFrom = 0, style }) {
   const ref = useRef(null)
@@ -88,9 +89,9 @@ export default function About() {
           </ScrollReveal>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <ReadingPara>At 16, in 11th grade navigating PCM, while leading <strong><InlineLink href="https://gobitsnbytes.org/" external>Bits&amp;Bytes Kolkata</InlineLink></strong>, consulting at <strong><InlineLink href="https://4mq.org/" external>4MQ.org</InlineLink></strong>, and building open-source tools that solve real gaps, not demo projects.</ReadingPara>
+            <ReadingPara>At {AGE}, in 11th grade navigating PCM, while leading <strong><InlineLink href="https://gobitsnbytes.org/" external>Bits&amp;Bytes Kolkata</InlineLink></strong>, consulting at <strong><InlineLink href="https://4mq.org/" external>4MQ.org</InlineLink></strong>, and building open-source tools that solve real gaps, not demo projects.</ReadingPara>
             <ReadingPara>Work spans hardware (<InlineLink href="/project/lifi-network">LiFi mesh networks</InlineLink>, <InlineLink href="/project/chemx">Arduino reaction simulators</InlineLink>), AI research (<InlineLink href="/project/planning-research">planning systems and grounding failures on Zenodo</InlineLink>), and product — <InlineLink href="/project/buy4chai">Buy4Chai</InlineLink> for India's Stripe exclusion problem, <InlineLink href="/project/sarkarsathi">SarkarSathi</InlineLink> for civic accountability. The thread: constraint thinking. Building the right thing with what's actually available.</ReadingPara>
-            <ReadingPara>Published research at 15. National ideathon recognition. First international payment from Kolkata. None of it felt like an achievement at the time. It felt like the next thing to figure out.</ReadingPara>
+            <ReadingPara>Researching AI planning failures since 15. National ideathon recognition. First international payment from Kolkata. None of it felt like an achievement at the time. It felt like the next thing to figure out.</ReadingPara>
 
           </div>
         </div>

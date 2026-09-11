@@ -33,19 +33,6 @@ export const EXP = [
   },
   {
     n: '03',
-    org: 'Freelance',
-    live: true,
-    primaryRole: 'UI & Landing Page Design',
-    type: 'Freelance',
-    period: 'Mar 2026 – Present',
-    desc: 'Building landing pages and UI systems for lead conversion. Brand positioning, conversion optimization, maintenance-based pricing.',
-    skills: ['UI Design', 'Conversion', 'Brand Positioning'],
-    cta: { label: 'Book a call', href: 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true' },
-    hire: true,
-    extra: null,
-  },
-  {
-    n: '04',
     org: 'Beyond Rote',
     live: false,
     primaryRole: 'Research & Outreach Lead',
@@ -56,7 +43,7 @@ export const EXP = [
     extra: null,
   },
   {
-    n: '05',
+    n: '04',
     org: 'Utsavy',
     live: false,
     primaryRole: 'Experience Designer, UI/UX',
@@ -64,6 +51,19 @@ export const EXP = [
     period: 'Jun – Jul 2025',
     desc: 'Designed UX workflows and interface templates for an event management platform. Custom designs increased inquiry submissions by 20%. Designed AI prompts and onboarding flows. Trained incoming interns on the design system.',
     skills: ['UX Design', 'AI Prompting', 'Mentoring'],
+    extra: null,
+  },
+  {
+    n: '05',
+    org: 'Freelance',
+    live: true,
+    primaryRole: 'UI & Landing Page Design',
+    type: 'Freelance',
+    period: 'Mar 2026 – Present',
+    desc: 'Building landing pages and UI systems for lead conversion. Brand positioning, conversion optimization, maintenance-based pricing.',
+    skills: ['UI Design', 'Conversion', 'Brand Positioning'],
+    cta: { label: 'Book a call', href: 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true' },
+    hire: true,
     extra: null,
   },
 ]
@@ -516,6 +516,19 @@ export default function Experience() {
   const tilt = useTransform(velocity, [-0.8, 0, 0.8], [6, 0, -6])
   const springTilt = useSpring(tilt, { stiffness: 200, damping: 25 })
 
+  // Skip control — this section is scroll-jacked (5x a normal section's
+  // height), so give people a way out. It jumps to the LAST panel (the
+  // freelance/hire pitch), not past the section entirely — the one thing
+  // in here that shouldn't be skippable.
+  const skipOpacity = useTransform(scrollYProgress, [0.15, 0.22, 0.85, 0.93], [0, 1, 1, 0])
+  const skipPointerEvents = useTransform(scrollYProgress, v => (v > 0.15 && v < 0.93) ? 'auto' : 'none')
+  const skipToEnd = () => {
+    const el = containerRef.current
+    if (!el) return
+    const target = el.offsetTop + el.offsetHeight - window.innerHeight
+    window.scrollTo({ top: target, behavior: 'smooth' })
+  }
+
   // ── Portrait (phone + portrait tablet): stacked cards ─────────────────────
   if (isMobile) {
     return (
@@ -570,6 +583,29 @@ export default function Experience() {
             <path d="M1 4.5h20M16 1l5 3.5-5 3.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
+
+        <motion.button
+          onClick={skipToEnd}
+          style={{
+            opacity: skipOpacity, pointerEvents: skipPointerEvents,
+            position: 'absolute', top: '54px', right: 'var(--pad)',
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--text3)', background: 'none',
+            border: '1px solid var(--border)', borderRadius: '100px',
+            padding: '6px 12px', cursor: 'none',
+            transition: 'color 0.2s, border-color 0.2s',
+            zIndex: 10,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu-b)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+        >
+          skip
+          <svg width="10" height="9" viewBox="0 0 22 9" fill="none">
+            <path d="M1 4.5h20M16 1l5 3.5-5 3.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </motion.button>
 
         <motion.div style={{
           x,
