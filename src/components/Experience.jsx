@@ -618,12 +618,12 @@ export default function Experience() {
             onClick={skipToEnd}
             style={{
               opacity: skipOpacity, pointerEvents: skipPointerEvents,
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
               fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
               letterSpacing: '0.08em', textTransform: 'uppercase',
               color: 'var(--text3)', background: 'none',
               border: '1px solid var(--border)', borderRadius: '100px',
-              padding: '6px 12px', cursor: 'none', flexShrink: 0,
+              padding: '10px 18px', minHeight: '40px', cursor: 'none', flexShrink: 0,
               transition: 'color 0.2s, border-color 0.2s',
             }}
             onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu-b)' }}
