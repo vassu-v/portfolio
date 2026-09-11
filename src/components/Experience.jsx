@@ -454,10 +454,10 @@ function TabletExperience() {
     <div id="experience" style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
 
       <div style={{
-        position: 'absolute', top: '28px', left: 'var(--pad)',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
-        letterSpacing: '0.22em', textTransform: 'uppercase',
-        color: 'var(--text3)', zIndex: 10, pointerEvents: 'none',
+        position: 'absolute', top: '24px', left: 'var(--pad)',
+        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: 500,
+        letterSpacing: '0.18em', textTransform: 'uppercase',
+        color: 'var(--text)', zIndex: 10, pointerEvents: 'none',
       }}>
         Experience
       </div>
@@ -527,12 +527,17 @@ export default function Experience() {
   const skipToEnd = () => {
     const el = containerRef.current
     if (!el) return
-    // Deliberately overshoot rather than computing offsetHeight - innerHeight
-    // exactly — that calculation can undershoot the scroll range Framer
-    // Motion's own useScroll measured internally by a few px, which stops
-    // scrollYProgress from ever reaching a clean 1.0 and leaves the last
-    // panel not fully snapped in. The event handler in App.jsx clamps to
-    // the real max, so overshooting here is always safe.
+    // el.offsetTop + el.offsetHeight - innerHeight is exactly progress 1.0
+    // within this pinned section — do NOT overshoot past that. An earlier
+    // version deliberately overshot (offsetTop + offsetHeight, no
+    // - innerHeight) on the theory that Framer Motion's own scroll
+    // measurement could undershoot by a few px — that was a misdiagnosis.
+    // The real bug at the time was the RAF-loop-fighting issue below; once
+    // that was fixed, the imperfect snap went away too. The overshoot then
+    // became actively harmful: the clamp in App.jsx's event handler clamps
+    // to the whole PAGE's max scroll, which is well past the end of this
+    // section (Projects/Blog/etc. still follow it), so it was scrolling
+    // straight out of the section instead of landing on the last panel.
     //
     // Must go through this custom event, NOT window.scrollTo() directly —
     // App.jsx runs its own RAF-driven smooth-scroll loop on desktop that
@@ -540,7 +545,7 @@ export default function Experience() {
     // every frame. A raw scrollTo() gets silently fought and undone almost
     // immediately by that loop; dispatching this event updates targetY
     // itself so the two systems agree instead of fighting.
-    const target = el.offsetTop + el.offsetHeight
+    const target = el.offsetTop + el.offsetHeight - window.innerHeight
     window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: target }))
   }
 
@@ -553,8 +558,8 @@ export default function Experience() {
           display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
         }}>
           <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
-            letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--text3)',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: 500,
+            letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text)',
           }}>
             Experience
           </span>
@@ -578,10 +583,10 @@ export default function Experience() {
     <div id="experience" ref={containerRef} style={{ height: `${TOTAL * 100}vh`, position: 'relative' }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', perspective: '1200px' }}>
         <div style={{
-          position: 'absolute', top: '28px', left: 'var(--pad)',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
-          letterSpacing: '0.22em', textTransform: 'uppercase',
-          color: 'var(--text3)', zIndex: 10, pointerEvents: 'none',
+          position: 'absolute', top: '24px', left: 'var(--pad)',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', fontWeight: 500,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: 'var(--text)', zIndex: 10, pointerEvents: 'none',
         }}>
           Experience
         </div>

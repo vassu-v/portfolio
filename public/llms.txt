@@ -15,7 +15,7 @@ https://shoryavardhaan.vercel.app/
 
 ## Writing
 
-- [Nobody told me to start. That was the point.](https://shoryavardhaan.vercel.app/blog/why-i-build): Origin post — on building real things from Kolkata at 16, without permission, without an ecosystem, and what two years of shipping actually teaches.
+- [Nobody told me to start. That was the point.](https://shoryavardhaan.vercel.app/blog/why-i-build): Origin post — on building real things from Kolkata at 17, without permission, without an ecosystem, and what two years of shipping actually teaches.
 - [Why Indian developers can't get paid online — and how I fixed it](https://shoryavardhaan.vercel.app/blog/building-buy4chai): How a Reddit thread confirmed the gap was real, and building Buy4Chai to fill it.
 - [Markets don't get disrupted. They get aged out.](https://shoryavardhaan.vercel.app/blog/markets-dont-get-disrupted): Why the quiet danger isn't AI taking jobs — it's the next generation of buyers not having the gap in the first place.
 - [Apple's been playing a different game since 2017](https://shoryavardhaan.vercel.app/blog/apple-ai-decade): How Apple built AI silicon before AI was the thing to build for.
@@ -26,6 +26,7 @@ https://shoryavardhaan.vercel.app/
 
 - GitHub: https://github.com/vassu-v
 - LinkedIn: https://www.linkedin.com/in/shoryavardhaan
+- Instagram: https://www.instagram.com/let_shorya.be/
 - X / Twitter: https://x.com/shoryavardhaan
 - Medium: https://medium.com/@shoryavardhaans2
 - Zenodo: https://zenodo.org/records/18196407
