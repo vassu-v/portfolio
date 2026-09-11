@@ -525,7 +525,13 @@ export default function Experience() {
   const skipToEnd = () => {
     const el = containerRef.current
     if (!el) return
-    const target = el.offsetTop + el.offsetHeight - window.innerHeight
+    // Deliberately overshoot rather than computing offsetHeight - innerHeight
+    // exactly — that calculation can undershoot the scroll range Framer
+    // Motion's own useScroll measured internally by a few px, which stops
+    // scrollYProgress from ever reaching a clean 1.0 and leaves the last
+    // panel not fully snapped in. window.scrollTo clamps to the real max
+    // automatically, so overshooting is always safe.
+    const target = el.offsetTop + el.offsetHeight
     window.scrollTo({ top: target, behavior: 'smooth' })
   }
 
@@ -584,29 +590,6 @@ export default function Experience() {
           </svg>
         </div>
 
-        <motion.button
-          onClick={skipToEnd}
-          style={{
-            opacity: skipOpacity, pointerEvents: skipPointerEvents,
-            position: 'absolute', top: '54px', right: 'var(--pad)',
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: 'var(--text3)', background: 'none',
-            border: '1px solid var(--border)', borderRadius: '100px',
-            padding: '6px 12px', cursor: 'none',
-            transition: 'color 0.2s, border-color 0.2s',
-            zIndex: 10,
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu-b)' }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border)' }}
-        >
-          skip
-          <svg width="10" height="9" viewBox="0 0 22 9" fill="none">
-            <path d="M1 4.5h20M16 1l5 3.5-5 3.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </motion.button>
-
         <motion.div style={{
           x,
           rotateY: springTilt,
@@ -631,6 +614,26 @@ export default function Experience() {
             <motion.div style={{ position: 'absolute', left: 0, top: 0, height: '100%', background: 'var(--cu)', width: barWidth }} />
           </div>
           <ProgressDots scrollYProgress={springProgress} />
+          <motion.button
+            onClick={skipToEnd}
+            style={{
+              opacity: skipOpacity, pointerEvents: skipPointerEvents,
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+              color: 'var(--text3)', background: 'none',
+              border: '1px solid var(--border)', borderRadius: '100px',
+              padding: '6px 12px', cursor: 'none', flexShrink: 0,
+              transition: 'color 0.2s, border-color 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu-b)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+          >
+            skip
+            <svg width="10" height="9" viewBox="0 0 22 9" fill="none">
+              <path d="M1 4.5h20M16 1l5 3.5-5 3.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.button>
         </div>
       </div>
     </div>
