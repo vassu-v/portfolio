@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useRoute } from '../router'
 import { PROJECTS, getProject } from '../data/projects'
@@ -135,11 +135,6 @@ export default function ProjectPage({ slug }) {
   const { navigate } = useRoute()
   const project = getProject(slug)
   const [lightboxSrc, setLightboxSrc] = useState(null)
-
-  useEffect(() => {
-    if (project) document.title = `${project.name} — Shoryavardhaan`
-    return () => { document.title = 'Shoryavardhaan Gupta' }
-  }, [project])
 
   if (!project) {
     return (
@@ -346,7 +341,7 @@ export default function ProjectPage({ slug }) {
                 In the wild
               </div>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                {project.images.map((src, i) => (
+                {project.images.map(({ src, alt }, i) => (
                   <motion.div
                     key={src}
                     initial={{ opacity: 0, y: 16 }}
@@ -365,7 +360,7 @@ export default function ProjectPage({ slug }) {
                     }}
                   >
                     <img
-                      src={src} alt={`${name} — image ${i + 1}`}
+                      src={src} alt={alt}
                       loading="lazy"
                       style={{ width: '220px', height: '140px', objectFit: 'cover', display: 'block' }}
                     />

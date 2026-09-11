@@ -1,6 +1,21 @@
+// Generates public/project/<slug>/index.html for every project in
+// src/data/projects.js.
+//
+// Like the blog generator, this fully regenerates every file from a single
+// source of truth. public/project/<slug>/index.html's <div id="root"> is
+// filled with the REAL src/pages/ProjectPage.jsx component, server-rendered
+// via scripts/prerender.mjs (Vite SSR + react-dom/server) — the exact same
+// component the live SPA uses, so static and live content can never
+// disagree. This replaced an earlier design where #root was left empty and
+// crawler-visible content was a hand-written <noscript> paraphrase of
+// problem/solution/how/impact — that could drift from the live page the
+// same way the old blog static shells could, so it's gone now too.
+//
+// Adding a new project is just: add an entry to PROJECTS, run this script.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { createPrerenderer } from './prerender.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = join(__dirname, '..')
@@ -24,127 +39,122 @@ function schemaType(project) {
   return 'SoftwareApplication'
 }
 
-function paragraphs(text) {
-  return String(text ?? '')
-    .split(/\n\n+/)
-    .map(p => `        <p>${escapeHtml(p.trim())}</p>`)
-    .join('\n')
+// Pulled straight from src/index.css so the pre-hydration paint uses the
+// exact same design tokens as the live site — see generate-blog-static.mjs
+// for the same pattern and why it matters.
+const indexCss = readFileSync(join(root, 'src', 'index.css'), 'utf8')
+const rootBlockMatch = indexCss.match(/:root\s*\{[\s\S]*?\n\}/)
+if (!rootBlockMatch) throw new Error('Could not find :root block in src/index.css')
+const rootBlock = rootBlockMatch[0]
+
+// Mirrors the project branch of the SPA's per-route meta effect in
+// src/App.jsx — same canonical URL, so a crawler with or without JS must
+// see identical title/description/JSON-LD either way.
+function metaFor(project) {
+  const url = `${BASE_URL}/project/${project.slug}`
+  const title = `${project.name} | ${BASE_NAME}`
+  const img = project.images?.[0] ? `${BASE_URL}${project.images[0].src}` : `${BASE_URL}/og-image.png`
+  const jsonld = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': schemaType(project),
+        '@id': url,
+        name: project.name,
+        description: project.desc,
+        url,
+        author: { '@type': 'Person', '@id': `${BASE_URL}/#person`, name: BASE_NAME },
+        keywords: project.tags ?? [],
+        ...(project.github ? { codeRepository: project.github } : {}),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+          { '@type': 'ListItem', position: 2, name: project.name, item: url },
+        ],
+      },
+    ],
+  }
+  return { title, desc: project.tagline, url, img, jsonld }
 }
 
-function projectHtml(project) {
-  const url = `${BASE_URL}/project/${project.slug}`
-  const type = schemaType(project)
-  // Must match the SPA's per-route meta in src/App.jsx exactly — same canonical
-  // URL, so crawlers with and without JS need to see the same title/description.
-  const title = `${project.name} | ${BASE_NAME}`
-  const links = []
-  if (project.github) links.push(`<p><a href="${escapeHtml(project.github)}">GitHub →</a></p>`)
-  if (project.live) links.push(`<p><a href="${escapeHtml(project.live)}">${escapeHtml(project.liveLabel ?? 'View live →')}</a></p>`)
-  links.push(`<p><a href="${BASE_URL}/">← Back to portfolio</a></p>`)
-
+function pageHtml({ title, desc, url, img, jsonld, bodyHtml }) {
   return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHtml(title)}</title>
-
-    <meta name="description" content="${escapeHtml(project.tagline)}" />
-    <meta name="author" content="${escapeHtml(BASE_NAME)}" />
-    <link rel="canonical" href="${url}" />
-
-    <meta property="og:type"        content="website" />
-    <meta property="og:url"         content="${url}" />
-    <meta property="og:title"       content="${escapeHtml(title)}" />
-    <meta property="og:description" content="${escapeHtml(project.tagline)}" />
-    <meta property="og:image"       content="${project.images?.[0] ? BASE_URL + project.images[0] : BASE_URL + '/og-image.png'}" />
-    <meta property="og:site_name"   content="${escapeHtml(BASE_NAME)}" />
-
-    <meta name="twitter:card"        content="summary_large_image" />
-    <meta name="twitter:url"         content="${url}" />
-    <meta name="twitter:title"       content="${escapeHtml(title)}" />
-    <meta name="twitter:description" content="${escapeHtml(project.tagline)}" />
-    <meta name="twitter:image"       content="${project.images?.[0] ? BASE_URL + project.images[0] : BASE_URL + '/og-image.png'}" />
-    <meta name="twitter:creator"     content="@shoryavardhaan" />
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "${type}",
-          "@id": "${url}",
-          "name": ${JSON.stringify(project.name)},
-          "description": ${JSON.stringify(project.desc)},
-          "url": "${url}",
-          "author": { "@type": "Person", "@id": "${BASE_URL}/#person", "name": ${JSON.stringify(BASE_NAME)} },
-          "keywords": ${JSON.stringify(project.tags ?? [])}${project.github ? `,\n          "codeRepository": ${JSON.stringify(project.github)}` : ''}
-        },
-        {
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "${BASE_URL}/" },
-            { "@type": "ListItem", "position": 2, "name": ${JSON.stringify(project.name)}, "item": "${url}" }
-          ]
-        }
-      ]
-    }
-    </script>
-
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    <noscript>
-      <article>
-        <h1>${escapeHtml(project.name)}</h1>
-        <p>${escapeHtml(project.tagline)} · ${escapeHtml(project.period ?? '')}</p>
-        <p>Tags: ${escapeHtml((project.tags ?? []).join(', '))}</p>
-        <p><strong>${escapeHtml(project.stat ?? '')}</strong></p>
-
-        <h2>The problem</h2>
-${paragraphs(project.problem)}
-
-        <h2>What it does</h2>
-${paragraphs(project.solution)}
-
-        <h2>How it works</h2>
-        <ul>
-${(project.how ?? []).map(h => `          <li><strong>${escapeHtml(h.label)}:</strong> ${escapeHtml(h.text)}</li>`).join('\n')}
-        </ul>
-
-        <h2>Impact</h2>
-        <ul>
-${(project.impact ?? []).map(i => `          <li>${escapeHtml(i.val)} — ${escapeHtml(i.label)}</li>`).join('\n')}
-        </ul>
-
-        ${links.join('\n        ')}
-      </article>
-    </noscript>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(desc)}" />
+  <meta name="author" content="${escapeHtml(BASE_NAME)}" />
+  <link rel="canonical" href="${url}" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="${url}" />
+  <meta property="og:title"       content="${escapeHtml(title)}" />
+  <meta property="og:description" content="${escapeHtml(desc)}" />
+  <meta property="og:image"       content="${img}" />
+  <meta property="og:site_name"   content="${escapeHtml(BASE_NAME)}" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:url"         content="${url}" />
+  <meta name="twitter:title"       content="${escapeHtml(title)}" />
+  <meta name="twitter:description" content="${escapeHtml(desc)}" />
+  <meta name="twitter:image"       content="${img}" />
+  <meta name="twitter:creator"     content="@shoryavardhaan" />
+  <script type="application/ld+json">
+${JSON.stringify(jsonld, null, 2)}
+  </script>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    ${rootBlock}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip;cursor:auto}
+  </style>
+</head>
+<body>
+  <div id="root">${bodyHtml}</div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
 </html>
 `
 }
 
-let created = 0
-for (const project of PROJECTS) {
-  const dir = join(projectDir, project.slug)
-  const file = join(dir, 'index.html')
-  if (existsSync(file)) {
-    console.log(`Skip (already exists, hand-maintained): ${project.slug}/index.html`)
-    continue
-  }
-  mkdirSync(dir, { recursive: true })
-  writeFileSync(file, projectHtml(project))
-  console.log(`Created: project/${project.slug}/index.html`)
-  created++
+const onlySlug = process.argv[2]
+const targets = onlySlug ? PROJECTS.filter(p => p.slug === onlySlug) : PROJECTS
+if (onlySlug && targets.length === 0) {
+  console.error(`No project with slug "${onlySlug}" found in projects.js`)
+  process.exit(1)
 }
+
+const { renderProject, close } = await createPrerenderer()
+
+let created = 0, updated = 0, unchanged = 0
+for (const project of targets) {
+  const meta = metaFor(project)
+  const bodyHtml = await renderProject(project.slug)
+  const html = pageHtml({ ...meta, bodyHtml })
+
+  const dir = join(projectDir, project.slug)
+  mkdirSync(dir, { recursive: true })
+  const file = join(dir, 'index.html')
+  const existing = existsSync(file) ? readFileSync(file, 'utf8') : null
+
+  if (existing === html) {
+    console.log(`Unchanged: project/${project.slug}/index.html`)
+    unchanged++
+  } else {
+    writeFileSync(file, html)
+    console.log(`${existing === null ? 'Created' : 'Updated'}: project/${project.slug}/index.html`)
+    existing === null ? created++ : updated++
+  }
+}
+
+await close()
 
 // ── Regenerate sitemap.xml from PROJECTS + POSTS so new content is never
 // forgotten (previously hand-maintained, per SEO audit finding #7). ──
@@ -169,4 +179,4 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://w
 writeFileSync(join(root, 'public', 'sitemap.xml'), sitemap)
 console.log('Regenerated: public/sitemap.xml')
 
-console.log(created > 0 ? `Done — ${created} project page(s) created.` : 'Done — no new project pages needed.')
+console.log(`Done — ${created} created, ${updated} updated, ${unchanged} unchanged.`)

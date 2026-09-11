@@ -120,8 +120,8 @@ Append to the `PROJECTS` array:
   ],
 
   images: [
-    '/projects/myproject_screenshot1.png',  // first image = main scatter stack photo
-    '/projects/myproject_screenshot2.png',
+    { src: '/projects/myproject_screenshot1.png', alt: 'Describe exactly what this screenshot shows' },  // first image = main scatter stack photo
+    { src: '/projects/myproject_screenshot2.png', alt: 'Describe exactly what this screenshot shows' },
   ],
 
   impact: [
@@ -180,7 +180,7 @@ The horizontal scroll section automatically adjusts — adding an entry creates 
   border: 'var(--border)',           // card border color
   bg: 'rgba(255,255,255,0.025)',     // card background
   images: [                          // optional polaroid photos that appear on hover
-    { src: '/image.jpg', rotate: 6, top: '-44px', right: '-18px' },
+    { src: '/image.jpg', alt: 'Describe exactly what this photo shows', rotate: 6, top: '-44px', right: '-18px' },
   ],
 },
 ```
@@ -210,8 +210,8 @@ bottom: <StatCard id="unique-id" target={1249} prefix="" color="var(--cu)" />,
 
 ```js
 images: [
-  { src: '/path.jpg', rotate: 8, top: '-42px', right: '-18px' },   // top-right
-  { src: '/path.jpg', rotate: -6, bottom: '-36px', left: '-14px' }, // bottom-left
+  { src: '/path.jpg', alt: 'Describe exactly what this photo shows', rotate: 8, top: '-42px', right: '-18px' },   // top-right
+  { src: '/path.jpg', alt: 'Describe exactly what this photo shows', rotate: -6, bottom: '-36px', left: '-14px' }, // bottom-left
 ],
 ```
 
@@ -344,5 +344,6 @@ No router config to update — slugs in the data files are the URLs.
 1. Put screenshots in `public/projects/projectname_desc.png`
 2. Open `src/data/projects.js`
 3. Append a new object to `PROJECTS` (copy the template from Section 2 above)
-4. Fill all fields including `problem`, `solution`, `how`, `images`, `impact`
+4. Fill all fields including `problem`, `solution`, `how`, `impact`, and `images: [{ src, alt }, ...]` — write real, specific `alt` text for each image (what's actually shown), not a generic placeholder
 5. Save — the project appears in the portfolio list and at `/project/your-slug`
+6. Run `npm run generate:projects` — generates the static, crawler-visible `public/project/your-slug/index.html` and re-syncs the sitemap (see CLAUDE.md "Static blog + project pages")

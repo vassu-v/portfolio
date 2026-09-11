@@ -19,6 +19,7 @@ import DeskBackdrop from './three/DeskBackdrop'
 import ProjectPage from './pages/ProjectPage'
 import BlogPost from './pages/BlogPost'
 import BlogIndex from './pages/BlogIndex'
+import { AGE } from './utils/meta'
 
 // Section → cursor RGB color map
 const SECTION_COLORS = {
@@ -103,7 +104,7 @@ function AppShell() {
   useEffect(() => {
     const BASE      = 'Shoryavardhaan Gupta'
     const BASE_URL  = 'https://shoryavardhaan.vercel.app'
-    const BASE_DESC = '16-year-old builder from Kolkata shipping civic tech, hardware, and AI. Projects live in the real world, not just on GitHub.'
+    const BASE_DESC = `${AGE}-year-old builder from Kolkata shipping civic tech, hardware, and AI. Projects live in the real world, not just on GitHub.`
     const BASE_IMG  = `${BASE_URL}/og-image.png`
 
     let title = BASE, desc = BASE_DESC, url = BASE_URL, img = BASE_IMG, jsonld = null
@@ -115,7 +116,7 @@ function AppShell() {
         title = `${proj.name} | ${BASE}`
         desc  = proj.tagline
         url   = `${BASE_URL}/project/${proj.slug}`
-        img   = proj.images?.[0] ? `${BASE_URL}${proj.images[0]}` : BASE_IMG
+        img   = proj.images?.[0] ? `${BASE_URL}${proj.images[0].src}` : BASE_IMG
         jsonld = {
           '@context': 'https://schema.org',
           '@graph': [
@@ -161,6 +162,7 @@ function AppShell() {
               publisher: { '@type': 'Person', name: BASE, url: BASE_URL },
               mainEntityOfPage: { '@type': 'WebPage', '@id': url },
               inLanguage: 'en-IN',
+              keywords: post.keywords ?? [],
             },
             { '@type': 'BreadcrumbList', itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
@@ -183,6 +185,12 @@ function AppShell() {
         url,
         author: { '@type': 'Person', '@id': `${BASE_URL}/#person` },
         inLanguage: 'en-IN',
+        blogPost: POSTS.map(p => ({
+          '@type': 'BlogPosting',
+          headline: p.title,
+          url: `${BASE_URL}/blog/${p.slug}`,
+          datePublished: p.isoDate ?? p.date,
+        })),
       }
     } else if (path !== '/') {
       is404 = true

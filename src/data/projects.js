@@ -29,9 +29,9 @@ The name is deliberately local. A cup of chai is what you actually get in Kolkat
     ],
 
     images: [
-      '/projects/buy4chai_live.png',
-      '/projects/buy4chai_readme.png',
-      '/projects/buy4chai_community.png',
+      { src: '/projects/buy4chai_live.png', alt: 'Buy4Chai live supporter page showing the "Buy me a chai" checkout button and profile header' },
+      { src: '/projects/buy4chai_readme.png', alt: 'Buy4Chai GitHub README with the project tagline, tech stack badges, and quick-start links' },
+      { src: '/projects/buy4chai_community.png', alt: 'Reddit and X posts from developers reacting positively to Buy4Chai after its launch' },
     ],
 
     impact: [
@@ -73,7 +73,7 @@ Built this as the sole technical member on a 5-person remote team. During board 
     ],
 
     images: [
-      '/projects/sarkarsathi_cm.jpg',
+      { src: '/projects/sarkarsathi_cm.jpg', alt: 'Team demoing SarkarSathi on laptops to West Bengal officials at the India Innovates 2026 exhibition' },
     ],
 
     impact: [
@@ -113,9 +113,9 @@ The system operates entirely off-grid. No power grid dependency. No mobile netwo
     ],
 
     images: [
-      '/projects/lifi_exhibit.jpeg',
-      '/projects/lifi_slide.jpeg',
-      '/projects/lifi_report.png',
+      { src: '/projects/lifi_exhibit.jpeg', alt: 'D-LiFi-Proto exhibition table with the mesh-node prototype, laptop demo, and printed project poster' },
+      { src: '/projects/lifi_slide.jpeg', alt: 'Title slide for the Disaster-Resilient Communication System presentation, South Point High School' },
+      { src: '/projects/lifi_report.png', alt: 'Excerpt from the project report listing the rationale, scientific principles, and hardware materials used' },
     ],
 
     impact: [

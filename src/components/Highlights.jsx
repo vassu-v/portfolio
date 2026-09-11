@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useContext, createContext } from 'react'
 import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Lightbox from './Lightbox'
 import CRTMonitor from './CRTMonitor'
+import { AGE } from '../utils/meta'
 
 const HoveredImageContext = createContext({ hoveredSrc: null, setHoveredSrc: () => {} })
 
@@ -47,7 +48,7 @@ const CARDS = [
     bottom: <span style={{ fontFamily: 'Instrument Serif, serif', fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--go)' }}>Top 1k</span>,
     border: 'var(--go-b)', bg: 'var(--go-d)',
     images: [
-      { src: '/projects/sarkarsathi_cm.jpg', rotate: 6, top: '-44px', right: '-18px' },
+      { src: '/projects/sarkarsathi_cm.jpg', alt: 'Officials watching a SarkarSathi demo on a laptop at the India Innovates 2026 exhibition', rotate: 6, top: '-44px', right: '-18px' },
     ],
   },
   {
@@ -69,7 +70,7 @@ const CARDS = [
   },
   { gram: true, cls: 'r2' },
   {
-    cls: '', label: 'International Payments Processed', title: 'From Kolkata. Age 16.',
+    cls: '', label: 'International Payments Processed', title: `From Kolkata. Age ${AGE}.`,
     bottom: <StatCard id="c-pay" target={300} prefix="$" color="var(--text)" />,
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
   },
@@ -78,8 +79,8 @@ const CARDS = [
     desc: 'Built real-world systems across CS and electronics under competition constraints.',
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
-      { src: '/dbpc.jpg',    rotate: 8,   top: '-42px', right: '-18px' },
-      { src: '/solder.jpeg', rotate: -6, bottom: '-36px', left: '-14px' },
+      { src: '/dbpc.jpg', alt: 'Receiving the 3rd place Quantum Qubit trophy on stage at Don Bosco School Kolkata', rotate: 8, top: '-42px', right: '-18px' },
+      { src: '/solder.jpeg', alt: 'Soldering workbench with a breadboard, wires, and tools for the Quantum Qubit build', rotate: -6, bottom: '-36px', left: '-14px' },
     ],
   },
   {
@@ -87,7 +88,7 @@ const CARDS = [
     desc: 'Object Commitment as a Diagnostic Pressure Point in Grounded Planning. Exposing failure modes that high success rates hide.',
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
-      { src: '/preprint.jpg', rotate: -7, top: '-42px', right: '-16px' },
+      { src: '/preprint.jpg', alt: 'Title page of the "Object Commitment as a Diagnostic Pressure Point in Grounded Planning" research preprint', rotate: -7, top: '-42px', right: '-16px' },
     ],
   },
   {
@@ -95,7 +96,7 @@ const CARDS = [
     desc: 'Recognized for active participation and winning.',
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
-      { src: '/google.jpeg', rotate: -5, top: '-40px', left: '-14px' },
+      { src: '/google.jpeg', alt: 'Google Cloud Arcade Facilitator swag box received for the program', rotate: -5, top: '-40px', left: '-14px' },
     ],
   },
   {
@@ -103,7 +104,7 @@ const CARDS = [
     desc: 'Youth Ideathon. Top 2,000 → Top 500 with PickedIn.',
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
-      { src: '/syi.webp', rotate: -7, top: '-44px', right: '-16px' },
+      { src: '/syi.webp', alt: '"We Are Champ" Top 500 India graphic from the School Youth Ideathon with portrait photo', rotate: -7, top: '-44px', right: '-16px' },
     ],
   },
   {
@@ -111,7 +112,7 @@ const CARDS = [
     desc: "Wrote, formatted, designed the cover, navigated Amazon's publishing at 14. No AI. Zero sales. Redesigned it a year later. Then sold copies. The lesson wasn't the book. It was finishing.",
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
-      { src: '/amzn.jpeg', rotate: 7, top: '-44px', right: '-18px' },
+      { src: '/amzn.jpeg', alt: 'Amazon Kindle Store listing for the self-published book "7 Days of Motivation"', rotate: 7, top: '-44px', right: '-18px' },
     ],
   },
   { crt: true, cls: '' },
@@ -354,7 +355,7 @@ function BentoCard({ card, index }) {
             <FloatingImg
               key={i}
               src={img.src}
-              alt={`${title} photo ${i + 1}`}
+              alt={img.alt}
               rotate={img.rotate}
               top={img.top}
               right={img.right}

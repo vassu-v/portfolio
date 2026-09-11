@@ -27,6 +27,7 @@ export const POSTS = [
     personal: 'best',
     externalUrl: null,
     platform: null,
+    keywords: ['16 year old developer India', 'student builder Kolkata', 'young developer India', 'building things at 16', 'India Innovates', 'Buy4Chai', 'SarkarSathi'],
     content: [
       { type: 'paragraph', text: 'There\'s a version of this story where I say I always knew I\'d build things. That I was coding at eight. That growing up in Kolkata shaped me in some clean, narratable way. That version is tidy. It\'s also not what happened.' },
       { type: 'paragraph', text: 'What happened is I was 14, bored in a way school couldn\'t fix, and I started solving problems I was actually irritated by. Not with permission. Not with a plan. Just because the alternative (waiting until I had a degree, a job, a title) felt like a waste of time I didn\'t have back.' },
@@ -58,6 +59,7 @@ export const POSTS = [
     personal: 'best',
     externalUrl: null,
     platform: null,
+    keywords: ['Buy4Chai', 'Indian developer payments', 'Razorpay open source', 'UPI supporter page', 'Stripe alternative India', 'Indian indie developer'],
     content: [
       { type: 'paragraph', text: 'A few weeks before shipping, I posted on r/indiandevs asking if anyone else couldn\'t accept support for their open source work without Stripe. 29 upvotes. 33 comments. 9.4K views. Turns out everyone had the same problem and nobody was solving it. Just coping. Workarounds. A quiet acceptance that this is how it is.' },
       { type: 'pullquote', text: 'Buy Me a Coffee? Stripe. Ko-fi? Stripe. GitHub Sponsors? Stripe. PayPal works, but the fees and UX are embarrassing.' },
@@ -83,6 +85,7 @@ export const POSTS = [
     personal: null,
     externalUrl: null,
     platform: null,
+    keywords: ['market disruption', 'AI jobs future', 'freelance economy future', 'generational shift tech', 'builder economy', 'future of work India'],
     content: [
       { type: 'paragraph', text: 'Everyone\'s watching AI take jobs. That\'s the only headline anyone\'s writing. That\'s not where the quiet danger is.' },
       { type: 'paragraph', text: 'The current builder economy runs on a gap. People need things done that they can\'t do themselves. Website? Hire someone. App for the business? Hire someone. That gap is the entire business model of thousands of agencies and freelancers right now.' },
@@ -108,6 +111,7 @@ export const POSTS = [
     personal: null,
     externalUrl: 'https://medium.com/@shoryavardhaans2/the-ai-market-is-quietly-shifting-it-started-a-decade-ago-67201dd22fa5',
     platform: 'Medium',
+    keywords: ['Apple AI silicon', 'Neural Engine history', 'Apple chip advantage', 'on-device AI', 'A11 Bionic', 'tech strategy'],
     content: [
       { type: 'paragraph', text: 'Apple put the entire iPhone Air motherboard inside the camera bump: CPU, everything. The rest is screen and battery. Nobody noticed. Everyone was busy complaining about the charging cable.' },
       { type: 'paragraph', text: 'The AI race didn\'t start when everyone thinks it did. While the whole industry was renting Nvidia GPUs and calling it infrastructure, Apple was quietly building purpose-built AI silicon into every device they shipped. Since 2017. ChatGPT didn\'t exist. The AI boom was years away.' },
@@ -129,6 +133,7 @@ export const POSTS = [
     personal: 'learned',
     externalUrl: 'https://medium.com/p/703a2e7f624d',
     platform: 'Medium',
+    keywords: ['AI coding tools students', 'vibe coding', 'learning to code 2025', 'AI and programming education', 'builder mindset'],
     content: [
       { type: 'paragraph', text: 'Coding changed more in the last year than the decade before it. And I\'m watching two types of students emerge around me.' },
       { type: 'paragraph', text: 'One group is shipping constantly: three projects a week, impressive GitHub streaks, always something new to show. Ask them how their project works under the hood and they go quiet. They didn\'t build it; they directed it. The other group is doing the opposite: ignoring every tool that could free up their thinking, learning syntax line by line, staying strictly within the syllabus. Technically clean. Practically behind.' },
@@ -151,6 +156,7 @@ export const POSTS = [
     personal: null,
     externalUrl: 'https://www.linkedin.com/pulse/hardware-failure-why-needs-vs-wants-killing-teen-financial-kim-0gjhe/',
     platform: 'LinkedIn',
+    keywords: ['teen financial literacy', 'needs vs wants framework', 'prefrontal cortex spending', 'Hardware Failure model', 'Dr Richard Kim', 'behavioral finance youth'],
     content: [
       { type: 'paragraph', text: 'Traditional financial literacy teaches "needs vs. wants" to a generation facing algorithmic desire engines, then acts surprised when restrictive saving snaps into first-paycheck binges. The framework was built for a different era.' },
       { type: 'paragraph', text: 'The Hardware Failure framework explains what most miss: midnight spending isn\'t a character failure. The prefrontal cortex is offline. What\'s running is emotional relief-seeking. Real financial sovereignty requires understanding biology first, mechanism second, strategy third. Not guilt, not budget apps.' },

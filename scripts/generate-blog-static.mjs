@@ -3,7 +3,7 @@
 // This is a full rewrite of the old GEN-marker patcher. There is no more
 // hand-written article prose living in these files at all — the entire
 // <body> is the REAL src/pages/BlogPost.jsx component, rendered to static
-// HTML at build time via scripts/prerender-blog.mjs (Vite SSR, see that file
+// HTML at build time via scripts/prerender.mjs (Vite SSR, see that file
 // for how/why it's safe). src/data/blog.js is now the only place post
 // content exists; these files are fully regenerated from it every run, and
 // safe to delete and regenerate at any time — there is nothing hand-authored
@@ -15,7 +15,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { createPrerenderer } from './prerender-blog.mjs'
+import { createPrerenderer } from './prerender.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = join(__dirname, '..')
@@ -63,6 +63,7 @@ function metaFor(post) {
         publisher: { '@type': 'Person', name: BASE_NAME, url: BASE_URL },
         mainEntityOfPage: { '@type': 'WebPage', '@id': url },
         inLanguage: 'en-IN',
+        keywords: post.keywords ?? [],
       },
       {
         '@type': 'BreadcrumbList',
@@ -79,7 +80,7 @@ function metaFor(post) {
 
 function pageHtml({ title, desc, url, img, jsonld, bodyHtml }) {
   return `<!doctype html>
-<html lang="en">
+<html lang="en-IN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

@@ -140,7 +140,7 @@ function ScatterStack({ images, name }) {
         onMouseEnter={() => setOut(true)}
         onMouseLeave={() => setOut(false)}
       >
-        {visible.map((src, i) => {
+        {visible.map(({ src, alt }, i) => {
           const pos = out ? SCATTERED[i] : STACKED[i]
           return (
             <motion.div
@@ -157,7 +157,7 @@ function ScatterStack({ images, name }) {
                 cursor: 'zoom-in',
               }}
             >
-              <img src={src} alt={`${name} photo ${i + 1}`} style={{ width: '100%', height: '80px', objectFit: 'cover', display: 'block' }} />
+              <img src={src} alt={alt} style={{ width: '100%', height: '80px', objectFit: 'cover', display: 'block' }} />
             </motion.div>
           )
         })}

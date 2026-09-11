@@ -1,6 +1,6 @@
 # Shoryavardhaan Gupta
 
-> 16-year-old builder and developer from Kolkata, India. Shipping civic tech, hardware, and AI projects since age 14. India Innovates 2026 Top 1,000 of 26,000+ entries.
+> 17-year-old builder and developer from Kolkata, India. Shipping civic tech, hardware, and AI projects since age 14. India Innovates 2026 Top 1,000 of 26,000+ entries.
 
 ## Portfolio
 https://shoryavardhaan.vercel.app/
