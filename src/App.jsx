@@ -37,38 +37,62 @@ function ZoneDivider() {
   )
 }
 
-function Preloader() {
+function Preloader({ progress }) {
   return (
     <motion.div
       initial={{ clipPath: 'inset(0% 0% 0% 0%)' }}
       animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
-      exit={{ clipPath: 'inset(100% 0% 0% 0%)', transition: { duration: 0.75, ease: [0.76, 0, 0.24, 1] } }}
+      exit={{
+        clipPath: 'inset(100% 0% 0% 0%)',
+        filter: 'blur(8px)',
+        transition: { duration: 0.75, ease: [0.76, 0, 0.24, 1] },
+      }}
       style={{
         position: 'fixed', inset: 0,
         background: 'var(--bg)',
         zIndex: 9999,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexDirection: 'column', gap: '8px',
+        flexDirection: 'column', gap: '18px',
       }}
     >
-      <span style={{
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem',
-        fontWeight: 500, color: 'var(--cu)', letterSpacing: '0.1em',
-        display: 'flex', alignItems: 'center',
-      }}>
+      <motion.span
+        animate={{ opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '1.3rem',
+          fontWeight: 500, color: 'var(--cu)', letterSpacing: '0.1em',
+          display: 'flex', alignItems: 'center',
+        }}
+      >
         SG
         <span style={{
           display: 'inline-block', width: '2px', height: '1.1em',
           background: 'var(--cu)', marginLeft: '3px', verticalAlign: 'middle',
           animation: 'blink 1.1s step-end infinite',
         }} />
-      </span>
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: '48px' }}
-        transition={{ duration: 0.7, ease: 'easeInOut' }}
-        style={{ height: '1px', background: 'var(--cu)', opacity: 0.35 }}
-      />
+      </motion.span>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <div style={{
+          width: '64px', height: '2px', borderRadius: '2px',
+          background: 'var(--border2)', position: 'relative', overflow: 'hidden',
+        }}>
+          <motion.div
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+            style={{
+              position: 'absolute', inset: '0 auto 0 0', height: '100%',
+              background: 'var(--cu)', borderRadius: '2px',
+            }}
+          />
+        </div>
+        <span style={{
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
+          letterSpacing: '0.16em', color: 'var(--text3)', fontVariantNumeric: 'tabular-nums',
+        }}>
+          {String(Math.round(progress)).padStart(3, '0')}%
+        </span>
+      </div>
     </motion.div>
   )
 }
@@ -261,26 +285,52 @@ export default function App() {
   const curColor  = useRef({ ...COPPER })
   const curTarget = useRef({ ...COPPER })
   // Only the homepage gets the "SG" boot splash — a direct load of /blog or
-  // /project/:slug shouldn't pay for it. Gated on the real window 'load'
-  // event (fonts/images/scripts actually settled), not a flat timer, with a
-  // small minimum-visible floor so it never looks like a single-frame flash.
+  // /project/:slug shouldn't pay for it. The progress bar tracks REAL
+  // readiness (web fonts + the hero portrait actually decoded), not a flat
+  // timer — see the effect below.
   const [preloaderVisible, setPreloaderVisible] = useState(() => window.location.pathname === '/')
+  const [loadProgress, setLoadProgress] = useState(0)
 
   useEffect(() => {
     if (!preloaderVisible) return
-    const MIN_VISIBLE = 300
+
+    const MIN_VISIBLE = 900   // long enough for the animation to read as intentional
+    const MAX_WAIT     = 4500 // never hold a slow connection hostage
     const start = performance.now()
-    let t
-    const hide = () => {
+    let settled = false
+    let rafId, hideT
+
+    // Drift the bar toward ~92% while the real signals below are still
+    // pending, so it never sits static — it only reaches 100% once loading
+    // is actually confirmed (or MAX_WAIT forces it).
+    const driftProgress = () => {
+      if (settled) return
+      const elapsed = performance.now() - start
+      const eased = 1 - Math.exp(-elapsed / 900)
+      setLoadProgress(Math.min(92, eased * 92))
+      rafId = requestAnimationFrame(driftProgress)
+    }
+    rafId = requestAnimationFrame(driftProgress)
+
+    const heroImageReady = new Promise(resolve => {
+      const img = new Image()
+      img.onload = img.onerror = resolve
+      img.src = '/preview (1).jpg'
+    })
+    const fontsReady = document.fonts?.ready ?? Promise.resolve()
+
+    Promise.race([
+      Promise.all([heroImageReady, fontsReady]),
+      new Promise(resolve => setTimeout(resolve, MAX_WAIT)),
+    ]).then(() => {
+      settled = true
+      cancelAnimationFrame(rafId)
+      setLoadProgress(100)
       const wait = Math.max(0, MIN_VISIBLE - (performance.now() - start))
-      t = setTimeout(() => setPreloaderVisible(false), wait)
-    }
-    if (document.readyState === 'complete') {
-      hide()
-    } else {
-      window.addEventListener('load', hide, { once: true })
-    }
-    return () => { window.removeEventListener('load', hide); clearTimeout(t) }
+      hideT = setTimeout(() => setPreloaderVisible(false), wait + 220) // brief pause so 100% registers
+    })
+
+    return () => { cancelAnimationFrame(rafId); clearTimeout(hideT) }
   }, [])
 
   // ── Smooth scroll (wheel-driven, Lenis-style) ────────────────────────────
@@ -434,7 +484,7 @@ export default function App() {
       <div id="cursor" ref={cursorRef} />
 
       <AnimatePresence>
-        {preloaderVisible && <Preloader key="loader" />}
+        {preloaderVisible && <Preloader key="loader" progress={loadProgress} />}
       </AnimatePresence>
 
       <AppShell />

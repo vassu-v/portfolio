@@ -86,7 +86,7 @@ function FeaturedPost({ post }) {
       <div style={{ position: 'absolute', top: '20px', right: '24px', display: 'flex', gap: '6px' }}>
         {post.personal === 'best' && (
           <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             color: 'var(--bg)', background: 'var(--cu)',
             padding: '3px 10px', borderRadius: '100px', letterSpacing: '0.1em',
           }}>
@@ -95,7 +95,7 @@ function FeaturedPost({ post }) {
         )}
         {post.personal === 'learned' && (
           <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             color: 'var(--cu)', border: '1px solid var(--cu-b)',
             padding: '3px 10px', borderRadius: '100px', letterSpacing: '0.1em',
             background: 'rgba(9,9,9,0.5)', backdropFilter: 'blur(8px)',
@@ -104,7 +104,7 @@ function FeaturedPost({ post }) {
           </span>
         )}
         <span style={{
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
           color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.15)',
           padding: '3px 10px', borderRadius: '100px', letterSpacing: '0.1em',
           background: 'rgba(9,9,9,0.5)', backdropFilter: 'blur(8px)',
@@ -207,7 +207,7 @@ function SmallCard({ post, delay }) {
         />
         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '5px' }}>
           <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             color: 'rgba(255,255,255,0.5)', background: 'rgba(9,9,9,0.5)',
             backdropFilter: 'blur(6px)', padding: '3px 8px', borderRadius: '100px',
             letterSpacing: '0.06em',
@@ -216,7 +216,7 @@ function SmallCard({ post, delay }) {
           </span>
           {post.personal === 'best' && (
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--bg)', background: 'var(--cu)',
               padding: '3px 8px', borderRadius: '100px', letterSpacing: '0.06em',
             }}>
@@ -225,7 +225,7 @@ function SmallCard({ post, delay }) {
           )}
           {post.personal === 'learned' && (
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--cu)', border: '1px solid var(--cu-b)',
               padding: '3px 8px', borderRadius: '100px', letterSpacing: '0.06em',
               background: 'rgba(9,9,9,0.5)', backdropFilter: 'blur(6px)',
@@ -276,7 +276,7 @@ function SmallCard({ post, delay }) {
         }}
       >
         {post.readTime}
-        <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.5rem' }} />
+        <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.58rem' }} />
       </motion.div>
     </motion.div>
   )

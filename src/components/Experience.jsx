@@ -215,7 +215,7 @@ function Panel({ exp }) {
             {extra.map(r => (
               <div key={r.title} style={{ border: '1px solid var(--border)', borderRadius: '4px', padding: '5px 12px' }}>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.52rem', letterSpacing: '0.07em', color: 'var(--text2)', marginBottom: '2px' }}>{r.title}</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.48rem', letterSpacing: '0.05em', color: 'var(--text3)' }}>{r.period} · {r.type}</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', letterSpacing: '0.05em', color: 'var(--text3)' }}>{r.period} · {r.type}</div>
               </div>
             ))}
           </div>
@@ -302,7 +302,7 @@ function MobileCard({ exp }) {
               target="_blank"
               rel="noreferrer"
               style={{
-                fontFamily: 'JetBrains Mono, monospace', fontSize: '0.46rem',
+                fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
                 letterSpacing: '0.08em', textTransform: 'uppercase',
                 color: 'var(--cu)', background: 'var(--cu-d)',
                 border: '1px solid var(--cu-b)',
@@ -320,7 +320,7 @@ function MobileCard({ exp }) {
         {live ? (
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: '5px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             letterSpacing: '0.08em', color: 'var(--cu)',
             background: 'var(--cu-d)', border: '1px solid var(--cu-b)',
             padding: '3px 9px', borderRadius: '100px',
@@ -329,7 +329,7 @@ function MobileCard({ exp }) {
           </span>
         ) : (
           <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             letterSpacing: '0.08em', color: 'var(--text3)',
             border: '1px solid var(--border)', padding: '3px 9px', borderRadius: '100px',
           }}>
@@ -337,7 +337,7 @@ function MobileCard({ exp }) {
           </span>
         )}
         <span style={{
-          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
           letterSpacing: '0.05em', color: 'var(--text3)',
         }}>
           {primaryRole} · {type}
@@ -361,8 +361,8 @@ function MobileCard({ exp }) {
         <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
           {extra.map(r => (
             <div key={r.title} style={{ border: '1px solid var(--border)', borderRadius: '4px', padding: '4px 10px' }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem', letterSpacing: '0.07em', color: 'var(--text2)', marginBottom: '2px' }}>{r.title}</div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.46rem', color: 'var(--text3)' }}>{r.period} · {r.type}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.07em', color: 'var(--text2)', marginBottom: '2px' }}>{r.title}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem', color: 'var(--text3)' }}>{r.period} · {r.type}</div>
             </div>
           ))}
         </div>
@@ -371,7 +371,7 @@ function MobileCard({ exp }) {
       <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
         {skills.map(s => (
           <span key={s} style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             letterSpacing: '0.08em', color: 'var(--text3)',
             border: '1px solid var(--border)', borderRadius: '3px', padding: '2px 7px',
           }}>

@@ -20,7 +20,9 @@ function LiquidHeading({ scrollYProgress }) {
   const dispRef = useRef(null)
   const blurRef = useRef(null)
   const h2Ref   = useRef(null)
-  const inView  = useInView(h2Ref, { once: true, amount: 0.7 })
+  // amount 0.7 + a bottom margin so the mark only draws once the line is
+  // actually settled in view, not while it's still rising up the screen.
+  const inView  = useInView(h2Ref, { once: true, amount: 0.7, margin: '0px 0px -15% 0px' })
 
   useEffect(() => {
     if (window.matchMedia('(max-width: 767px)').matches) {

@@ -110,9 +110,9 @@ function RelatedProjects({ currentSlug, navigate }) {
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               gap: '16px', padding: '16px 0',
+              background: 'none', border: 'none',
               borderTop: i === 0 ? '1px solid var(--border)' : 'none',
               borderBottom: '1px solid var(--border)',
-              background: 'none', border: 'none', borderTop: '1px solid var(--border)',
               cursor: 'none', textAlign: 'left', width: '100%',
               transition: 'background 0.15s',
             }}
@@ -193,7 +193,7 @@ export default function ProjectPage({ slug }) {
           </span>
           {featured && (
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--cu)', border: '1px solid var(--cu-b)',
               padding: '2px 8px', borderRadius: '100px', letterSpacing: '0.08em',
             }}>

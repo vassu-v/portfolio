@@ -74,7 +74,7 @@ function NameRow({ project, isActive, isHovering, progressKey, onEnter, onNaviga
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {featured && (
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--cu)', border: '1px solid var(--cu-b)',
               padding: '2px 8px', borderRadius: '100px', letterSpacing: '0.08em',
               whiteSpace: 'nowrap',

@@ -49,7 +49,7 @@ function PostCard({ post }) {
         {/* Badges */}
         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '5px' }}>
           <span style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
             color: 'rgba(255,255,255,0.55)', letterSpacing: '0.08em',
             background: 'rgba(9,9,9,0.5)', backdropFilter: 'blur(8px)',
             padding: '3px 8px', borderRadius: '100px',
@@ -58,7 +58,7 @@ function PostCard({ post }) {
           </span>
           {post.personal === 'best' && (
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--bg)', background: 'var(--cu)',
               padding: '3px 8px', borderRadius: '100px', letterSpacing: '0.06em',
             }}>
@@ -67,7 +67,7 @@ function PostCard({ post }) {
           )}
           {post.personal === 'learned' && (
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--cu)', border: '1px solid var(--cu-b)',
               padding: '3px 8px', borderRadius: '100px', letterSpacing: '0.06em',
               background: 'rgba(9,9,9,0.5)', backdropFilter: 'blur(8px)',
@@ -118,7 +118,7 @@ function PostCard({ post }) {
         }}
       >
         {post.readTime}
-        <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.5rem' }} />
+        <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.58rem' }} />
       </motion.div>
     </motion.div>
   )
@@ -202,7 +202,7 @@ export default function Blog() {
           }}
         >
           Explore more
-          <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.5rem' }} />
+          <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.58rem' }} />
         </button>
       </div>
     </section>

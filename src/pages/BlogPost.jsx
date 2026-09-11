@@ -16,7 +16,7 @@ function ReadingPara({ children, index }) {
   return (
     <div style={{ display: 'flex', gap: '28px', marginBottom: '26px', alignItems: 'start' }}>
       <span style={{
-        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.48rem',
+        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
         color: 'var(--text3)', letterSpacing: '0.1em',
         paddingTop: '6px', minWidth: '20px', flexShrink: 0,
         userSelect: 'none',

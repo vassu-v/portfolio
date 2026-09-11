@@ -41,7 +41,7 @@ function NavLink({ id, index, isActive }) {
             style={{
               position: 'absolute', right: '100%', paddingRight: '6px',
               top: '50%', transform: 'translateY(-50%)',
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.5rem',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem',
               color: 'var(--text3)', letterSpacing: '0.1em',
               whiteSpace: 'nowrap', pointerEvents: 'none',
             }}
