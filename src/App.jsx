@@ -321,7 +321,12 @@ export default function App() {
   useEffect(() => {
     if (!preloaderVisible) return
 
-    const MIN_VISIBLE = 900   // long enough for the animation to read as intentional
+    // 900ms measured as unrealistically short to actually read/click the
+    // "switch to CLI mode" link on a fast connection (confirmed live: the
+    // bar was already at 100% about to unmount within ~1s of landing) —
+    // 1300ms gives a fair chance without meaningfully hurting perceived
+    // load time on a real page.
+    const MIN_VISIBLE = 1300
     const MAX_WAIT     = 4500 // never hold a slow connection hostage
     const start = performance.now()
     let settled = false

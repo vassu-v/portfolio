@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>shoryavardhaan :: terminal</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
   <meta name="description" content="Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI. A no-chrome terminal easter egg, the fast, text-only escape hatch off the main site." />
   <meta name="author" content="Shoryavardhaan Gupta" />
@@ -141,6 +142,16 @@
       margin: 4px 0 12px;
       white-space: pre;
       overflow-x: auto;
+    }
+
+    /* The name banner (~90 chars wide) and portrait (~60 chars wide) render
+       far wider than a phone viewport at desktop font-size — this used to
+       just clip mid-character with a barely-visible scrollbar as the only
+       cue there was more. Shrink both to fit narrow screens without
+       scrolling instead. */
+    @media (max-width: 600px) {
+      .term-banner-gradient { font-size: 5px; }
+      .term-ascii { font-size: 7px; }
     }
 
     .term-echo-prompt {
