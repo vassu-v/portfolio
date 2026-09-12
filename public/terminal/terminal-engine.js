@@ -2,7 +2,7 @@
  * terminal-engine.js
  *
  * Pure JS port of terminal_sim.py's process_command(state, command) engine.
- * Framework-agnostic, no DOM access anywhere in this file — safe to drop
+ * Framework-agnostic, no DOM access anywhere in this file - safe to drop
  * into any future React (or other) codebase's state management untouched.
  *
  * Content (bio, work history, projects, blog excerpts, contact scripts) is
@@ -44,7 +44,7 @@
     "that solve real gaps, not demo projects.\n\n" +
     "Work spans hardware (LiFi mesh networks, Arduino reaction simulators), " +
     "AI research (planning systems and grounding failures on Zenodo), and " +
-    "product — Buy4Chai for India's Stripe exclusion problem, SarkarSathi for " +
+    "product - Buy4Chai for India's Stripe exclusion problem, SarkarSathi for " +
     "civic accountability. The thread: constraint thinking. Building the " +
     "right thing with what's actually available.\n\n" +
     "Researching AI planning failures since 15. National ideathon recognition. " +
@@ -112,7 +112,7 @@
     "thread surfaced it clearly: 29 upvotes from developers who'd simply " +
     "stopped trying to earn from their work.\n\n" +
     "Solution: A self-hosted supporter page you deploy to Vercel in under " +
-    "10 minutes. Razorpay and UPI work natively — no platform cut, you own " +
+    "10 minutes. Razorpay and UPI work natively - no platform cut, you own " +
     "the data, the experience, and the URL.\n\n" +
     "Stack: Open Source, Razorpay/UPI, Vercel, MIT, JavaScript\n" +
     "Stats: 16+ GitHub stars · 7 forks · MIT license\n" +
@@ -124,7 +124,7 @@
     "structure and escalate complaints to local government. Led as sole " +
     "technical member of a 5-person remote team during board exams.\n\n" +
     "Problem:  Civic complaints in India vanish into systems that were never " +
-    "designed to respond. The problem isn't awareness — it's structured " +
+    "designed to respond. The problem isn't awareness - it's structured " +
     "escalation.\n\n" +
     "Solution: Started as a complaint co-pilot that frames issues clearly " +
     "and routes them to the right authority. For India Innovates 2026, it " +
@@ -141,7 +141,7 @@
     "Hop-based routing delivers emergency messages when power grids and " +
     "mobile networks fail simultaneously.\n\n" +
     "Problem:  During disasters, power grids and mobile networks fail at the " +
-    "same time. The street lamps are already there, mostly solar-powered — " +
+    "same time. The street lamps are already there, mostly solar-powered - " +
     "the question was whether they could become a communication mesh.\n\n" +
     "Solution: Retrofits solar street lamps with ESP8266 microcontrollers and " +
     "IR transceivers. Each lamp becomes a mesh node; messages hop between " +
@@ -153,9 +153,9 @@
   var PROJ_CHEMX =
     "# ChemX\n\n" +
     "Physical chemistry reaction simulator controlled from a browser: " +
-    "Arduino, LEDs, electromagnet. First hardware project — taught " +
+    "Arduino, LEDs, electromagnet. First hardware project - taught " +
     "constraint thinking before I had words for it.\n\n" +
-    "Problem:  Chemistry education is almost entirely symbolic — equations " +
+    "Problem:  Chemistry education is almost entirely symbolic - equations " +
     "on a board, reactions over after one lab session. No way to interact " +
     "with the process or ask \"what happens if I change this.\"\n\n" +
     "Solution: LEDs represent atomic bonds forming and breaking, an " +
@@ -168,12 +168,12 @@
   var PROJ_PLANNING_RESEARCH =
     "# Grounded Planning Research\n\n" +
     "Exposing brittle AI reasoning that high success rates hide. Shows " +
-    "structured, repeatable failure modes — the kind that only surface " +
+    "structured, repeatable failure modes - the kind that only surface " +
     "under real pressure.\n\n" +
-    "Problem:  AI planning benchmarks are saturating — agents report 90%+ " +
+    "Problem:  AI planning benchmarks are saturating - agents report 90%+ " +
     "success, but success rates measure outcomes, not the reasoning that " +
     "produced them.\n\n" +
-    "Solution: Object commitment as a pressure point — forcing an agent to " +
+    "Solution: Object commitment as a pressure point - forcing an agent to " +
     "explicitly name which objects it's operating on before selecting " +
     "actions exposes brittle reasoning that high success rates hide.\n\n" +
     "Stack: AI Research, Planning Systems, Python, Ablation Study, Zenodo\n" +
@@ -190,7 +190,7 @@
     "permission. Not with a plan.\n\n" +
     "Kolkata is not Bangalore. There's no startup ecosystem I accidentally " +
     "wandered into. When you don't have the ecosystem, you build " +
-    "differently — you build for real problems because you're surrounded by " +
+    "differently - you build for real problems because you're surrounded by " +
     "them.\n\n" +
     "I'm 17. I have no idea what the next five years look like except that " +
     "I'm going to keep shipping things and seeing what sticks.\n\n" +
@@ -203,7 +203,7 @@
     "A few weeks before shipping, I posted on r/indiandevs asking if anyone " +
     "else couldn't accept support for their open source work without " +
     "Stripe. 29 upvotes. 33 comments. 9.4K views.\n\n" +
-    "So I built Buy4Chai — a self-hosted supporter page with Razorpay and " +
+    "So I built Buy4Chai - a self-hosted supporter page with Razorpay and " +
     "UPI out of the box, zero platform fees, deploy to Vercel in ten minutes.\n\n" +
     "Read the rest: https://shoryavardhaan.vercel.app/blog/building-buy4chai\n";
 
@@ -212,7 +212,7 @@
     "Everyone's watching AI take jobs. That's not where the quiet danger is.\n\n" +
     "The current builder economy runs on a gap: people need things done " +
     "they can't do themselves. But look at who's starting businesses in " +
-    "fifteen years — people who've been building things since they were " +
+    "fifteen years - people who've been building things since they were " +
     "fourteen.\n\n" +
     "What gets aged out is the middle. What survives is either the top, or " +
     "the people who read where spending is actually migrating.\n\n" +
@@ -224,10 +224,10 @@
     "quietly built AI silicon before AI was the thing to build for.\n\n" +
     "The AI race didn't start when everyone thinks it did. Apple was " +
     "quietly building purpose-built AI silicon into every device they " +
-    "shipped since 2017 — years before ChatGPT existed.\n\n" +
+    "shipped since 2017 - years before ChatGPT existed.\n\n" +
     "The companies that win the next decade of AI won't have the best " +
     "model. They'll own the full stack.\n\n" +
-    "Full breakdown on Medium — read the rest: https://shoryavardhaan.vercel.app/blog/apple-ai-decade\n";
+    "Full breakdown on Medium - read the rest: https://shoryavardhaan.vercel.app/blog/apple-ai-decade\n";
 
   var BLOG_BOTH_GROUPS =
     "# Both groups are losing. Just differently.\n\n" +
@@ -235,7 +235,7 @@
     "world moves on. Neither has figured out the actual question.\n\n" +
     "One group is shipping constantly, but ask them how their project works " +
     "under the hood and they go quiet. The other group ignores every tool " +
-    "that could free their thinking — technically clean, practically behind.\n\n" +
+    "that could free their thinking - technically clean, practically behind.\n\n" +
     "The problem isn't AI. It's using it without knowing what you're " +
     "actually trying to get good at.\n\n" +
     "Read the rest: https://shoryavardhaan.vercel.app/blog/both-groups-are-losing\n";
@@ -247,34 +247,34 @@
     "Traditional financial literacy teaches \"needs vs. wants\" to a " +
     "generation facing algorithmic desire engines, then acts surprised when " +
     "restrictive saving snaps into first-paycheck binges.\n\n" +
-    "Midnight spending isn't a character failure — the prefrontal cortex is " +
+    "Midnight spending isn't a character failure - the prefrontal cortex is " +
     "offline. Real financial sovereignty requires understanding biology " +
     "first, mechanism second, strategy third.\n\n" +
-    "Contributed with Dr. Richard Y. Kim — read the rest: " +
+    "Contributed with Dr. Richard Y. Kim - read the rest: " +
     "https://shoryavardhaan.vercel.app/blog/hardware-failure\n";
 
   // --- .sh file *source* content ---
 
   var CONTACT_SH_SRC =
     "#!/bin/sh\n" +
-    "# contact.sh — say hi\n" +
+    "# contact.sh - say hi\n" +
     "echo \"Reach out any time: shoryavardhaans2@gmail.com\"\n" +
-    "echo \"I read everything — say hi.\"\n";
+    "echo \"I read everything - say hi.\"\n";
 
   var CALL_SH_SRC =
     "#!/bin/sh\n" +
-    "# call.sh — grab time on the calendar\n" +
+    "# call.sh - grab time on the calendar\n" +
     "echo \"Grab a slot on my calendar: https://cal.com/shoryavardhaan/30min?overlayCalendar=true\"\n";
 
   var EMAIL_SH_SRC =
     "#!/bin/sh\n" +
-    "# email.sh — just the address\n" +
+    "# email.sh - just the address\n" +
     "echo \"shoryavardhaans2@gmail.com\"\n" +
-    "echo \"Drop me a line — I'll get back to you.\"\n";
+    "echo \"Drop me a line - I'll get back to you.\"\n";
 
   var TERMINAL_SH_SRC =
     "#!/bin/sh\n" +
-    "# terminal.sh — you know exactly what this is\n" +
+    "# terminal.sh - you know exactly what this is\n" +
     "echo \"You just ran a shell script inside a shell script that pretends to\"\n" +
     "echo \"be a filesystem that doesn't exist. It's turtles all the way down.\"\n";
 
@@ -315,22 +315,22 @@
   var SCRIPT_OUTPUTS = {
     "contact.sh":
       "Reach out any time: shoryavardhaans2@gmail.com\n" +
-      "I read everything — say hi.\n",
+      "I read everything - say hi.\n",
     "call.sh":
       "Grab a slot on my calendar: https://cal.com/shoryavardhaan/30min?overlayCalendar=true\n",
     "email.sh":
       "shoryavardhaans2@gmail.com\n" +
-      "Drop me a line — I'll get back to you.\n",
+      "Drop me a line - I'll get back to you.\n",
     "terminal.sh":
       "You just ran a shell script inside a shell script that pretends to\n" +
       "be a filesystem that doesn't exist. It's turtles all the way down.\n" +
-      "(this is an easter egg — there's nothing else here)\n",
+      "(this is an easter egg - there's nothing else here)\n",
   };
 
   var REFUSED_COMMANDS = { mkdir: 1, rmdir: 1, rm: 1, touch: 1, mv: 1, cp: 1 };
 
   var WHOAMI_BIO =
-    "Shoryavardhaan Gupta — 17, Kolkata, India. 11th grade, South Point\n" +
+    "Shoryavardhaan Gupta - 17, Kolkata, India. 11th grade, South Point\n" +
     "High School. Student developer building AI applications, civic tech,\n" +
     "and hardware projects.\n" +
     "\n" +
@@ -338,9 +338,9 @@
     "            Youth Partner @ 4MQ.org\n" +
     "Also        Consultant @ 4MQ.org\n" +
     "            Freelance UI / landing-page design\n" +
-    "Research    Grounded/embodied AI planning — published on Zenodo,\n" +
+    "Research    Grounded/embodied AI planning - published on Zenodo,\n" +
     "            written at 15. ORCID: 0009-0009-1370-5230\n" +
-    "Recognition India Innovates 2026 — Top 1,000 of 26,000+ entries\n" +
+    "Recognition India Innovates 2026 - Top 1,000 of 26,000+ entries\n" +
     "            CBSE Regional Science Exhibition 2025-26\n" +
     "\n" +
     "GitHub      https://github.com/vassu-v\n" +
@@ -363,29 +363,29 @@
   };
 
   var MAN_PAGES = {
-    ls: "NAME\n    ls — list directory contents\nSYNOPSIS\n    ls [-la] [path]\nDESCRIPTION\n    Lists files and directories. -l/-a-style flags switch to the long form.",
-    cd: "NAME\n    cd — change the working directory\nSYNOPSIS\n    cd [path]\nDESCRIPTION\n    Changes the current directory. No argument, ~, or / goes to root; .. goes up.",
-    cat: "NAME\n    cat — print file contents\nSYNOPSIS\n    cat <file>\nDESCRIPTION\n    Prints a file's raw contents, markdown and shell scripts included, exactly as stored — no rendering.",
-    pwd: "NAME\n    pwd — print working directory\nSYNOPSIS\n    pwd\nDESCRIPTION\n    Prints the current directory as an absolute path.",
-    whoami: "NAME\n    whoami — print the current identity\nSYNOPSIS\n    whoami\nDESCRIPTION\n    This terminal answers as its owner, not the visitor typing.",
-    sudo: "NAME\n    sudo — execute a command as another user\nSYNOPSIS\n    sudo <command>\nDESCRIPTION\n    Prompts for a password. You will not get one right.",
-    nano: "NAME\n    nano — simple session-only text editor\nSYNOPSIS\n    nano <file>\nDESCRIPTION\n    Opens a file for editing this session only. Type :wq to save and exit, :q to discard and exit.",
-    theme: "NAME\n    theme — set the terminal color hint\nSYNOPSIS\n    theme <amber|green|blue|default>\nDESCRIPTION\n    Records a color preference for the rendering client. No effect on this plain-text engine.",
-    font: "NAME\n    font — set the terminal font hint\nSYNOPSIS\n    font <default|mono|ibm|vt>\nDESCRIPTION\n    Records a font preference for the rendering client. No effect on this plain-text engine.",
-    neofetch: "NAME\n    neofetch — print a system-info-style panel\nSYNOPSIS\n    neofetch\nDESCRIPTION\n    Prints an info panel about the site owner, styled like the real neofetch tool.",
-    man: "NAME\n    man — print the manual page for a command\nSYNOPSIS\n    man <command>\nDESCRIPTION\n    Prints a short deadpan manual entry for a built-in command.",
-    history: "NAME\n    history — print command history\nSYNOPSIS\n    history\nDESCRIPTION\n    Prints every command run so far this session, numbered from 1.",
-    banner: "NAME\n    banner — print a block-letter ASCII banner\nSYNOPSIS\n    banner\nDESCRIPTION\n    Prints the site owner's name in large block letters. Alias: figlet.",
-    figlet: "NAME\n    figlet — print a block-letter ASCII banner\nSYNOPSIS\n    figlet\nDESCRIPTION\n    Alias for banner. Prints the site owner's name in large block letters.",
-    clear: "NAME\n    clear — clear the screen\nSYNOPSIS\n    clear\nDESCRIPTION\n    Signals the client to wipe the rendered terminal buffer.",
-    help: "NAME\n    help — list available commands\nSYNOPSIS\n    help\nDESCRIPTION\n    Prints the command reference.",
-    exit: "NAME\n    exit — leave the terminal\nSYNOPSIS\n    exit\nDESCRIPTION\n    Ends the session.",
-    mkdir: "NAME\n    mkdir — make a directory\nSYNOPSIS\n    mkdir <name>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
-    rmdir: "NAME\n    rmdir — remove a directory\nSYNOPSIS\n    rmdir <name>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
-    rm: "NAME\n    rm — remove a file\nSYNOPSIS\n    rm <name>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
-    touch: "NAME\n    touch — create an empty file\nSYNOPSIS\n    touch <name>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
-    mv: "NAME\n    mv — move or rename a file\nSYNOPSIS\n    mv <src> <dst>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
-    cp: "NAME\n    cp — copy a file\nSYNOPSIS\n    cp <src> <dst>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
+    ls: "NAME\n    ls - list directory contents\nSYNOPSIS\n    ls [-la] [path]\nDESCRIPTION\n    Lists files and directories. -l/-a-style flags switch to the long form.",
+    cd: "NAME\n    cd - change the working directory\nSYNOPSIS\n    cd [path]\nDESCRIPTION\n    Changes the current directory. No argument, ~, or / goes to root; .. goes up.",
+    cat: "NAME\n    cat - print file contents\nSYNOPSIS\n    cat <file>\nDESCRIPTION\n    Prints a file's raw contents, markdown and shell scripts included, exactly as stored - no rendering.",
+    pwd: "NAME\n    pwd - print working directory\nSYNOPSIS\n    pwd\nDESCRIPTION\n    Prints the current directory as an absolute path.",
+    whoami: "NAME\n    whoami - print the current identity\nSYNOPSIS\n    whoami\nDESCRIPTION\n    This terminal answers as its owner, not the visitor typing.",
+    sudo: "NAME\n    sudo - execute a command as another user\nSYNOPSIS\n    sudo <command>\nDESCRIPTION\n    Prompts for a password. You will not get one right.",
+    nano: "NAME\n    nano - simple session-only text editor\nSYNOPSIS\n    nano <file>\nDESCRIPTION\n    Opens a file for editing this session only. Type :wq to save and exit, :q to discard and exit.",
+    theme: "NAME\n    theme - set the terminal color hint\nSYNOPSIS\n    theme <amber|green|blue|default>\nDESCRIPTION\n    Records a color preference for the rendering client. No effect on this plain-text engine.",
+    font: "NAME\n    font - set the terminal font hint\nSYNOPSIS\n    font <default|mono|ibm|vt>\nDESCRIPTION\n    Records a font preference for the rendering client. No effect on this plain-text engine.",
+    neofetch: "NAME\n    neofetch - print a system-info-style panel\nSYNOPSIS\n    neofetch\nDESCRIPTION\n    Prints an info panel about the site owner, styled like the real neofetch tool.",
+    man: "NAME\n    man - print the manual page for a command\nSYNOPSIS\n    man <command>\nDESCRIPTION\n    Prints a short deadpan manual entry for a built-in command.",
+    history: "NAME\n    history - print command history\nSYNOPSIS\n    history\nDESCRIPTION\n    Prints every command run so far this session, numbered from 1.",
+    banner: "NAME\n    banner - print a block-letter ASCII banner\nSYNOPSIS\n    banner\nDESCRIPTION\n    Prints the site owner's name in large block letters. Alias: figlet.",
+    figlet: "NAME\n    figlet - print a block-letter ASCII banner\nSYNOPSIS\n    figlet\nDESCRIPTION\n    Alias for banner. Prints the site owner's name in large block letters.",
+    clear: "NAME\n    clear - clear the screen\nSYNOPSIS\n    clear\nDESCRIPTION\n    Signals the client to wipe the rendered terminal buffer.",
+    help: "NAME\n    help - list available commands\nSYNOPSIS\n    help\nDESCRIPTION\n    Prints the command reference.",
+    exit: "NAME\n    exit - leave the terminal\nSYNOPSIS\n    exit\nDESCRIPTION\n    Ends the session.",
+    mkdir: "NAME\n    mkdir - make a directory\nSYNOPSIS\n    mkdir <name>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
+    rmdir: "NAME\n    rmdir - remove a directory\nSYNOPSIS\n    rmdir <name>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
+    rm: "NAME\n    rm - remove a file\nSYNOPSIS\n    rm <name>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
+    touch: "NAME\n    touch - create an empty file\nSYNOPSIS\n    touch <name>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
+    mv: "NAME\n    mv - move or rename a file\nSYNOPSIS\n    mv <src> <dst>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
+    cp: "NAME\n    cp - copy a file\nSYNOPSIS\n    cp <src> <dst>\nDESCRIPTION\n    Refused. This filesystem is read-only fiction.",
   };
 
   var HELP_TEXT =
@@ -519,7 +519,7 @@
       "OS: ShoryaOS (portfolio-terminal build)",
       "Host: shoryavardhaan.vercel.app",
       "Name: Shoryavardhaan Gupta",
-      "Role: Student developer — CS, AI applications, software",
+      "Role: Student developer - CS, AI applications, software",
       "Location: Kolkata, India",
       "Uptime: building since 2023 (~3 years)",
       "Now: Kolkata Fork Lead @ Bits&Bytes · Youth Partner @ 4MQ.org",
@@ -568,7 +568,7 @@
     parts.push(NANO_HELP);
     parts.push(
       "[session-only editor: type a line with just :wq to save+exit, " +
-      ":q to discard+exit — real nano's Ctrl+X doesn't survive a plain text protocol]"
+      ":q to discard+exit - real nano's Ctrl+X doesn't survive a plain text protocol]"
     );
     return parts.join("\n");
   }
@@ -635,7 +635,7 @@
     // --- exit ---
     if (cmd === "exit") {
       newState.should_exit = true;
-      return [newState, "goodbye — thanks for poking around 👋"];
+      return [newState, "goodbye - thanks for poking around 👋"];
     }
 
     // --- clear ---
@@ -679,10 +679,10 @@
       var themeName = args[0].toLowerCase();
       if (!Object.prototype.hasOwnProperty.call(THEMES, themeName)) {
         var availT = Object.keys(THEMES).sort().join(", ");
-        return [newState, "theme: unknown theme '" + args[0] + "' — available: " + availT];
+        return [newState, "theme: unknown theme '" + args[0] + "' - available: " + availT];
       }
       newState.theme = themeName;
-      return [newState, "theme set to " + themeName + " — text-color hint: " + THEMES[themeName]];
+      return [newState, "theme set to " + themeName + " - text-color hint: " + THEMES[themeName]];
     }
 
     // --- font ---
@@ -694,10 +694,10 @@
       var fontName = args[0].toLowerCase();
       if (!Object.prototype.hasOwnProperty.call(FONTS, fontName)) {
         var availF = Object.keys(FONTS).sort().join(", ");
-        return [newState, "font: unknown font '" + args[0] + "' — available: " + availF];
+        return [newState, "font: unknown font '" + args[0] + "' - available: " + availF];
       }
       newState.font = fontName;
-      return [newState, "font set to " + fontName + " — font-family hint: " + FONTS[fontName]];
+      return [newState, "font set to " + fontName + " - font-family hint: " + FONTS[fontName]];
     }
 
     // --- neofetch ---
@@ -798,7 +798,7 @@
       var nanoTarget = resolvePath(state.cwd, nanoArg);
       var nanoNode = getNode(nanoTarget);
       if (nanoNode === null) {
-        return [newState, "nano: cannot create new files in this demo terminal — '" + nanoArg + "' doesn't exist yet"];
+        return [newState, "nano: cannot create new files in this demo terminal - '" + nanoArg + "' doesn't exist yet"];
       }
       if (nanoNode.type === "dir") return [newState, "nano: " + nanoArg + ": Is a directory"];
       var nanoContent = fileContent(newState, nanoTarget, nanoNode);

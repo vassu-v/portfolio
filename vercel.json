@@ -1,21 +1,29 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "headers": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
+      "src": "/(.*)",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      },
+      "continue": true
     },
     {
-      "source": "/assets/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    }
+      "src": "/assets/(.*)",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" },
+      "continue": true
+    },
+
+    { "src": "/", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/whoami", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/projects", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/blog", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/contact", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/api/cli/(.*)", "dest": "/api/cli" },
+
+    { "handle": "filesystem" },
+
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

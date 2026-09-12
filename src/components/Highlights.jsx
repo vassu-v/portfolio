@@ -397,10 +397,15 @@ export default function Highlights() {
 }
 
 function CRTCard() {
+  const openCli = () => { window.location.href = '/terminal/index.html' }
   return (
     <div
       style={{ gridColumn: '4', gridRow: '4', position: 'relative', cursor: 'pointer' }}
-      onClick={() => { window.location.href = '/terminal/index.html' }}
+      onClick={openCli}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCli() } }}
+      role="button"
+      tabIndex={0}
+      aria-label="Open CLI mode"
       title="Open CLI mode"
     >
       <CRTMonitor text="Now Playing:\nLife + JEE" isTag />

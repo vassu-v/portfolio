@@ -311,6 +311,14 @@ export default function App() {
   const [loadProgress, setLoadProgress] = useState(0)
 
   useEffect(() => {
+    console.log(
+      '%cpsst, curl this site: %ccurl shoryavardhaan.vercel.app',
+      'color:#8a8a8a;font-family:monospace',
+      'color:#c57b2b;font-family:monospace;font-weight:bold'
+    )
+  }, [])
+
+  useEffect(() => {
     if (!preloaderVisible) return
 
     const MIN_VISIBLE = 900   // long enough for the animation to read as intentional

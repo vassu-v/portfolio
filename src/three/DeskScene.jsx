@@ -172,7 +172,13 @@ function Screen({ ctl, stages, mobile }) {
   })
 
   return (
-    <mesh position={[0, -0.024, 0.375]} rotation={[Math.PI / 2, 0, 0]}>
+    <mesh
+      position={[0, -0.024, 0.375]}
+      rotation={[Math.PI / 2, 0, 0]}
+      onClick={e => { e.stopPropagation(); window.location.href = '/terminal/index.html' }}
+      onPointerOver={e => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
+      onPointerOut={e => { e.stopPropagation(); document.body.style.cursor = '' }}
+    >
       <planeGeometry args={[1.0, 0.62]} />
       <meshBasicMaterial map={texture} toneMapped={false} />
     </mesh>
@@ -433,6 +439,7 @@ export default function DeskScene() {
         dpr={isMobile ? [1, 1] : [1, 1.75]}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
         camera={{ position: [-3.2, 1.7, 4.9], fov: 38 }}
+        style={{ pointerEvents: 'auto' }}
         onCreated={({ scene }) => {
           scene.fog = new THREE.Fog('#090909', 3.4, 8.5)
         }}

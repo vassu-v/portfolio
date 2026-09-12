@@ -4,6 +4,46 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>shoryavardhaan :: terminal</title>
+
+  <meta name="description" content="Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI. A no-chrome terminal easter egg, the fast, text-only escape hatch off the main site." />
+  <meta name="author" content="Shoryavardhaan Gupta" />
+
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://shoryavardhaan.vercel.app/terminal/index.html" />
+  <meta property="og:title"       content="shoryavardhaan :: terminal" />
+  <meta property="og:description" content="Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI." />
+  <meta property="og:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name"   content="Shoryavardhaan Gupta" />
+
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:url"         content="https://shoryavardhaan.vercel.app/terminal/index.html" />
+  <meta name="twitter:title"       content="shoryavardhaan :: terminal" />
+  <meta name="twitter:description" content="Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI." />
+  <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
+  <meta name="twitter:creator"     content="@shoryavardhaan" />
+
+  <link rel="canonical" href="https://shoryavardhaan.vercel.app/terminal/index.html" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://shoryavardhaan.vercel.app/terminal/index.html",
+        "url": "https://shoryavardhaan.vercel.app/terminal/index.html",
+        "name": "shoryavardhaan :: terminal",
+        "description": "Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI.",
+        "isPartOf": { "@id": "https://shoryavardhaan.vercel.app/#website" },
+        "about": { "@id": "https://shoryavardhaan.vercel.app/#person" },
+        "inLanguage": "en-IN"
+      }
+    ]
+  }
+  </script>
+
   <style>
     /*
       Raw-terminal build spec, grounded in real references (Alacritty/kitty/
@@ -22,10 +62,14 @@
     */
     :root {
       --term-bg: #0a0a0a;
-      --term-fg: #c0caf5;
-      --term-prompt: #9ece6a;
-      --term-accent: #7dcfff;
-      --term-muted: #565f89;
+      /* Default palette matches the laptop screen's exact emissive color
+         (#C57B2B) in the 3D desk scene (src/three/DeskScene.jsx) — this is
+         the "screen you're now inside", not an unrelated color scheme.
+         `theme <name>` still switches to the other palettes on request. */
+      --term-fg: #e8a05c;
+      --term-prompt: #c57b2b;
+      --term-accent: #ffb000;
+      --term-muted: #6b4a2a;
       --term-error: #f7768e;
       --term-copper: #c57b2b;
       --term-font: "JetBrains Mono", monospace;
