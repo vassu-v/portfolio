@@ -398,7 +398,11 @@ export default function Highlights() {
 
 function CRTCard() {
   return (
-    <div style={{ gridColumn: '4', gridRow: '4', position: 'relative' }}>
+    <div
+      style={{ gridColumn: '4', gridRow: '4', position: 'relative', cursor: 'pointer' }}
+      onClick={() => { window.location.href = '/terminal/index.html' }}
+      title="Open CLI mode"
+    >
       <CRTMonitor text="Now Playing:\nLife + JEE" isTag />
     </div>
   )

@@ -93,6 +93,24 @@ function Preloader({ progress }) {
           {String(Math.round(progress)).padStart(3, '0')}%
         </span>
       </div>
+
+      {/* Always-available escape hatch — same idea as Gmail's "load basic
+          HTML" link: a real <a> (full page nav, not the SPA router) so it
+          bypasses the 3D/background bundle entirely rather than waiting
+          on it, for slow connections or anyone who just wants the text. */}
+      <a
+        href="/terminal/index.html"
+        style={{
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
+          letterSpacing: '0.06em', color: 'var(--text3)', textDecoration: 'none',
+          borderBottom: '1px solid var(--border2)', paddingBottom: '1px',
+          transition: 'color 0.2s, border-color 0.2s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu)' }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border2)' }}
+      >
+        switch to CLI mode
+      </a>
     </motion.div>
   )
 }

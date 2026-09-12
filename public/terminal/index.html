@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>shoryavardhaan :: terminal</title>
+  <style>
+    /*
+      Raw-terminal build spec, grounded in real references (Alacritty/kitty/
+      xterm defaults, real no-chrome terminal-portfolio sites) rather than
+      an "app window" mockup:
+        - pure/near-pure black background, not a dark-UI gray
+        - zero border-radius anywhere
+        - no border, no box-shadow
+        - NO title bar / traffic-light cluster — the single strongest
+          "fake mac app" signal, dropped entirely
+        - small (not generous) padding between text and the viewport edge
+        - full-bleed layout, not a centered narrow card
+      Color roles (still multi-color, per feedback — Tokyo Night-derived):
+        prompt/username, typed command, output, muted/comment, error,
+        plus a copper→cyan gradient reserved for the boot banner only.
+    */
+    :root {
+      --term-bg: #0a0a0a;
+      --term-fg: #c0caf5;
+      --term-prompt: #9ece6a;
+      --term-accent: #7dcfff;
+      --term-muted: #565f89;
+      --term-error: #f7768e;
+      --term-copper: #c57b2b;
+      --term-font: "JetBrains Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: var(--term-bg);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    #terminal-root {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .term-window {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--term-bg);
+      overflow: hidden;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+    }
+
+    .term-body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 14px 16px;
+      font-family: var(--term-font);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--term-fg);
+    }
+
+    .term-line {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .term-boot-line {
+      color: var(--term-muted);
+      font-size: 13px;
+    }
+
+    .term-banner-gradient {
+      background: linear-gradient(90deg, var(--term-copper), var(--term-accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-size: 13px;
+      line-height: 1.1;
+      margin: 8px 0 4px;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .term-ascii {
+      color: var(--term-copper);
+      font-size: 12px;
+      line-height: 1.1;
+      margin: 4px 0 12px;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .term-echo-prompt {
+      color: var(--term-prompt);
+      margin-right: 2px;
+    }
+
+    .term-echo-cmd {
+      color: var(--term-accent);
+    }
+
+    .term-output {
+      color: var(--term-fg);
+    }
+
+    .term-exited {
+      color: var(--term-error);
+    }
+
+    .term-nano-banner {
+      margin-top: 6px;
+      margin-bottom: 4px;
+      padding: 4px 8px;
+      border: 1px dashed var(--term-accent);
+      border-radius: 0;
+      color: var(--term-accent);
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    .term-inputline {
+      display: flex;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .term-inputline.term-nano-mode {
+      border-left: 3px solid var(--term-accent);
+      padding-left: 8px;
+    }
+
+    .term-prompt {
+      white-space: pre;
+      color: var(--term-prompt);
+      margin-right: 2px;
+    }
+
+    .term-input-wrap {
+      position: relative;
+      flex: 1 1 auto;
+      display: inline-block;
+    }
+
+    .term-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--term-fg);
+      font-family: var(--term-font);
+      font-size: 14px;
+      caret-color: transparent; /* replaced by the block cursor overlay */
+    }
+
+    .term-mirror,
+    .term-charwidth {
+      position: absolute;
+      left: 0;
+      top: 0;
+      visibility: hidden;
+      white-space: pre;
+      font-family: var(--term-font);
+      font-size: 14px;
+    }
+
+    /*
+      Real block-cursor behavior: sits ON TOP of the character at the caret
+      position (not in a gap beside it) and inverts that character's color
+      via mix-blend-mode, so the letter stays fully legible — this is how
+      an actual terminal cursor works, and it's the fix for a real bug
+      (it previously just sat as an opaque block, hiding whatever letter
+      was under it, with no visible relation to the actual caret position).
+    */
+    .term-cursor {
+      position: absolute;
+      left: 0;
+      top: 1px;
+      height: 17px;
+      background: var(--term-fg);
+      mix-blend-mode: difference;
+      animation: term-blink 1s step-end infinite;
+      pointer-events: none;
+    }
+
+    @keyframes term-blink {
+      0%, 50% { opacity: 1; }
+      50.01%, 100% { opacity: 0; }
+    }
+
+    .term-body::-webkit-scrollbar { width: 8px; height: 8px; }
+    .term-body::-webkit-scrollbar-thumb {
+      background: var(--term-muted);
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal-root"></div>
+
+  <script src="./terminal-engine.js"></script>
+  <script src="./terminal-ui.js"></script>
+  <script>
+    TerminalUI.mount(document.getElementById("terminal-root"));
+  </script>
+</body>
+</html>
