@@ -350,9 +350,19 @@ export default function App() {
       img.src = '/preview (1).jpg'
     })
     const fontsReady = document.fonts?.ready ?? Promise.resolve()
+    // The 3D desk scene (three.js/r3f/drei + the scene module itself) is
+    // code-split — DeskBackdrop.jsx lazy-loads it separately, and until
+    // now the preloader had zero awareness of that fetch. Priming the
+    // same dynamic import here (Vite/Rollup dedupe by resolved module,
+    // not literal specifier text, so this is the same chunk the lazy()
+    // call resolves) means the loader actually waits on the background
+    // that's the whole reason a CLI-mode fallback exists, instead of
+    // finishing on fonts/hero-image alone and dropping the visitor into
+    // a still-loading background right after the loader disappears.
+    const deskSceneReady = import('./three/DeskScene').catch(() => {})
 
     Promise.race([
-      Promise.all([heroImageReady, fontsReady]),
+      Promise.all([heroImageReady, fontsReady, deskSceneReady]),
       new Promise(resolve => setTimeout(resolve, MAX_WAIT)),
     ]).then(() => {
       settled = true
