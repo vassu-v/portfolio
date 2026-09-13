@@ -229,7 +229,7 @@ def two_column(left_lines: list, right_lines: list, gap: int = 3) -> str:
 # ── Real content ─────────────────────────────────────────────────────────
 
 WHOAMI_PLAIN = (
-    "Shoryavardhaan Gupta - 17, Kolkata, India.\n"
+    "Shoryavardhaan Gupta - Kolkata, India.\n"
     "Student developer building AI applications, civic tech, and hardware projects.\n"
     "Currently: Kolkata Fork Lead @ Bits&Bytes, Youth Partner @ 4MQ.org.\n"
     "Also: Consultant @ 4MQ.org, Freelance UI/landing-page design.\n"
@@ -267,7 +267,7 @@ CONTACT_PLAIN = (
 
 def render_whoami() -> str:
     info = [
-        c("Shoryavardhaan Gupta", BOLD + FG) + c("  -  17, Kolkata, India", MUTED),
+        c("Shoryavardhaan Gupta", BOLD + FG) + c("  -  Kolkata, India", MUTED),
         "11th grade, South Point High School. Student developer building",
         "AI applications, civic tech, and hardware projects.",
         "",

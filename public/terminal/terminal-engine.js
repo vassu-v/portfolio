@@ -39,7 +39,7 @@
 
   var ABOUT_MD =
     "# Shoryavardhaan Gupta\n\n" +
-    "At 17, in 11th grade navigating PCM, while leading Bits&Bytes Kolkata, " +
+    "Currently in 11th grade navigating PCM, while leading Bits&Bytes Kolkata, " +
     "serving as Youth Partner at 4MQ.org, and building open-source tools " +
     "that solve real gaps, not demo projects.\n\n" +
     "Work spans hardware (LiFi mesh networks, Arduino reaction simulators), " +
@@ -330,7 +330,7 @@
   var REFUSED_COMMANDS = { mkdir: 1, rmdir: 1, rm: 1, touch: 1, mv: 1, cp: 1 };
 
   var WHOAMI_BIO =
-    "Shoryavardhaan Gupta - 17, Kolkata, India. 11th grade, South Point\n" +
+    "Shoryavardhaan Gupta - Kolkata, India. 11th grade, South Point\n" +
     "High School. Student developer building AI applications, civic tech,\n" +
     "and hardware projects.\n" +
     "\n" +

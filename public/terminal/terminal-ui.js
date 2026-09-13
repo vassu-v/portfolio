@@ -21,12 +21,23 @@
     return str
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
+  // Security note (fixed a real, if narrow, XSS finding): escapeHtml() now
+  // also encodes quotes, and this regex additionally excludes " and ' from
+  // the URL match itself (defense in depth) - previously a URL matched up
+  // to the first whitespace/'<', so file content ending in
+  // `https://x" onmouseover="...` could break out of the href="$1"
+  // attribute once inserted via innerHTML. Reachable only by a visitor
+  // saving crafted content with `nano` and viewing it with `cat` in their
+  // OWN mount-local session (no persistence, no other visitor affected),
+  // but worth closing properly regardless.
   function linkify(escapedText) {
     return escapedText.replace(
-      /(https?:\/\/[^\s<]+)/g,
+      /(https?:\/\/[^\s<"']+)/g,
       '<a class="term-hl-link" href="$1" target="_blank" rel="noreferrer">$1</a>'
     );
   }
@@ -121,14 +132,14 @@
     root.innerHTML =
       '<div class="term-window">' +
       '  <div class="term-body" id="term-body">' +
-      '    <div class="term-log" id="term-log"></div>' +
+      '    <div class="term-log" id="term-log" role="log" aria-live="polite" aria-relevant="additions"></div>' +
       '    <div class="term-inputline" id="term-inputline">' +
-      '      <span class="term-prompt" id="term-prompt"></span>' +
+      '      <span class="term-prompt" id="term-prompt" aria-hidden="true"></span>' +
       '      <span class="term-input-wrap">' +
-      '        <input class="term-input" id="term-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" />' +
+      '        <input class="term-input" id="term-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command input" />' +
       '        <span class="term-mirror" id="term-mirror" aria-hidden="true"></span>' +
       '        <span class="term-charwidth" id="term-charwidth" aria-hidden="true">0</span>' +
-      '        <span class="term-cursor" id="term-cursor">&nbsp;</span>' +
+      '        <span class="term-cursor" id="term-cursor" aria-hidden="true">&nbsp;</span>' +
       '      </span>' +
       '    </div>' +
       '  </div>' +
