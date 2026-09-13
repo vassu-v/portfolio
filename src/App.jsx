@@ -93,6 +93,24 @@ function Preloader({ progress }) {
           {String(Math.round(progress)).padStart(3, '0')}%
         </span>
       </div>
+
+      {/* Always-available escape hatch — same idea as Gmail's "load basic
+          HTML" link: a real <a> (full page nav, not the SPA router) so it
+          bypasses the 3D/background bundle entirely rather than waiting
+          on it, for slow connections or anyone who just wants the text. */}
+      <a
+        href="/terminal/index.html"
+        style={{
+          fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
+          letterSpacing: '0.06em', color: 'var(--text3)', textDecoration: 'none',
+          borderBottom: '1px solid var(--border2)', paddingBottom: '1px',
+          transition: 'color 0.2s, border-color 0.2s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu)' }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border2)' }}
+      >
+        switch to CLI mode
+      </a>
     </motion.div>
   )
 }
@@ -293,9 +311,22 @@ export default function App() {
   const [loadProgress, setLoadProgress] = useState(0)
 
   useEffect(() => {
+    console.log(
+      '%cpsst, curl this site: %ccurl shoryavardhaan.vercel.app',
+      'color:#8a8a8a;font-family:monospace',
+      'color:#c57b2b;font-family:monospace;font-weight:bold'
+    )
+  }, [])
+
+  useEffect(() => {
     if (!preloaderVisible) return
 
-    const MIN_VISIBLE = 900   // long enough for the animation to read as intentional
+    // 900ms measured as unrealistically short to actually read/click the
+    // "switch to CLI mode" link on a fast connection (confirmed live: the
+    // bar was already at 100% about to unmount within ~1s of landing) —
+    // 1300ms gives a fair chance without meaningfully hurting perceived
+    // load time on a real page.
+    const MIN_VISIBLE = 1300
     const MAX_WAIT     = 4500 // never hold a slow connection hostage
     const start = performance.now()
     let settled = false
@@ -319,9 +350,19 @@ export default function App() {
       img.src = '/preview (1).jpg'
     })
     const fontsReady = document.fonts?.ready ?? Promise.resolve()
+    // The 3D desk scene (three.js/r3f/drei + the scene module itself) is
+    // code-split — DeskBackdrop.jsx lazy-loads it separately, and until
+    // now the preloader had zero awareness of that fetch. Priming the
+    // same dynamic import here (Vite/Rollup dedupe by resolved module,
+    // not literal specifier text, so this is the same chunk the lazy()
+    // call resolves) means the loader actually waits on the background
+    // that's the whole reason a CLI-mode fallback exists, instead of
+    // finishing on fonts/hero-image alone and dropping the visitor into
+    // a still-loading background right after the loader disappears.
+    const deskSceneReady = import('./three/DeskScene').catch(() => {})
 
     Promise.race([
-      Promise.all([heroImageReady, fontsReady]),
+      Promise.all([heroImageReady, fontsReady, deskSceneReady]),
       new Promise(resolve => setTimeout(resolve, MAX_WAIT)),
     ]).then(() => {
       settled = true

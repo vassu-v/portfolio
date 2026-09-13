@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { AGE, YEAR } from '../utils/meta'
 
@@ -146,6 +146,40 @@ function MagneticCTA({ href, icon, label, secondary }) {
   )
 }
 
+// ── Curl hint ──────────────────────────────────────────────────────────────────
+
+function CurlHint() {
+  const [copied, setCopied] = useState(false)
+  const cmd = 'curl https://shoryavardhaan.vercel.app'
+
+  const handleClick = async () => {
+    try {
+      await navigator.clipboard.writeText(cmd)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1600)
+    } catch {
+      // clipboard access can fail (permissions, insecure context) — fail quiet
+    }
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      title="Click to copy"
+      style={{
+        fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem',
+        color: 'var(--text3)', opacity: 0.55, background: 'none', border: 'none',
+        cursor: 'pointer', padding: 0, marginTop: '6px', display: 'block',
+        transition: 'opacity 0.2s, color 0.2s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.color = 'var(--cu)' }}
+      onMouseLeave={e => { e.currentTarget.style.opacity = 0.55; e.currentTarget.style.color = 'var(--text3)' }}
+    >
+      {copied ? 'copied to clipboard ✓' : `// ${cmd}`}
+    </button>
+  )
+}
+
 // ── Footer ─────────────────────────────────────────────────────────────────────
 
 export default function Footer() {
@@ -210,6 +244,7 @@ export default function Footer() {
           <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: 'var(--text3)', opacity: 0.45 }}>
             © {YEAR} Shoryavardhaan Gupta &nbsp;·&nbsp; {AGE} y/o &nbsp;·&nbsp; Kolkata, India
           </p>
+          <CurlHint />
         </motion.div>
       </footer>
     </>

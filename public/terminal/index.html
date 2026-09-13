@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>shoryavardhaan :: terminal</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <meta name="description" content="Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI. A no-chrome terminal easter egg, the fast, text-only escape hatch off the main site." />
+  <meta name="author" content="Shoryavardhaan Gupta" />
+
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://shoryavardhaan.vercel.app/terminal/index.html" />
+  <meta property="og:title"       content="shoryavardhaan :: terminal" />
+  <meta property="og:description" content="Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI." />
+  <meta property="og:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name"   content="Shoryavardhaan Gupta" />
+
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:url"         content="https://shoryavardhaan.vercel.app/terminal/index.html" />
+  <meta name="twitter:title"       content="shoryavardhaan :: terminal" />
+  <meta name="twitter:description" content="Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI." />
+  <meta name="twitter:image"       content="https://shoryavardhaan.vercel.app/og-image.png" />
+  <meta name="twitter:creator"     content="@shoryavardhaan" />
+
+  <link rel="canonical" href="https://shoryavardhaan.vercel.app/terminal/index.html" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://shoryavardhaan.vercel.app/terminal/index.html",
+        "url": "https://shoryavardhaan.vercel.app/terminal/index.html",
+        "name": "shoryavardhaan :: terminal",
+        "description": "Interactive CLI portfolio for Shoryavardhaan Gupta, a student builder from Kolkata, India shipping civic tech, hardware, and AI.",
+        "isPartOf": { "@id": "https://shoryavardhaan.vercel.app/#website" },
+        "about": { "@id": "https://shoryavardhaan.vercel.app/#person" },
+        "inLanguage": "en-IN"
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    /*
+      Raw-terminal build spec, grounded in real references (Alacritty/kitty/
+      xterm defaults, real no-chrome terminal-portfolio sites) rather than
+      an "app window" mockup:
+        - pure/near-pure black background, not a dark-UI gray
+        - zero border-radius anywhere
+        - no border, no box-shadow
+        - NO title bar / traffic-light cluster — the single strongest
+          "fake mac app" signal, dropped entirely
+        - small (not generous) padding between text and the viewport edge
+        - full-bleed layout, not a centered narrow card
+      Color roles - 60/30/10 balance, per direct feedback that copper/orange
+      was dominating everything:
+        - 60% dominant neutral: --term-fg (body text) + --term-muted
+          (rule/box-drawing characters, secondary text)
+        - 30% supporting hues, each with one real job: --term-accent (cyan,
+          links/URLs), --term-violet (labels/keys), --term-teal (headline-
+          style values / box titles)
+        - 10% minority accent: --term-copper, held to the prompt glyph, the
+          boot banner gradient, and nothing else - it is no longer the
+          default color for every label and every box border.
+    */
+    :root {
+      --term-bg: #0a0a0a;
+      /* Tokyo-Night-derived neutral, matching api/cli.py's FG/MUTED exactly
+         so the web terminal and the `curl` output read as the same palette.
+         Copper is now a deliberate minority accent (prompt + banner) rather
+         than the base foreground color. `theme <name>` still switches to
+         the other palettes on request. */
+      --term-fg: #c0caf5;
+      --term-prompt: #c57b2b;
+      --term-accent: #7dcfff;
+      --term-muted: #565f89;
+      --term-error: #f7768e;
+      --term-copper: #c57b2b;
+      --term-violet: #9d7cd8;
+      --term-teal: #73daca;
+      --term-font: "JetBrains Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: var(--term-bg);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    #terminal-root {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .term-window {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--term-bg);
+      overflow: hidden;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+    }
+
+    .term-body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 14px 16px;
+      font-family: var(--term-font);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--term-fg);
+    }
+
+    .term-line {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .term-boot-line {
+      color: var(--term-muted);
+      font-size: 13px;
+      animation: term-boot-fade 0.25s ease-out both;
+    }
+
+    @keyframes term-boot-fade {
+      from { opacity: 0; transform: translateY(2px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .term-banner-gradient {
+      background: linear-gradient(90deg, var(--term-copper), var(--term-accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-size: 13px;
+      line-height: 1.1;
+      margin: 8px 0 4px;
+      white-space: pre;
+      overflow-x: auto;
+      animation: term-banner-reveal 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    /* Name banner wipes in left-to-right instead of appearing instantly -
+       the web equivalent of the curl side's row-by-row streamed reveal. */
+    @keyframes term-banner-reveal {
+      from { clip-path: inset(0 100% 0 0); opacity: 0.3; }
+      to { clip-path: inset(0 0 0 0); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .term-banner-gradient { animation: none; }
+      .term-boot-line { animation: none; }
+    }
+
+    /* The name banner (~90 chars wide) renders far wider than a phone
+       viewport at desktop font-size — this used to just clip mid-character
+       with a barely-visible scrollbar as the only cue there was more.
+       Shrink it to fit narrow screens without scrolling instead. */
+    @media (max-width: 600px) {
+      .term-banner-gradient { font-size: 5px; }
+    }
+
+    .term-echo-prompt {
+      color: var(--term-prompt);
+      margin-right: 2px;
+    }
+
+    .term-echo-cmd {
+      color: var(--term-accent);
+    }
+
+    .term-output {
+      color: var(--term-fg);
+    }
+
+    /* Structured output styling - differentiates headers/labels/links
+       from plain body text instead of one flat color for everything.
+       Header = teal (headline-style content), label = violet (keys),
+       link = accent cyan - three distinct supporting hues, no copper. */
+    .term-hl-header {
+      color: var(--term-teal);
+      font-weight: bold;
+    }
+
+    .term-hl-label {
+      color: var(--term-violet);
+    }
+
+    .term-hl-link {
+      color: var(--term-accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    .term-hl-link:hover {
+      border-bottom-color: var(--term-accent);
+    }
+
+    /* Bordered panel for identity/system-info output (whoami, neofetch) -
+       rendered from real Unicode box-drawing characters (┌─┐│└┘) as
+       monospace text, matching the curl/ANSI side's `box()` technique,
+       rather than a generic CSS `border` rectangle. Built in JS (see
+       appendBoxedOutput in terminal-ui.js); this class only sets layout. */
+    .term-box {
+      margin: 10px 0;
+      overflow-x: auto;
+    }
+    .term-box-line {
+      white-space: pre;
+    }
+    .term-box-border {
+      color: var(--term-muted);
+    }
+    .term-box-title-inline {
+      color: var(--term-teal);
+    }
+
+    .term-exited {
+      color: var(--term-error);
+    }
+
+    .term-nano-banner {
+      margin-top: 6px;
+      margin-bottom: 4px;
+      padding: 4px 8px;
+      border: 1px dashed var(--term-accent);
+      border-radius: 0;
+      color: var(--term-accent);
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    .term-inputline {
+      display: flex;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .term-inputline.term-nano-mode {
+      border-left: 3px solid var(--term-accent);
+      padding-left: 8px;
+    }
+
+    .term-prompt {
+      white-space: pre;
+      color: var(--term-prompt);
+      margin-right: 2px;
+    }
+
+    .term-input-wrap {
+      position: relative;
+      flex: 1 1 auto;
+      display: inline-block;
+    }
+
+    .term-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--term-fg);
+      font-family: var(--term-font);
+      font-size: 14px;
+      caret-color: transparent; /* replaced by the block cursor overlay */
+    }
+
+    .term-mirror,
+    .term-charwidth {
+      position: absolute;
+      left: 0;
+      top: 0;
+      visibility: hidden;
+      white-space: pre;
+      font-family: var(--term-font);
+      font-size: 14px;
+    }
+
+    /*
+      Real block-cursor behavior: sits ON TOP of the character at the caret
+      position (not in a gap beside it) and inverts that character's color
+      via mix-blend-mode, so the letter stays fully legible — this is how
+      an actual terminal cursor works, and it's the fix for a real bug
+      (it previously just sat as an opaque block, hiding whatever letter
+      was under it, with no visible relation to the actual caret position).
+    */
+    .term-cursor {
+      position: absolute;
+      left: 0;
+      top: 1px;
+      height: 17px;
+      background: var(--term-fg);
+      mix-blend-mode: difference;
+      animation: term-blink 1s step-end infinite;
+      pointer-events: none;
+    }
+
+    @keyframes term-blink {
+      0%, 50% { opacity: 1; }
+      50.01%, 100% { opacity: 0; }
+    }
+
+    .term-body::-webkit-scrollbar { width: 8px; height: 8px; }
+    .term-body::-webkit-scrollbar-thumb {
+      background: var(--term-muted);
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal-root"></div>
+
+  <script src="./terminal-engine.js"></script>
+  <script src="./terminal-ui.js"></script>
+  <script>
+    TerminalUI.mount(document.getElementById("terminal-root"));
+  </script>
+</body>
+</html>
