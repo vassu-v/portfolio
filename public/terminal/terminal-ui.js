@@ -24,35 +24,59 @@
       .replace(/>/g, "&gt;");
   }
 
-  // Real portrait, ASCII-rendered so it stays "in system" (monospace
-  // character art) rather than breaking the terminal illusion with a
-  // normal floating <img> - shown once during boot, per design research.
-  // v3: compact portrait - replaces both the earlier partial (only showed
-  // the top of the head) and oversized (100+ cols, way too big) versions.
-  // Same art now used on the curl side (api/cli.py's ASCII_PORTRAIT_LINES).
-  var ASCII_PORTRAIT = [
-    "                      .=***###*+**-.",
-    "                   .+###%#*##*##+#%%%+",
-    "                   *%##%%%%@@@%%@%#%%%*:",
-    "                  +%@@@@%%%#++**#%%%%%#*.",
-    "                  *%@%*=-:.....:--=+#%##.",
-    "                  +@%=:...   .......:%%%:",
-    "                  -@=-=+*#*=--=***=-:.*%:",
-    "                  =#.-*####+:.=**%#*+:.*=:",
-    "                  -=.  .::..  ....    .+=.",
-    "                  .:.    :: ... --....:::",
-    "                   .:---++-=***=-++==-::",
-    "                    .-==+##=:::-*++=--:",
-    "                     .=+=--==++=--=+=-",
-    "                    .=-+*+-:....:=+++.*:",
-    "                .+#*#= +***********+=+ ####+.",
-    "               +*####  :++**###**+++*   *%##*-",
-    "            .+*#####%.  :**++++++***   .%##%##*=.",
-    "        .-***#%%%%%%#*.*=:++++++++= + -#%%%%#%%#**+:.",
-    "      *####%%%%%%@%%%%%#-:: ----:.==#%%%%%@@@%%%%%%##*+.",
-    "      #%%%%%%%%%%%%%@@%@%%#.  :.:-%%%@%@@%%%%%%%%%%%%%##-",
-    "      %@@%%@%%%%%%%%%@%@@@@@@-:#@@@@@@%%%%%%%%%%%@%%@%%%#-",
-  ].join("\n");
+  function linkify(escapedText) {
+    return escapedText.replace(
+      /(https?:\/\/[^\s<]+)/g,
+      '<a class="term-hl-link" href="$1" target="_blank" rel="noreferrer">$1</a>'
+    );
+  }
+
+  // Lightweight, presentation-only line classifier — colors labels/headers/
+  // links differently from plain body text, so command OUTPUT reads as
+  // structured content instead of one flat color for everything. Purely a
+  // UI-layer concern: the engine still just returns plain strings.
+  function formatOutputLine(line) {
+    var m;
+
+    // Markdown-style heading (from `cat`-ing a .md file)
+    m = line.match(/^(#{1,3})\s+(.*)$/);
+    if (m) return '<span class="term-hl-header">' + escapeHtml(m[2]) + "</span>";
+
+    // man-page section headers
+    if (/^(NAME|SYNOPSIS|DESCRIPTION)$/.test(line.trim())) {
+      return '<span class="term-hl-header">' + escapeHtml(line) + "</span>";
+    }
+
+    // numbered list entry ("1. Title", "1) Title" - blog listing)
+    m = line.match(/^(\s*)(\d+)([.)])(\s+)(.*)$/);
+    if (m) {
+      return (
+        escapeHtml(m[1]) +
+        '<span class="term-hl-label">' + m[2] + m[3] + "</span>" +
+        escapeHtml(m[4]) +
+        linkify(escapeHtml(m[5]))
+      );
+    }
+
+    // "Label   value" - two+ spaces separating a short label from its value
+    // (whoami/neofetch/man SYNOPSIS-style key-value lines)
+    m = line.match(/^(\s*)(\S[\w()&/'.-]*(?:\s[\w()&/'.-]+)*?)(\s{2,})(\S.*)$/);
+    if (m) {
+      return (
+        escapeHtml(m[1]) +
+        '<span class="term-hl-label">' + escapeHtml(m[2]) + "</span>" +
+        escapeHtml(m[3]) +
+        linkify(escapeHtml(m[4]))
+      );
+    }
+
+    return linkify(escapeHtml(line));
+  }
+
+  // Commands whose output reads better as a bordered panel (identity/
+  // system-info style content) than a flat scroll of lines - mirrors the
+  // box treatment already used on the curl/ANSI side.
+  var BOXED_COMMANDS = { whoami: "whoami", neofetch: "neofetch" };
 
   // UI-only glyph table for the boot splash's name banner - deliberately
   // NOT shared with terminal-engine.js's own banner/figlet command glyphs;
@@ -166,8 +190,28 @@
       if (text === "") return;
       var lines = text.split("\n");
       for (var i = 0; i < lines.length; i++) {
-        appendLine(escapeHtml(lines[i]) || "&nbsp;", "term-output");
+        appendLine(formatOutputLine(lines[i]) || "&nbsp;", "term-output");
       }
+    }
+
+    // Bordered panel for identity/system-info style output (whoami,
+    // neofetch) - one DOM element instead of a flat run of .term-output
+    // lines, matching the boxed treatment already used on the curl side.
+    function appendBoxedOutput(text, title) {
+      if (text === "") return;
+      var lines = text.split("\n");
+      var box = document.createElement("div");
+      box.className = "term-box";
+      var titleEl = document.createElement("span");
+      titleEl.className = "term-box-title";
+      titleEl.textContent = title;
+      box.appendChild(titleEl);
+      for (var i = 0; i < lines.length; i++) {
+        var lineEl = document.createElement("div");
+        lineEl.innerHTML = formatOutputLine(lines[i]) || "&nbsp;";
+        box.appendChild(lineEl);
+      }
+      logEl.appendChild(box);
     }
 
     function clearLog() {
@@ -226,12 +270,19 @@
 
       var isSudoPromptOutput = state.awaiting_password && output === "[sudo] password for visitor: ";
 
+      var cmdName = raw.trim().split(/\s+/)[0];
+      var boxedTitle = !wasEditor && !wasPassword ? BOXED_COMMANDS[cmdName] : null;
+
       if (state.clear) {
         clearLog();
       } else if (output && !isSudoPromptOutput) {
         // the sudo prompt text is rendered as the next input row's prompt
         // instead of a log line, to avoid showing it twice.
-        appendOutput(output);
+        if (boxedTitle) {
+          appendBoxedOutput(output, boxedTitle);
+        } else {
+          appendOutput(output);
+        }
       }
 
       applyThemeFont();
@@ -319,7 +370,6 @@
           return;
         }
         appendLine('<pre class="term-banner-gradient">' + escapeHtml(renderNameBanner()) + "</pre>");
-        appendLine('<pre class="term-ascii">' + escapeHtml(ASCII_PORTRAIT) + "</pre>");
         appendOutput("Type `help` to see available commands. Type `exit` to leave.");
         inputEl.disabled = false;
         scrollToBottom();
