@@ -33,11 +33,17 @@ RESET = "\033[0m"
 BOLD = "\033[1m"
 DIM = "\033[2m"
 
-# Role-based palette, not one accent doing everything:
-COPPER = "\033[38;2;197;123;43m"   # headers/labels - matches var(--cu) on the real site
+# Role-based palette, 60/30/10: FG/MUTED are the dominant neutral (body text
+# + borders/rules), ACCENT/VIOLET/TEAL are the three supporting hues doing
+# real semantic work (links / labels-keys / headline-values), and COPPER is
+# held to a small minority - the name banner gradient and section-title
+# accents only. It is NOT the default color for every label/border anymore.
+COPPER = "\033[38;2;197;123;43m"   # banner + section-title accent only - matches var(--cu)
 FG = "\033[38;2;192;202;245m"      # body text (Tokyo Night foreground, matches web terminal)
 ACCENT = "\033[38;2;125;207;255m"  # links/URLs
-MUTED = "\033[38;2;86;95;137m"     # rule characters, secondary text
+MUTED = "\033[38;2;86;95;137m"     # rule characters, box borders, secondary text
+VIOLET = "\033[38;2;157;124;216m"  # labels/keys (whoami field names, contact labels, list indices)
+TEAL = "\033[38;2;115;218;202m"    # headline-style values (project/blog titles, box titles)
 
 GRADIENT_START = (197, 123, 43)    # copper
 GRADIENT_END = (125, 207, 255)     # accent cyan
@@ -84,7 +90,7 @@ def rule_with_title(title: str, width: int = RULE_WIDTH) -> str:
     return c("─" * left, MUTED) + c(label, COPPER) + c("─" * right, MUTED)
 
 
-def box(lines: list, title: str = None, width: int = None) -> str:
+def box(lines: list, title: str = None, width: int = None, title_color: str = TEAL) -> str:
     inner_w = width or max((_visible_len(l) for l in lines), default=0)
     inner_w = max(inner_w, _visible_len(title) + 2 if title else 0)
 
@@ -93,7 +99,7 @@ def box(lines: list, title: str = None, width: int = None) -> str:
         pad = inner_w + 2 - _visible_len(title_disp)
         left = pad // 2
         right = pad - left
-        top = c("┌" + "─" * left, MUTED) + c(title_disp, COPPER) + c("─" * right + "┐", MUTED)
+        top = c("┌" + "─" * left, MUTED) + c(title_disp, title_color) + c("─" * right + "┐", MUTED)
     else:
         top = c("┌" + "─" * (inner_w + 2) + "┐", MUTED)
 
@@ -265,21 +271,21 @@ def render_whoami() -> str:
         "11th grade, South Point High School. Student developer building",
         "AI applications, civic tech, and hardware projects.",
         "",
-        c("Currently   ", COPPER) + "Kolkata Fork Lead @ Bits&Bytes",
-        c("            ", COPPER) + "Youth Partner @ 4MQ.org",
-        c("Also        ", COPPER) + "Consultant @ 4MQ.org",
-        c("            ", COPPER) + "Freelance UI / landing-page design",
-        c("Research    ", COPPER) + "Grounded/embodied AI planning - published on",
-        c("            ", COPPER) + "Zenodo, written at 15. ORCID 0009-0009-1370-5230",
-        c("Recognition ", COPPER) + "India Innovates 2026 - Top 1,000 / 26,000+ entries",
-        c("            ", COPPER) + "CBSE Regional Science Exhibition 2025-26",
+        c("Currently   ", VIOLET) + "Kolkata Fork Lead @ Bits&Bytes",
+        c("            ", VIOLET) + "Youth Partner @ 4MQ.org",
+        c("Also        ", VIOLET) + "Consultant @ 4MQ.org",
+        c("            ", VIOLET) + "Freelance UI / landing-page design",
+        c("Research    ", VIOLET) + "Grounded/embodied AI planning - published on",
+        c("            ", VIOLET) + "Zenodo, written at 15. ORCID 0009-0009-1370-5230",
+        c("Recognition ", VIOLET) + "India Innovates 2026 - Top 1,000 / 26,000+ entries",
+        c("            ", VIOLET) + "CBSE Regional Science Exhibition 2025-26",
         "",
-        c("GitHub      ", COPPER) + c("https://github.com/vassu-v", ACCENT),
-        c("LinkedIn    ", COPPER) + c("https://www.linkedin.com/in/shoryavardhaan", ACCENT),
-        c("More info   ", COPPER) + c("https://shoryavardhaan.vercel.app/blog/why-i-build", ACCENT),
-        c("Portfolio   ", COPPER) + c("https://shoryavardhaan.vercel.app", ACCENT),
+        c("GitHub      ", VIOLET) + c("https://github.com/vassu-v", ACCENT),
+        c("LinkedIn    ", VIOLET) + c("https://www.linkedin.com/in/shoryavardhaan", ACCENT),
+        c("More info   ", VIOLET) + c("https://shoryavardhaan.vercel.app/blog/why-i-build", ACCENT),
+        c("Portfolio   ", VIOLET) + c("https://shoryavardhaan.vercel.app", ACCENT),
     ]
-    art = [c(line, COPPER) for line in ASCII_PORTRAIT_LINES]
+    art = [c(line, MUTED) for line in ASCII_PORTRAIT_LINES]
     return two_column(art, info)
 
 
@@ -290,6 +296,7 @@ def render_commands(host: str) -> str:
         (f"curl {host}/projects", "project list"),
         (f"curl {host}/blog", "writing"),
         (f"curl {host}/contact", "get in touch"),
+        (f"curl {host}/animate", "watch this"),
     ]
     w = max(len(a) for a, _ in rows)
     lines = []
@@ -301,7 +308,7 @@ def render_commands(host: str) -> str:
 def render_projects() -> str:
     lines = [rule_with_title("projects"), ""]
     for i, (name, desc, url) in enumerate(PROJECTS):
-        lines.append(c(name, BOLD + FG))
+        lines.append(c(name, BOLD + TEAL))
         lines.append(c(f"  {desc}", MUTED))
         lines.append("  " + c(url, ACCENT))
         if i != len(PROJECTS) - 1:
@@ -312,7 +319,7 @@ def render_projects() -> str:
 def render_blog() -> str:
     lines = [rule_with_title("blog"), ""]
     for i, (title, url) in enumerate(BLOG_POSTS, start=1):
-        lines.append(c(f"{i}. ", COPPER) + c(title, BOLD + FG))
+        lines.append(c(f"{i}. ", VIOLET) + c(title, BOLD + TEAL))
         lines.append("   " + c(url, ACCENT))
         if i != len(BLOG_POSTS):
             lines.append("")
@@ -323,8 +330,8 @@ def render_contact() -> str:
     lines = [
         rule_with_title("contact"),
         "",
-        c("Email     ", COPPER) + c("shoryavardhaans2@gmail.com", ACCENT),
-        c("Calendar  ", COPPER) + c("https://cal.com/shoryavardhaan", ACCENT),
+        c("Email     ", VIOLET) + c("shoryavardhaans2@gmail.com", ACCENT),
+        c("Calendar  ", VIOLET) + c("https://cal.com/shoryavardhaan", ACCENT),
     ]
     return "\n".join(lines)
 
@@ -370,6 +377,67 @@ async def stream_root(host: str):
     yield render_whoami() + "\n\n"
     yield render_commands(host) + "\n\n"
     yield c("Full site: ", MUTED) + c("https://shoryavardhaan.vercel.app", ACCENT) + "\n\n"
+
+
+# ── Animation easter egg: `curl <host>/animate` ────────────────────────────
+# parrot.live-style clear-and-redraw: each frame is a full clear + repaint of
+# the same handful of lines in place, not a scroll-down log. Real chunked
+# HTTP response, one yield per WHOLE frame (never character-by-character -
+# see stream_root()'s docstring for why that measured ~6s on Vercel), with
+# asyncio.sleep between frames doing the actual pacing.
+
+CLEAR = "\033[H\033[2J"
+
+
+def _double_box(lines: list, border_color: str = COPPER) -> str:
+    """The one deliberate special-occasion use of heavy/double box-drawing
+    in this file, reserved for the /animate reveal payoff. Everywhere else
+    uses the light single-line box() above - do not change that."""
+    inner_w = max((_visible_len(l) for l in lines), default=0)
+    top = c("╔" + "═" * (inner_w + 2) + "╗", border_color)
+    bottom = c("╚" + "═" * (inner_w + 2) + "╝", border_color)
+    body = []
+    for line in lines:
+        fill = inner_w - _visible_len(line)
+        body.append(c("║ ", border_color) + line + " " * fill + c(" ║", border_color))
+    return "\n".join([top] + body + [bottom])
+
+
+async def stream_animate():
+    # Frame 1 (~0s): empty prompt, cursor blinking
+    yield CLEAR + "\n" + box([c("$ ", COPPER) + c("whoami_", FG)]) + "\n"
+    await asyncio.sleep(0.9)
+
+    # Frame 2 (~0.9s): typing the response, mid-word
+    yield CLEAR + "\n" + box([
+        c("$ ", COPPER) + c("whoami", FG),
+        c("> ", VIOLET) + c("shoryavardh-", TEAL),
+    ]) + "\n"
+    await asyncio.sleep(0.9)
+
+    # Frame 3 (~1.8s): full name, loading starts
+    yield CLEAR + "\n" + box([
+        c("$ ", COPPER) + c("whoami", FG),
+        c("> ", VIOLET) + c("shoryavardhaan gupta", TEAL),
+        c("loading... ", MUTED) + c("█████░░░░░", ACCENT),
+    ]) + "\n"
+    await asyncio.sleep(0.9)
+
+    # Frame 4 (~2.7s): loading complete, "done." - about to transition
+    yield CLEAR + "\n" + box([
+        c("$ ", COPPER) + c("whoami", FG),
+        c("> ", VIOLET) + c("shoryavardhaan gupta", TEAL),
+        c("loading... ", MUTED) + c("██████████", ACCENT),
+        c("done.", MUTED),
+    ]) + "\n"
+    await asyncio.sleep(0.9)
+
+    # Frame 5 (~3.6s, final): the real banner, held longer as the payoff
+    banner_lines = render_banner().split("\n")
+    fact = "17, Kolkata, India - building AI applications, civic tech, hardware"
+    reveal_lines = banner_lines + ["", c(fact, MUTED)]
+    yield CLEAR + "\n" + _double_box(reveal_lines, border_color=TEAL) + "\n\n"
+    await asyncio.sleep(2.0)
 
 
 # ── Routing ──────────────────────────────────────────────────────────────
@@ -426,3 +494,13 @@ async def cli_contact(request: fastapi.Request):
     if not is_curl(request):
         return JSONResponse({"contact": CONTACT_PLAIN.strip().split("\n")})
     return PlainTextResponse("\n" + render_contact() + "\n")
+
+
+@app.get("/animate")
+@app.get("/api/cli/animate")
+async def cli_animate(request: fastapi.Request):
+    if not is_curl(request):
+        return JSONResponse({
+            "hint": "this is a curl-only animation - try: curl " + str(request.url)
+        })
+    return StreamingResponse(stream_animate(), media_type="text/plain")

@@ -195,22 +195,49 @@
     }
 
     // Bordered panel for identity/system-info style output (whoami,
-    // neofetch) - one DOM element instead of a flat run of .term-output
-    // lines, matching the boxed treatment already used on the curl side.
+    // neofetch) - built from real Unicode box-drawing characters (┌─┐│└┘)
+    // as monospace text lines, the same technique api/cli.py's box() uses
+    // for the curl/ANSI side, instead of a generic CSS `border` rectangle.
     function appendBoxedOutput(text, title) {
       if (text === "") return;
       var lines = text.split("\n");
+
+      var width = 0;
+      for (var i = 0; i < lines.length; i++) width = Math.max(width, lines[i].length);
+      width = Math.max(width, title.length + 2);
+
       var box = document.createElement("div");
       box.className = "term-box";
-      var titleEl = document.createElement("span");
-      titleEl.className = "term-box-title";
-      titleEl.textContent = title;
-      box.appendChild(titleEl);
-      for (var i = 0; i < lines.length; i++) {
-        var lineEl = document.createElement("div");
-        lineEl.innerHTML = formatOutputLine(lines[i]) || "&nbsp;";
-        box.appendChild(lineEl);
+
+      function addLine(html) {
+        var div = document.createElement("div");
+        div.className = "term-box-line";
+        div.innerHTML = html;
+        box.appendChild(div);
       }
+
+      var titleDisp = " " + title + " ";
+      var pad = width + 2 - titleDisp.length;
+      var left = Math.floor(pad / 2);
+      var right = pad - left;
+      addLine(
+        '<span class="term-box-border">┌' + "─".repeat(left) + "</span>" +
+        '<span class="term-box-title-inline">' + escapeHtml(titleDisp) + "</span>" +
+        '<span class="term-box-border">' + "─".repeat(right) + "┐</span>"
+      );
+
+      for (var j = 0; j < lines.length; j++) {
+        var fill = width - lines[j].length;
+        addLine(
+          '<span class="term-box-border">│ </span>' +
+          (formatOutputLine(lines[j]) || "&nbsp;") +
+          " ".repeat(Math.max(fill, 0)) +
+          '<span class="term-box-border"> │</span>'
+        );
+      }
+
+      addLine('<span class="term-box-border">└' + "─".repeat(width + 2) + "┘</span>");
+
       logEl.appendChild(box);
     }
 
