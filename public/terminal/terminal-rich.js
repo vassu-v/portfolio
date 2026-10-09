@@ -95,6 +95,18 @@
     };
   };
   C.neofetch = C.welcome;
+  C.fastfetch = C.welcome;
+
+  // short greeting used when the fastfetch pane is already on screen
+  C.motd = function () {
+    var last = new Date(Date.now() - 1000 * 60 * 47);
+    return {
+      html: '<div class="k-motd"><p><span class="k-name">Welcome to ShoryaOS</span> <span class="k-dim">(arch, btw) · tty1</span></p>' +
+        '<p class="k-dim">Last login: ' + esc(last.toDateString()) + " " + esc(last.toTimeString().slice(0, 5)) + " from your browser</p>" +
+        "<p>I'm Shoryavardhaan, " + esc(age()) + ", building civic tech, hardware and AI from Kolkata. This terminal is the fast way through everything.</p></div>" +
+        hint("start here: " + cmd("about") + " " + cmd("projects") + " " + cmd("work") + " " + cmd("blog") + " " + cmd("wins") + " " + cmd("contact") + " · or " + cmd("help")),
+    };
+  };
 
   C.help = function () {
     var group = function (title, rows) {
@@ -246,7 +258,7 @@
   C.date = function () { return { html: "<p>" + esc(new Date().toString()) + "</p>" }; };
   C.echo = function (args) { return { html: "<p>" + esc(args.join(" ")) + "</p>" }; };
 
-  var THEMES = ["copper", "phosphor", "paper", "mono"];
+  var THEMES = ["shorya", "catppuccin", "gruvbox", "nord", "paper"];
   C.theme = function (args) {
     var t = (args[0] || "").toLowerCase();
     if (THEMES.indexOf(t) === -1) {

@@ -52,35 +52,58 @@
 </head>
 <body>
   <a class="skip" href="#cmd">skip to the command line</a>
-  <div class="window" id="window">
-    <header class="titlebar">
-      <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-      <span class="title">shorya@kolkata <span class="title__path" id="title-path">~</span></span>
-      <nav class="titlebar__actions" aria-label="site">
-        <button type="button" class="tb-btn" data-cmd="theme">theme</button>
-        <a class="tb-btn" href="/">3D room ↗</a>
-      </nav>
-    </header>
-    <main id="log" class="log" role="log" aria-live="polite" aria-label="terminal output"></main>
-    <form class="promptbar" id="promptbar" autocomplete="off">
-      <label class="prompt" for="cmd" id="prompt"><span class="p-user">visitor</span><span class="p-at">@</span><span class="p-host">shorya</span> <span class="p-path">~</span> <span class="p-arrow">❯</span></label>
-      <div class="field">
-        <div class="ghost" aria-hidden="true"><span class="ghost__typed"></span><span class="ghost__rest"></span></div>
-        <input id="cmd" name="cmd" type="text" spellcheck="false" autocapitalize="none" autocorrect="off" enterkeyhint="go" aria-describedby="hintline" />
-      </div>
-    </form>
-    <p class="hintline" id="hintline">type a command, or tap one below · <kbd>Tab</kbd> completes</p>
-    <nav class="chips" id="chips" aria-label="quick commands"></nav>
+
+  <!-- status bar (waybar-style) -->
+  <header class="bar" role="banner">
+    <nav class="ws" id="workspaces" aria-label="workspaces"></nav>
+    <div class="bar__title" id="bar-title">kitty — ~</div>
+    <div class="bar__mods">
+      <span class="mod mod--kol" title="Shorya's time (Kolkata)"><b>KOL</b> <span id="clock-kol">--:--</span></span>
+      <span class="mod mod--you" title="your time"><b>YOU</b> <span id="clock-you">--:--</span></span>
+      <button type="button" class="mod mod--btn" data-cmd="theme" title="change theme">theme</button>
+      <a class="mod mod--btn mod--exit" href="/" title="back to the 3D room">⏻ 3d</a>
+    </div>
+  </header>
+
+  <!-- tiled windows (hyprland-style, master + stack) -->
+  <div class="tiles">
+    <section class="win win--term is-active" id="window" aria-label="terminal">
+      <header class="win__head"><span class="win__app">kitty</span><span class="win__path" id="title-path">~</span></header>
+      <main id="log" class="log" role="log" aria-live="polite" aria-label="terminal output"></main>
+      <form class="promptbar" id="promptbar" autocomplete="off">
+        <label class="prompt" for="cmd" id="prompt">
+          <span class="seg seg--user">visitor</span><span class="seg seg--path p-path">~</span><span class="seg seg--git">main</span>
+        </label>
+        <span class="p-arrow" aria-hidden="true">❯</span>
+        <div class="field">
+          <div class="ghost" aria-hidden="true"><span class="ghost__typed"></span><span class="ghost__rest"></span></div>
+          <input id="cmd" name="cmd" type="text" spellcheck="false" autocapitalize="none" autocorrect="off" enterkeyhint="go" aria-describedby="hintline" />
+        </div>
+      </form>
+      <p class="hintline" id="hintline"><kbd>Tab</kbd> complete · <kbd>↑</kbd> history · <kbd>Alt</kbd>+<kbd>1-5</kbd> workspaces · click anything highlighted</p>
+      <nav class="chips" id="chips" aria-label="quick commands"></nav>
+    </section>
+
+    <div class="stack">
+      <section class="win win--fetch" aria-label="system info">
+        <header class="win__head"><span class="win__app">fastfetch</span></header>
+        <div class="fetch" id="fetch"></div>
+      </section>
+      <section class="win win--top" aria-label="what's running">
+        <header class="win__head"><span class="win__app">htop</span><span class="win__path">what's running</span></header>
+        <div class="top" id="top"></div>
+      </section>
+    </div>
   </div>
 
   <noscript>
-    <p style="padding:24px;font-family:monospace;color:#eee">This terminal needs JavaScript. The plain site is at <a href="/?classic" style="color:#D4983A">/?classic</a>.</p>
+    <p style="padding:24px;font-family:monospace;color:#eee">This terminal needs JavaScript. The plain site is at <a href="/?classic" style="color:#84D0E8">/?classic</a>.</p>
   </noscript>
 
   <script src="./terminal-data.js"></script>
   <script src="./terminal-engine.js"></script>
   <script src="./terminal-rich.js"></script>
   <script src="./terminal-ui.js"></script>
-  <script>TerminalUI.mount(document.getElementById("window"));</script>
+  <script>TerminalUI.mount(document.body);</script>
 </body>
 </html>

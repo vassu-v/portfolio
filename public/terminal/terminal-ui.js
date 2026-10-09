@@ -43,45 +43,111 @@
     return d[a.length][b.length]
   }
 
-  function portraitInto(pre) {
+  // chafa-style true-colour ASCII: each cell keeps its pixel's hue (sky blue,
+  // turban orange, skin), with a light saturation lift so it reads on dark.
+  function portraitInto(pre, cols, rows) {
+    cols = cols || 46; rows = rows || 30;
     var img = new Image();
     img.onload = function () {
-      var cols = 44, rows = 30;
       var c = document.createElement("canvas");
       c.width = cols; c.height = rows;
       var ctx = c.getContext("2d");
       var s = Math.min(img.width, img.height);
-      ctx.drawImage(img, (img.width - s) / 2, Math.max(0, (img.height - s) * 0.15), s, s, 0, 0, cols, rows);
+      ctx.drawImage(img, (img.width - s) / 2, Math.max(0, (img.height - s) * 0.1), s, s, 0, 0, cols, rows);
       var px = ctx.getImageData(0, 0, cols, rows).data;
-      var ramp = " .:-=+*#%@";
+      var ramp = " .,:;i1tfLCG08@";
       var out = "";
       for (var y = 0; y < rows; y++) {
-        var run = "", cls = "";
+        var run = "", col = "";
         for (var x = 0; x < cols; x++) {
           var i = (y * cols + x) * 4;
-          var l = (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
-          l = Math.min(1, Math.max(0, (l - 0.12) * 1.35));
-          var ch = ramp[Math.min(ramp.length - 1, Math.floor(l * ramp.length))];
-          var k = l < 0.25 ? "a1" : l < 0.5 ? "a2" : l < 0.78 ? "a3" : "a4";
-          if (k !== cls) { if (run) out += '<span class="' + cls + '">' + esc(run) + "</span>"; run = ""; cls = k; }
+          var r = px[i], g = px[i + 1], b = px[i + 2];
+          var l = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+          var ch = ramp[Math.min(ramp.length - 1, Math.floor(Math.pow(l, 0.8) * ramp.length))];
+          var m = (r + g + b) / 3;
+          var q = function (v) { return Math.max(0, Math.min(255, Math.round((m + (v - m) * 1.25) / 24) * 24)); };
+          var k = "rgb(" + q(r) + "," + q(g) + "," + q(b) + ")";
+          if (k !== col) { if (run) out += '<span style="color:' + col + '">' + esc(run) + "</span>"; run = ""; col = k; }
           run += ch;
         }
-        out += '<span class="' + cls + '">' + esc(run) + "</span>\n";
+        out += '<span style="color:' + col + '">' + esc(run) + "</span>\n";
       }
       pre.innerHTML = out;
     };
     img.src = "/preview (1).jpg";
   }
 
-  function mount(win) {
-    var log = win.querySelector("#log");
-    var input = win.querySelector("#cmd");
-    var form = win.querySelector("#promptbar");
+  function kolTime() {
+    try { return new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" }); }
+    catch (e) { return "--:--"; }
+  }
+
+  function renderFetch(el) {
+    var d = rich.data, a = rich.age();
+    var born = new Date(d.birth || "2009-09-02"), now = new Date();
+    var months = (now.getFullYear() - born.getFullYear()) * 12 + now.getMonth() - born.getMonth();
+    var rows = [
+      ["OS", 'ShoryaOS x86_64 <span class="rule">(arch, btw)</span>'],
+      ["Host", "a desk in Kolkata, IN"],
+      ["Kernel", a + ".0-builder"],
+      ["Uptime", Math.floor(months / 12) + " years, " + (months % 12) + " months"],
+      ["Packages", d.projects.length + " projects, " + d.posts.length + " essays, " + d.wins.length + " wins"],
+      ["Shell", "curiosity 5.9"],
+      ["WM", "hyprland (constraint-thinking)"],
+      ["Now", "Bits&amp;Bytes · 4MQ.org · freelance"],
+      ["Stack", "Python · C++ · JS · Arduino · IoT"],
+      ["School", "11th grade, PCM"],
+    ];
+    el.innerHTML =
+      '<pre class="fetch__art" aria-hidden="true"></pre>' +
+      '<div class="fetch__info"><div class="who">shorya<i>@</i>kolkata</div><div class="rule">────────────────</div>' +
+      rows.map(function (r) { return '<div><span class="k">' + r[0] + "</span>: " + r[1] + "</div>"; }).join("") +
+      '<div class="swatches" aria-hidden="true">' + ["--faint", "--err", "--ok", "--warn", "--accent", "--accent-2", "--dim", "--text"].map(function (v) { return '<i style="background:var(' + v + ')"></i>'; }).join("") + "</div></div>";
+    portraitInto(el.querySelector(".fetch__art"), 40, 26);
+  }
+
+  // htop: what's actually running in Shorya's life, as processes.
+  function renderTop(el) {
+    var d = rich.data;
+    var procs = d.work.map(function (w, i) {
+      return { pid: 1000 + i * 37, user: "shorya", st: w.live ? "R" : "S", cmd: w.org.toLowerCase().replace(/[^a-z0-9.&]+/g, "-") + " --" + w.role.toLowerCase().split(/[ ,&]+/)[0], run: "work " + (i + 1), cpu: w.live ? 18 + i * 3 : 0 };
+    }).concat(d.projects.slice(0, 3).map(function (p, i) {
+      return { pid: 2100 + i * 41, user: "shorya", st: "S", cmd: p.slug + " --maintain", run: "project " + p.slug, cpu: 2 + i };
+    })).concat([{ pid: 4242, user: "root", st: "R", cmd: "school --grade 11 --pcm", run: "about", cpu: 31 }]);
+    var meters = [["build", 0.74], ["ship", 0.62], ["learn", 0.88], ["sleep", 0.21]];
+    function bar(v) {
+      var n = 22, f = Math.round(v * n), cls = v > 0.85 ? "m3" : v > 0.65 ? "m2" : "";
+      return '[<b class="' + cls + '">' + "|".repeat(f) + "</b>" + " ".repeat(n - f) + "]";
+    }
+    function paint() {
+      var jit = function (v) { return Math.max(0.05, Math.min(0.99, v + (Math.random() - 0.5) * 0.08)); };
+      el.innerHTML =
+        meters.map(function (m) { var v = jit(m[1]); return '<div class="meter"><span class="meter__lbl">' + m[0] + '</span><span class="meter__bar">' + bar(v) + '</span><span class="meter__val">' + Math.round(v * 100) + "%</span></div>"; }).join("") +
+        '<p class="top__sum">Tasks: <b>' + procs.length + "</b>, " + procs.filter(function (p) { return p.st === "R"; }).length + " running · Load: 0.97 1.21 1.40 · Coffee: chai</p>" +
+        '<table class="proc"><thead><tr><th>PID</th><th>USER</th><th>S</th><th>CPU%</th><th>Command</th></tr></thead><tbody>' +
+        procs.map(function (p) {
+          var cpu = p.cpu ? (p.cpu + Math.random() * 4).toFixed(1) : "0.0";
+          return '<tr data-cmd="' + esc(p.run) + '" tabindex="0"><td>' + p.pid + "</td><td>" + p.user + '</td><td class="st-' + p.st + '">' + p.st + "</td><td>" + cpu + "</td><td>" + esc(p.cmd) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+    }
+    paint();
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(function () { if (!document.hidden) paint(); }, 2200);
+  }
+
+  var WORKSPACES = [["1", "home", "welcome"], ["2", "projects", "projects"], ["3", "work", "work"], ["4", "blog", "blog"], ["5", "contact", "contact"]];
+
+  function mount() {
+    var win = document.getElementById("window");
+    var log = document.getElementById("log");
+    var input = document.getElementById("cmd");
+    var form = document.getElementById("promptbar");
     var ghostTyped = win.querySelector(".ghost__typed");
     var ghostRest = win.querySelector(".ghost__rest");
     var promptPath = win.querySelector(".p-path");
-    var titlePath = win.querySelector("#title-path");
-    var chips = win.querySelector("#chips");
+    var titlePath = document.getElementById("title-path");
+    var barTitle = document.getElementById("bar-title");
+    var chips = document.getElementById("chips");
+    var wsEl = document.getElementById("workspaces");
     var embedded = global.top !== global.self;
     if (embedded) document.documentElement.classList.add("embedded");
 
@@ -92,9 +158,10 @@
 
     // ---------- theme ----------
     function setTheme(t) {
-      if (!t || t === "copper") document.documentElement.removeAttribute("data-theme");
+      if (["catppuccin", "gruvbox", "nord", "paper"].indexOf(t) === -1) t = "shorya";
+      if (t === "shorya") document.documentElement.removeAttribute("data-theme");
       else document.documentElement.setAttribute("data-theme", t);
-      try { localStorage.setItem(THEME_KEY, t || "copper"); } catch (e) { /* storage blocked */ }
+      try { localStorage.setItem(THEME_KEY, t); } catch (e) { /* storage blocked */ }
     }
     try { setTheme(localStorage.getItem(THEME_KEY)); } catch (e) { /* storage blocked */ }
 
@@ -102,7 +169,8 @@
     function entry(echo, html) {
       var div = document.createElement("div");
       div.className = "entry";
-      div.innerHTML = (echo !== null ? '<div class="echo"><span class="p-arrow">❯</span> <b>' + esc(echo) + "</b></div>" : "") + (html || "");
+      var path = promptPath.textContent;
+      div.innerHTML = (echo !== null ? '<div class="echo"><span class="seg seg--user">visitor</span><span class="seg seg--path">' + esc(path) + '</span><b>' + esc(echo) + "</b></div>" : "") + (html || "");
       log.appendChild(div);
       var pre = div.querySelector("[data-ascii-portrait]");
       if (pre) portraitInto(pre);
@@ -118,6 +186,7 @@
       var shown = p === "/" ? "~" : "~" + p;
       promptPath.textContent = state.in_editor ? "nano " + state.in_editor.display : shown;
       titlePath.textContent = shown;
+      barTitle.textContent = "kitty — " + shown + (history.length ? " — " + history[history.length - 1] : "");
     }
 
     function leave(to) {
@@ -140,6 +209,7 @@
       history.push(line);
       win.classList.remove("errored");
       var parts = line.trim().split(/\s+/);
+      markWorkspace(parts[0].toLowerCase());
       var name = parts[0].toLowerCase(), args = parts.slice(1);
 
       var out = rich.run(name, args);
@@ -263,6 +333,40 @@
       input.focus();
     });
 
+    function markWorkspace(name) {
+      var hit = WORKSPACES.filter(function (w) { return w[2] === name || (name === "project" && w[2] === "projects") || (name === "read" && w[2] === "blog"); })[0];
+      if (!hit) return;
+      [].forEach.call(wsEl.children, function (b) { b.classList.toggle("is-on", b.getAttribute("data-cmd") === hit[2]); });
+    }
+    WORKSPACES.forEach(function (w, i) {
+      var b = document.createElement("button");
+      b.type = "button"; b.setAttribute("data-cmd", w[2]); b.title = "Alt+" + w[0];
+      b.innerHTML = "<b>" + w[0] + "</b><span>" + w[1] + "</span>";
+      if (!i) b.classList.add("is-on");
+      wsEl.appendChild(b);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.altKey && /^[1-5]$/.test(e.key)) { e.preventDefault(); run(WORKSPACES[+e.key - 1][2]); }
+      var row = e.target.closest && e.target.closest("tr[data-cmd]");
+      if (row && e.key === "Enter") run(row.getAttribute("data-cmd"));
+    });
+    document.addEventListener("click", function (e) {
+      if (win.contains(e.target)) return;
+      var b = e.target.closest("[data-cmd]");
+      if (b) { e.preventDefault(); run(b.getAttribute("data-cmd")); }
+    });
+    function tickClocks() {
+      document.getElementById("clock-kol").textContent = kolTime();
+      document.getElementById("clock-you").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+    tickClocks();
+    setInterval(tickClocks, 15000);
+    var tiled = !embedded && matchMedia("(min-width: 861px)").matches;
+    if (tiled) {
+      renderFetch(document.getElementById("fetch"));
+      renderTop(document.getElementById("top"));
+    }
+
     CHIPS.concat(["theme"]).forEach(function (c) {
       var b = document.createElement("button");
       b.type = "button"; b.className = "chip"; b.textContent = c; b.setAttribute("data-cmd", c);
@@ -273,7 +377,7 @@
     if (!embedded) chips.appendChild(home);
 
     // ---------- start ----------
-    entry(null, rich.run("welcome", []).html);
+    entry(null, rich.run(tiled ? "motd" : "welcome", []).html);
     var first = new URLSearchParams(global.location.search).get("cmd") || decodeURIComponent((global.location.hash || "").slice(1)).replace(/-/g, " ");
     if (first) run(first);
     syncPrompt();
