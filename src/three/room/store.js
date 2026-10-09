@@ -10,6 +10,7 @@ let state = {
   focus: null,       // null | 'laptop' | 'drawer' | 'diary' | 'corkboard' | 'phone'
   hover: null,       // { id, label } of the object under the pointer
   lampOn: true,
+  curtains: false,   // drawn shut
   hour: typeof window !== 'undefined' ? readHour() : 21,
   debug: params.has('debug'),
   folder: -1,        // project folder pulled out of the drawer

@@ -25,6 +25,7 @@ const SHOTS = {
   wins: { pos: V(BOARD.x + 0.05, BOARD.y - 0.1, BACK + 1.2), look: V(BOARD.x, BOARD.y - 0.18, BACK) },
   projects: { pos: V(0.66, 1.2, 0.36), look: V(0.55, 0.62, -0.28) },
   diary: { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
+  ping: { pos: V(0.3, 1.22, 0.42), look: V(0.26, 0.8, -0.56) },
   finale: { pos: V(0.17, 1.22, 0.3), look: V(0.17, 0.84, -0.7) },
   free: { pos: OVERVIEW.pos, look: OVERVIEW.look },
 }

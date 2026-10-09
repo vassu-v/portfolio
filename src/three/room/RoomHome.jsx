@@ -47,7 +47,8 @@ const STOP_COPY = {
   wins: { n: '02', label: 'wins & receipts', title: 'Proof, pinned.', line: 'A national semi-final, a first international payment, a preprint, a book at fourteen.' },
   projects: { n: '03', label: 'the drawer', title: "Things I've built.", line: 'Every folder is a project. Pull one out and flip through it.' },
   diary: { n: '04', label: 'the log', title: 'I write things down.', line: 'Essays on building, tech and thinking clearly. Tap the diary to read.' },
-  finale: { n: '05', label: 'say hi', title: 'Want to build something together?', line: "The phone's already lit up. Tap it, or the laptop." },
+  ping: { n: '05', label: 'incoming', title: 'Something just came in.', line: 'Your phone, actually. Keep scrolling.' },
+  finale: { n: '06', label: 'say hi', title: 'Want to build something together?', line: 'Every way to reach me is on the phone. Tap it.' },
   free: { n: '', label: 'the room is yours', title: 'Look around.', line: 'Drag to look around. Click anything — open it, close it, throw paper at the bin.' },
 }
 

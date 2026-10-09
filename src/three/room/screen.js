@@ -115,6 +115,27 @@ export function createScreen() {
     ctx.globalAlpha = 1
   }
 
+  // the 'incoming' stop: the laptop's half of the phone's invitation
+  function invite(ui) {
+    const k = ui.invite
+    if (k < 0.01) return
+    ctx.globalAlpha = k
+    ctx.fillStyle = 'rgba(9,12,15,0.9)'
+    ctx.fillRect(0, 44, W, H - 44)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = COPPER; ctx.font = '500 26px "JetBrains Mono", monospace'
+    ctx.fillText('● INCOMING — FROM SHORYA', W / 2, 260)
+    ctx.fillStyle = '#f6efe4'; ctx.font = 'italic 300 96px "Instrument Serif", serif'
+    ctx.fillText('Something cool,', W / 2, 400)
+    ctx.fillText('built together?', W / 2, 500)
+    ctx.fillStyle = GOLD; ctx.font = '500 30px "JetBrains Mono", monospace'
+    ctx.fillText('$ ./collaborate --with you', W / 2, 620)
+    ctx.fillStyle = 'rgba(239,230,216,0.5)'; ctx.font = '400 26px "JetBrains Mono", monospace'
+    ctx.fillText('→ the details are on your phone', W / 2, 690)
+    ctx.textAlign = 'left'
+    ctx.globalAlpha = 1
+  }
+
   function contact(ui) {
     const k = ui.contact
     if (k < 0.01) return
@@ -144,13 +165,14 @@ export function createScreen() {
     ctx.globalAlpha = 1
   }
 
-  // ui: { notif 0…1, msg {app, text}, contact 0…1 }
+  // ui: { notif 0…1, msg {app, text}, invite 0…1, contact 0…1 }
   function draw(t, ui) {
-    const key = [Math.floor(t * 2) % 2, new Date().getMinutes(), Math.floor(t * TYPE_RATE), ui.notif.toFixed(3), ui.contact.toFixed(3), ui.msg?.text].join('|')
+    const key = [Math.floor(t * 2) % 2, new Date().getMinutes(), Math.floor(t * TYPE_RATE), ui.notif.toFixed(3), ui.contact.toFixed(3), ui.invite.toFixed(3), ui.msg?.text].join('|')
     if (key === last.key) return false
     last.key = key
     desktop(t)
     notification(ui)
+    invite(ui)
     contact(ui)
     // subtle vignette so it reads as a real panel up close
     const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, W * 0.75)

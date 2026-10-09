@@ -30,16 +30,20 @@ function Sun({ sky, mapSize }) {
   const ref = useRef()
   const target = useMemo(() => new THREE.Object3D(), [])
   const lampOn = useRoom(s => s.lampOn)
+  const shut = useRoom(s => s.curtains)
+  const dim = useRef(1)
   useEffect(() => {
     target.position.set(0, 0.6, -0.3)
     ref.current.target = target
     ref.current.shadow.camera.layers.enable(1)
   }, [target])
-  useFrame(() => {
+  useFrame((_, dt) => {
     const l = ref.current
     l.position.copy(target.position).addScaledVector(sky.dir, -7)
     l.color.copy(sky.sunColor)
-    l.intensity = sky.sun * (lampOn && sky.night ? 0.85 : 1)
+    // drawn curtains let a little through the cloth
+    dim.current = THREE.MathUtils.damp(dim.current, shut ? 0.18 : 1, 3.5, dt)
+    l.intensity = sky.sun * (lampOn && sky.night ? 0.85 : 1) * dim.current
   })
   return (
     <>

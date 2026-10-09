@@ -155,7 +155,8 @@ function Item({ it, index }) {
   const focus = useRoom(s => s.focus)
   const sel = useRoom(s => s.pin === it.id)
   const h = SIZE[it.kind][1]
-  const big = Math.min(1.8, Math.max(1.25, 0.18 / h))
+  // presented at ~half the screen height, so even the receipt is readable
+  const big = Math.min(2.4, Math.max(1.4, 0.26 / h))
 
   useFrame((_, dt) => {
     const g = ref.current

@@ -3,7 +3,7 @@ import { live, wake } from './store'
 // Ambient notifications that land on the laptop or the phone now and then —
 // the desk feels lived-in, and each one is a nudge towards something to click.
 export const PINGS = [
-  { app: 'Shorya', text: 'Want to build something together?', where: 'phone' },
+  { app: 'Shorya', text: 'Want to collaborate on building something cool?', where: 'phone' },
   { app: 'Mail', text: 'Re: the landing page — got 15 min?', where: 'laptop' },
   { app: 'GitHub', text: 'new star on vassu-v/buy4chai', where: 'laptop' },
   { app: 'Calendar', text: '30-min slots open this week', where: 'phone' },

@@ -52,18 +52,20 @@ function Laptop() {
   }, [model, screen])
 
   const corners = useMemo(() => [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], [])
-  const ui = useMemo(() => ({ notif: 0, contact: 0, msg: null }), [])
+  const ui = useMemo(() => ({ notif: 0, contact: 0, invite: 0, msg: null }), [])
   useFrame(({ clock, camera, size }, dt) => {
     const s = room.get()
     const p = live.ping
     const notifOn = p?.where === 'laptop' && performance.now() < p.until && s.focus !== 'laptop'
     if (notifOn) ui.msg = p
     ui.notif = Math.abs(ui.notif - (notifOn ? 1 : 0)) < 0.002 ? (notifOn ? 1 : 0) : damp(ui.notif, notifOn ? 1 : 0, 6, dt)
+    const inviteOn = !s.focus && s.tourStop === 'ping'
+    ui.invite = Math.abs(ui.invite - (inviteOn ? 1 : 0)) < 0.002 ? (inviteOn ? 1 : 0) : damp(ui.invite, inviteOn ? 1 : 0, 3, dt)
     const contactOn = !s.focus && s.tourStop === 'finale'
     ui.contact = Math.abs(ui.contact - (contactOn ? 1 : 0)) < 0.002 ? (contactOn ? 1 : 0) : damp(ui.contact, contactOn ? 1 : 0, 3, dt)
     screen.draw(clock.elapsedTime, ui)
     // a notification makes the panel flare, lighting the keyboard and desk
-    const flare = Math.max(ui.notif, ui.contact * 0.6)
+    const flare = Math.max(ui.notif, ui.invite * 0.8, ui.contact * 0.6)
     const mesh = model.userData.parts.screen
     if (mesh.material.emissiveIntensity !== undefined) mesh.material.emissiveIntensity = 1.5 + flare * 0.9
     if (glow.current) glow.current.intensity = 0.55 + flare * 0.9

@@ -3,6 +3,8 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import Baked from './Baked'
+import { Hotspot } from './common'
+import { room, useRoom, wake, dirtyShadows } from './store'
 import { oakFloorTexture, plasterTexture, rugTexture, walnutTexture } from './textures'
 
 // Room shell. Corner room: back wall at z = BACK, window wall at x = LEFT.
@@ -125,16 +127,28 @@ function Skyline({ sky, depth, seed, height, x }) {
   )
 }
 
-function Curtain({ z, flip, sway: animate }) {
+// Curtains draw shut / open on click (store.curtains); shut, they cut the
+// daylight (Sun in RoomScene reads the same flag).
+function Curtain({ z, shutZ, flip, sway: animate }) {
   const ref = useRef()
+  const shut = useRoom(s => s.curtains)
+  const c = useRef(0)
   const geo = useMemo(() => {
     const g = new THREE.PlaneGeometry(0.42, 1.62, 48, 1)
     g.userData.base = g.attributes.position.array.slice()
     return g
   }, [])
-  useFrame(({ clock }) => {
-    if (!animate && geo.userData.done) return
+  useFrame(({ clock }, dt) => {
+    const moving = Math.abs(c.current - (shut ? 1 : 0)) > 0.001
+    if (moving) {
+      c.current = THREE.MathUtils.damp(c.current, shut ? 1 : 0, 3.5, dt)
+      if (ref.current) ref.current.position.z = z + (shutZ - z) * c.current
+      wake(150)
+      dirtyShadows(2)
+    }
+    if (!animate && !moving && geo.userData.done) return
     geo.userData.done = true
+    const spread = 1 + 0.5 * c.current
     const pos = geo.attributes.position
     const b = geo.userData.base
     const t = animate ? clock.elapsedTime : 0
@@ -142,7 +156,8 @@ function Curtain({ z, flip, sway: animate }) {
       const x = b[i * 3], y = b[i * 3 + 1]
       const sway = Math.sin(t * 0.6 + y * 2.0) * 0.003 * (0.81 - y)
       // soft folds, a touch deeper at the hem like real cloth
-      pos.setZ(i, Math.sin(x * 46) * (0.02 + (0.81 - y) * 0.004) + sway)
+      pos.setX(i, x * spread)
+      pos.setZ(i, Math.sin(x * 46) * (0.02 + (0.81 - y) * 0.004) / spread + sway)
     }
     pos.needsUpdate = true
     geo.computeVertexNormals()
@@ -150,9 +165,11 @@ function Curtain({ z, flip, sway: animate }) {
   return (
     // hangs in front of the sill (which sticks out 0.13 m), opaque: a
     // transparent double-sided cloth sorted against the glass and flickered
-    <mesh ref={ref} geometry={geo} position={[LEFT + 0.17, WIN.y1 + 0.13 - 0.81, z]} rotation={[0, flip ? -Math.PI / 2 : Math.PI / 2, 0]} castShadow receiveShadow>
-      <meshStandardMaterial color="#e8e0d2" roughness={0.97} side={THREE.DoubleSide} />
-    </mesh>
+    <Hotspot id="curtains" always label={shut ? 'open the curtains' : 'draw the curtains'} onClick={() => room.set({ curtains: !room.get().curtains })}>
+      <mesh ref={ref} geometry={geo} position={[LEFT + 0.17, WIN.y1 + 0.13 - 0.81, z]} rotation={[0, flip ? -Math.PI / 2 : Math.PI / 2, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#e8e0d2" roughness={0.97} side={THREE.DoubleSide} />
+      </mesh>
+    </Hotspot>
   )
 }
 
@@ -259,8 +276,8 @@ export default function Room({ sky, sway = true }) {
       </mesh>
       </Baked>
 
-      <Curtain z={WIN.z0 - 0.05} sway={sway} />
-      <Curtain z={WIN.z1 + 0.05} flip sway={sway} />
+      <Curtain z={WIN.z0 - 0.05} shutZ={WIN.z0 + 0.31} sway={sway} />
+      <Curtain z={WIN.z1 + 0.05} shutZ={WIN.z1 - 0.31} flip sway={sway} />
 
       {/* outside */}
       <Sky sky={sky} />

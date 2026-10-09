@@ -25,6 +25,7 @@ After `cli-v3-rice`: site-wide palette (portrait blue `#84D0E8` + turban orange 
 - Side projects: `src/data/sideProjects.js` — **placeholders, waiting for the real list**.
 - Notifications: `src/three/room/pings.js`.
 - Paper balls: `PaperBalls.jsx` — click to pick up, click a spot to throw.
+- Round 5: name sits behind the cut-out and particle-dissolves on first scroll (`IntroPhoto.jsx`); tour gained an `incoming` stop (3D notification pops out of the phone, laptop mirrors it) before `finale`; curtains draw shut on click and dim the sun; sun/moon lamp switch in the header; pan/tilt by dragging at the free stop; returning from a case study restores the spot (`sessionStorage room-return`); FPS probe fixed (remembered tier key bumped to `room-tier-v2`).
 
 ## Open decisions (asked, not answered yet)
 0. Side-projects list (user to send)
