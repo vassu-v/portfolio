@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PROJECTS } from '../../data/projects'
+import { SIDE_PROJECTS } from '../../data/sideProjects'
 import { POSTS } from '../../data/blog'
 import { ITEMS } from './corkData'
 import { PHOTOS } from './DeskPhotos'
@@ -18,6 +19,7 @@ const serif = { fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', font
 
 const SPOTS = [
   { id: 'drawer', label: 'projects', hint: 'drawer' },
+  { id: 'sides', label: 'side projects', hint: 'drawer 2' },
   { id: 'diary', label: 'log', hint: 'diary' },
   { id: 'corkboard', label: 'experience', hint: 'corkboard' },
   { id: 'phone', label: 'contact', hint: 'phone' },
@@ -92,14 +94,22 @@ function FocusPanel({ focus }) {
   const pin = useRoom(s => s.pin)
   const spread = useRoom(s => s.spread)
   const page = useRoom(s => s.page)
+  const side = useRoom(s => s.side)
   const { navigate } = useRoute()
+  const closeDrawer = () => room.set({ focus: null, folder: -1, side: -1 })
   let title = '', body = null
   if (focus === 'drawer') {
     const p = PROJECTS[folder]
     title = p ? p.name : 'Projects'
     body = p
       ? <><p>{p.tagline}</p><p style={{ opacity: 0.6 }}>page {page + 1} / 4 · click the page to turn it · click away to file it</p><button style={linkBtn} onClick={() => navigate(`/project/${p.slug}`)}>open case study →</button></>
-      : <p>Every folder is a project. Pick one out.</p>
+      : <><p>Every folder is a project. Pick one out.</p><button style={linkBtn} onClick={closeDrawer}>close the drawer</button></>
+  } else if (focus === 'sides') {
+    const s = SIDE_PROJECTS[side]
+    title = s ? s.name : 'Side projects'
+    body = s
+      ? <><p>{s.line}</p>{s.href && <a style={link} href={s.href} target="_blank" rel="noreferrer">open it →</a>}{s.placeholder && <p style={{ opacity: 0.5 }}>placeholder — the real list is coming</p>}</>
+      : <><p>Not so serious. Just listed, or still on them. Pick a card out.</p><button style={linkBtn} onClick={closeDrawer}>close the drawer</button></>
   } else if (focus === 'corkboard') {
     const it = ITEMS.find(i => i.id === pin)
     title = it ? it.panel.title : 'The work so far'
@@ -139,7 +149,7 @@ function FocusPanel({ focus }) {
   }
   return (
     <motion.aside
-      key={focus + folder + pin + (focus === 'diary' ? spread : '') + (focus === 'drawer' ? page : '')}
+      key={focus + folder + side + pin + (focus === 'diary' ? spread : '')}
       initial={{ opacity: 0, x: -14 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -8 }}
@@ -301,7 +311,7 @@ export default function RoomHome() {
     }, 900)
     if (room.get().roam || room.get().tier === 'poster') { live.intro = 1; room.set({ explore: true }) }
     if (new URLSearchParams(window.location.search).has('capture')) { live.intro = 1; live.scroll = 1 }
-    const onKey = e => { if (e.key === 'Escape') room.set({ focus: null, folder: -1, pin: null }) }
+    const onKey = e => { if (e.key === 'Escape') room.set({ focus: null, folder: -1, side: -1, pin: null }) }
     window.addEventListener('keydown', onKey)
     return () => { clearTimeout(delay); cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey) }
   }, [])
@@ -349,7 +359,7 @@ export default function RoomHome() {
             exit={{ opacity: 0, y: 10 }}
             style={{ position: 'fixed', right: mobile ? 16 : 'var(--pad)', left: mobile ? 16 : 'auto', bottom: mobile ? 20 : 40, zIndex: 50, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: mobile ? 'center' : 'flex-end', maxWidth: mobile ? 'none' : 520 }}
           >
-            {focus && <Chip onClick={() => room.set({ focus: null, folder: -1, pin: null })}>← back to the desk</Chip>}
+            {focus && <Chip onClick={() => room.set({ focus: null, folder: -1, side: -1, pin: null })}>← back to the desk</Chip>}
             {(!focus || !mobile) && SPOTS.map(s => (
               <Chip key={s.id} active={focus === s.id} onClick={() => focusOn(s.id)}>{s.label} · {s.hint}</Chip>
             ))}

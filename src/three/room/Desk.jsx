@@ -3,16 +3,19 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { PROJECTS } from '../../data/projects'
+import { SIDE_PROJECTS } from '../../data/sideProjects'
 import { walnutTexture } from './textures'
 import { Hotspot, damp } from './common'
 import { room, useRoom, focusOn } from './store'
 import { BACK } from './Room'
 import Baked from './Baked'
 
+const SIDE_TRAVEL = 0.3
 export const DESK = { x0: -0.78, x1: 0.78, z0: BACK + 0.02, z1: -0.28, top: 0.75, th: 0.035 }
 const PED = { x0: 0.36, x1: 0.74, z0: DESK.z0 + 0.02, z1: DESK.z1 - 0.015 }
 const DRAWER_TRAVEL = 0.36
 const DRAWER_W = PED.x1 - PED.x0 - 0.02, DRAWER_D = PED.z1 - PED.z0 - 0.08
+const D_HALF = DRAWER_D / 2
 const SLOTS = 9
 const slotZ = i => DRAWER_D / 2 - 0.04 - i * ((DRAWER_D - 0.06) / SLOTS)
 
@@ -45,7 +48,7 @@ function tabTexture(label, color) {
 
 const TAB_COLORS = ['#F07A1A', '#5B8FAF', '#7a8f5a', '#a8483a', '#84D0E8', '#6d5a8a']
 
-function Folder({ project, index, z, selected, onPick }) {
+function Folder({ project, index, z, selected, onPick, open }) {
   const ref = useRef()
   const hoverRef = useRef(false)
   const kraft = useMemo(() => new THREE.MeshStandardMaterial({ color: index % 2 ? '#c8a774' : '#b8935e', roughness: 0.9, side: THREE.DoubleSide }), [index])
@@ -62,9 +65,9 @@ function Folder({ project, index, z, selected, onPick }) {
     <group position={[0, 0, z]}>
       <group
         ref={ref}
-        onPointerOver={e => { if (!project) return; e.stopPropagation(); hoverRef.current = true; room.set({ hover: { id: 'folder', label: project.name } }) }}
-        onPointerOut={e => { if (!project) return; e.stopPropagation(); hoverRef.current = false; room.set({ hover: null }) }}
-        onClick={e => { if (!project) return; e.stopPropagation(); onPick(index) }}
+        onPointerOver={e => { if (!project || !open) return; e.stopPropagation(); hoverRef.current = true; room.set({ hover: { id: 'folder', label: project.name } }) }}
+        onPointerOut={e => { if (!hoverRef.current) return; e.stopPropagation(); hoverRef.current = false; room.set({ hover: null }) }}
+        onClick={e => { if (!project || !open) return; e.stopPropagation(); onPick(index) }}
       >
         <mesh position={[0, -0.055, -0.006]} rotation={[0.06, 0, 0]} material={kraft} castShadow receiveShadow>
           <planeGeometry args={[0.3, 0.115]} />
@@ -92,7 +95,8 @@ function Drawer() {
   const ref = useRef()
   const focus = useRoom(s => s.focus)
   const folder = useRoom(s => s.folder)
-  const open = focus === 'drawer'
+  const tour = useRoom(s => s.tourStop)
+  const open = focus === 'drawer' || (!focus && tour === 'projects')
   const carcass = useMemo(() => new THREE.MeshStandardMaterial({ color: '#d9cdb8', roughness: 0.8 }), [])
   const front = useMemo(() => new THREE.MeshStandardMaterial({ map: walnutTexture(), roughness: 0.5 }), [])
 
@@ -107,7 +111,8 @@ function Drawer() {
   return (
     <group position={[(PED.x0 + PED.x1) / 2, DESK.top - DESK.th - 0.095, (PED.z0 + PED.z1) / 2]}>
       <group ref={ref}>
-        <Hotspot id="drawer" label="Projects — open the drawer" enabled={!open} onClick={() => focusOn('drawer')}>
+        <Hotspot id="drawer" always={open} label={focus === 'drawer' ? 'close the drawer' : 'Projects — open the drawer'}
+          onClick={() => (focus === 'drawer' ? room.set({ focus: null, folder: -1 }) : focusOn('drawer'))}>
           {/* front panel + pull */}
           <RoundedBox args={[W + 0.016, 0.15, 0.02]} radius={0.003} position={[0, 0, D / 2 + 0.03]} material={front} castShadow receiveShadow />
           <mesh position={[0, 0.03, D / 2 + 0.048]} rotation={[0, 0, Math.PI / 2]} castShadow>
@@ -128,9 +133,129 @@ function Drawer() {
               index={p ? PROJECTS.indexOf(p) : i}
               project={p}
               z={slotZ(i)}
+              open={open}
               selected={p && folder === PROJECTS.indexOf(p)}
-              onPick={idx => room.set({ folder: room.get().folder === idx ? -1 : idx, page: 0 })}
+              onPick={idx => room.set({ focus: 'drawer', folder: room.get().folder === idx ? -1 : idx, page: 0 })}
             />
+          ))}
+        </group>
+      </group>
+    </group>
+  )
+}
+
+function cardTexture(p, i) {
+  const c = document.createElement('canvas')
+  c.width = 512; c.height = 320
+  const ctx = c.getContext('2d')
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  t.anisotropy = 8
+  const draw = () => {
+    ctx.fillStyle = '#fbf7ee'; ctx.fillRect(0, 0, 512, 320)
+    ctx.strokeStyle = 'rgba(70,110,170,0.22)'; ctx.lineWidth = 2
+    for (let y = 104; y < 320; y += 38) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(512, y); ctx.stroke() }
+    ctx.strokeStyle = 'rgba(200,60,60,0.4)'; ctx.beginPath(); ctx.moveTo(0, 80); ctx.lineTo(512, 80); ctx.stroke()
+    ctx.fillStyle = '#1d1712'; ctx.font = 'italic 50px "Instrument Serif", serif'; ctx.fillText(p.name, 24, 60)
+    ctx.fillStyle = '#2a3550'; ctx.font = '600 34px Caveat, cursive'; ctx.fillText(p.line, 24, 136)
+    const [col, word] = STATUS[p.status] || ['#8a7a6a', p.status || '']
+    ctx.save(); ctx.translate(400, 262); ctx.rotate(-0.12)
+    ctx.strokeStyle = col; ctx.lineWidth = 4; ctx.strokeRect(-70, -26, 140, 44)
+    ctx.fillStyle = col; ctx.font = '600 24px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText(word.toUpperCase(), 0, 4)
+    ctx.restore()
+    ctx.fillStyle = '#a89a8a'; ctx.font = '400 20px "JetBrains Mono", monospace'; ctx.fillText(String(i + 1).padStart(2, '0'), 24, 296)
+    t.needsUpdate = true
+  }
+  draw(); document.fonts?.ready.then(draw)
+  return t
+}
+const STATUS = { shipped: ['#4f7d4a', 'shipped'], wip: ['#F07A1A', 'on it'], parked: ['#8a7a6a', 'parked'] }
+
+function stickyTexture(lines) {
+  const c = document.createElement('canvas')
+  c.width = c.height = 256
+  const ctx = c.getContext('2d')
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  const draw = () => {
+    ctx.fillStyle = '#f7e27a'; ctx.fillRect(0, 0, 256, 256)
+    ctx.fillStyle = '#7a3b14'; ctx.font = '700 44px Caveat, cursive'; ctx.fillText(lines[0], 18, 58)
+    ctx.fillStyle = '#2a2018'; ctx.font = '600 32px Caveat, cursive'
+    lines.slice(1).forEach((l, i) => ctx.fillText(l, 18, 104 + i * 38))
+    t.needsUpdate = true
+  }
+  draw(); document.fonts?.ready.then(draw)
+  return t
+}
+
+function IndexCard({ p, i, z, open }) {
+  const ref = useRef()
+  const hov = useRef(false)
+  const sel = useRoom(s => s.side === i)
+  const tex = useMemo(() => cardTexture(p, i), [p, i])
+  useFrame((_, dt) => {
+    const g = ref.current
+    if (!g) return
+    g.userData.k = damp(g.userData.k ?? 0, sel ? 1 : 0, 7, dt)
+    g.userData.h = damp(g.userData.h ?? 0, hov.current && !sel ? 1 : 0, 10, dt)
+    const k = g.userData.k
+    g.position.y = g.userData.h * 0.02 + k * 0.2
+    g.position.z = z + k * (D_HALF - z + 0.04)
+    g.rotation.x = -0.18 * (1 - k) - 0.3 * k
+  })
+  return (
+    <group ref={ref} position={[i % 2 ? 0.012 : -0.01, 0, z]}
+      onPointerOver={e => { if (!open) return; e.stopPropagation(); hov.current = true; room.set({ hover: { id: 'side', label: p.name } }) }}
+      onPointerOut={e => { if (!hov.current) return; e.stopPropagation(); hov.current = false; room.set({ hover: null }) }}
+      onClick={e => { if (!open) return; e.stopPropagation(); room.set({ focus: 'sides', side: room.get().side === i ? -1 : i }) }}>
+      <mesh position={[0, 0.036, 0]} castShadow receiveShadow>
+        <planeGeometry args={[0.13, 0.081]} />
+        <meshStandardMaterial map={tex} roughness={0.85} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  )
+}
+
+// Second drawer: side projects. Same mechanics as the project drawer, but
+// index cards instead of hanging files, and a sticky note on the front.
+function SideDrawer({ y, h }) {
+  const ref = useRef()
+  const focus = useRoom(s => s.focus)
+  const open = focus === 'sides'
+  const front = useMemo(() => new THREE.MeshStandardMaterial({ map: walnutTexture(), roughness: 0.55, color: '#d8c9b8' }), [])
+  const carcass = useMemo(() => new THREE.MeshStandardMaterial({ color: '#d9cdb8', roughness: 0.8 }), [])
+  const note = useMemo(() => stickyTexture(['side projects', 'not so serious —', 'just listed, or', "still on 'em"]), [])
+  const W = DRAWER_W, D = DRAWER_D, H = h - 0.05
+  const n = SIDE_PROJECTS.length
+  const fill = useRef()
+  useFrame((_, dt) => {
+    if (ref.current) ref.current.position.z = damp(ref.current.position.z, open ? SIDE_TRAVEL : 0, 6, dt)
+    // under the desk is the darkest spot in the room — a soft fill while open
+    if (fill.current) fill.current.intensity = damp(fill.current.intensity, open ? 0.5 : 0, 5, dt)
+  })
+  return (
+    <group position={[(PED.x0 + PED.x1) / 2, y, (PED.z0 + PED.z1) / 2]}>
+      <pointLight ref={fill} position={[0.05, 0.3, SIDE_TRAVEL + 0.25]} color="#ffe9cf" distance={1.2} decay={2} intensity={0} />
+      <group ref={ref}>
+        <Hotspot id="sides" label={open ? 'close the drawer' : 'Side projects — open the drawer'}
+          onClick={() => (open ? room.set({ focus: null, side: -1 }) : focusOn('sides'))}>
+          <RoundedBox args={[W + 0.016, h - 0.008, 0.02]} radius={0.003} position={[0, 0, D / 2 + 0.03]} material={front} castShadow receiveShadow />
+          <mesh position={[0, h / 2 - 0.04, D / 2 + 0.048]} rotation={[0, 0, Math.PI / 2]} castShadow>
+            <cylinderGeometry args={[0.006, 0.006, 0.12, 12]} />
+            <meshStandardMaterial color="#b8894a" metalness={0.9} roughness={0.28} />
+          </mesh>
+          <mesh position={[0.07, -0.04, D / 2 + 0.0405]} rotation={[0, 0, -0.06]}>
+            <planeGeometry args={[0.11, 0.11]} />
+            <meshStandardMaterial map={note} roughness={0.85} />
+          </mesh>
+        </Hotspot>
+        <mesh position={[0, -H / 2, 0]} material={carcass} receiveShadow><boxGeometry args={[W, 0.01, D]} /></mesh>
+        <mesh position={[-W / 2, 0, 0]} material={carcass} receiveShadow><boxGeometry args={[0.01, H, D]} /></mesh>
+        <mesh position={[W / 2, 0, 0]} material={carcass} receiveShadow><boxGeometry args={[0.01, H, D]} /></mesh>
+        <mesh position={[0, 0, -D / 2]} material={carcass} receiveShadow><boxGeometry args={[W, H, 0.01]} /></mesh>
+        <group position={[0, -H / 2 + 0.005, 0]}>
+          {SIDE_PROJECTS.map((p, i) => (
+            <IndexCard key={i} p={p} i={i} open={open} z={D / 2 - 0.1 - i * ((D - 0.13) / Math.max(n, 6))} />
           ))}
         </group>
       </group>
@@ -171,7 +296,7 @@ export default function Desk() {
       <mesh position={[pcx, legH / 2, PED.z0 + 0.009]} material={ped} receiveShadow><boxGeometry args={[pw, legH, 0.018]} /></mesh>
       <mesh position={[pcx, 0.03, pcz]} material={ped} receiveShadow><boxGeometry args={[pw, 0.06, pd]} /></mesh>
       {/* lower two fixed drawer fronts */}
-      {[[0.23, 0.42], [0.27, 0.165]].map(([h, y]) => (
+      {[[0.27, 0.165]].map(([h, y]) => (
         <group key={y}>
           <RoundedBox args={[pw - 0.004, h - 0.008, 0.02]} radius={0.003} position={[pcx, y, PED.z1 + 0.01]} material={ped} castShadow receiveShadow />
           <mesh position={[pcx, y + h / 2 - 0.04, PED.z1 + 0.028]} rotation={[0, 0, Math.PI / 2]} castShadow>
@@ -182,6 +307,7 @@ export default function Desk() {
       ))}
       </Baked>
       <Drawer />
+      <SideDrawer y={0.42} h={0.23} />
     </group>
   )
 }

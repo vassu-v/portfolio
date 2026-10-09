@@ -10,6 +10,7 @@ import { folderWorld } from './Desk'
 // page is clicked to send it to the back; a click anywhere else files it.
 const PW = 0.21, PH = 0.297, PX = 840, PY = 1188
 export const PAGES = 4
+const FLIP_S = 0.6
 const PRESENT = new THREE.Vector3(0.56, 0.99, -0.15)
 const FACING = new THREE.Vector3(0.62, 1.16, 0.3)
 
@@ -154,9 +155,13 @@ const PAINT = [
     ctx.font = '500 24px "JetBrains Mono", monospace'
     if (p.github) { ctx.fillText('github  ' + p.github.replace(/^https?:\/\//, ''), 56, y); y += 38 }
     if (p.live) ctx.fillText('live    ' + p.live.replace(/^https?:\/\//, ''), 56, y)
+    // the one live link on the page — drawn as a stamped box so it reads as
+    // the thing to press (hit-tested by CASE_LINK)
+    ctx.strokeStyle = '#a8483a'; ctx.lineWidth = 3
+    ctx.strokeRect(CASE_LINK.x0 + 16, CASE_LINK.y0 + 8, CASE_LINK.x1 - CASE_LINK.x0 - 32, CASE_LINK.y1 - CASE_LINK.y0 - 16)
     ctx.fillStyle = '#a8483a'
-    ctx.font = '600 42px Caveat, cursive'
-    ctx.fillText(`full case study → /project/${p.slug}`, 56, PY - 60)
+    ctx.font = '600 44px Caveat, cursive'
+    ctx.fillText(`full case study → /project/${p.slug}`, 76, PY - 58)
   },
 ]
 
@@ -180,23 +185,35 @@ function pagesFor(index) {
   return list
 }
 
-function Page({ tex, slot, moving, onClick, jitter }) {
+// Canvas-pixel box of the "full case study" link on the last page.
+const CASE_LINK = { x0: 40, x1: PX - 40, y0: PY - 120, y1: PY - 28 }
+const onCaseLink = uv => {
+  if (!uv) return false
+  const x = uv.x * PX, y = (1 - uv.y) * PY
+  return x > CASE_LINK.x0 && x < CASE_LINK.x1 && y > CASE_LINK.y0 && y < CASE_LINK.y1
+}
+
+function Page({ tex, slot, moving, onClick, jitter, last }) {
   const ref = useRef()
   const st = useRef({ slot, arc: 0 })
   useFrame((_, dt) => {
     const s = st.current
-    s.slot = damp(s.slot, slot, 7, dt)
-    // a page going to the back lifts up and over the stack on an arc
-    s.arc = damp(s.arc, moving ? 1 : 0, 9, dt)
+    // one pass, never back: slide fully clear of the stack in front of it,
+    // then drop down behind it — no page ever cuts through another
+    s.arc = moving ? Math.min(1, s.arc + dt / FLIP_S) : 0
+    const lift = Math.sin(s.arc * Math.PI)
+    const behind = !moving || s.arc > 0.5
+    s.slot = behind ? damp(s.slot, slot, 9, dt) : -1.5
     const g = ref.current
     if (!g) return
-    g.position.set(jitter[0] + Math.sin(s.arc * Math.PI) * 0.02, jitter[1] + Math.sin(s.arc * Math.PI) * 0.17, -s.slot * 0.0022)
-    g.rotation.set(-Math.sin(s.arc * Math.PI) * 0.35, 0, jitter[2] * (1 - s.arc))
+    g.position.set(jitter[0] + lift * 0.015, jitter[1] + lift * (PH + 0.03), -s.slot * 0.0022)
+    g.rotation.set(-lift * 0.12, 0, jitter[2] * (1 - lift))
   })
+  const label = e => (slot !== 0 ? '' : last && onCaseLink(e.uv) ? 'open the full case study' : last ? 'back to page 1' : 'click to turn the page')
   return (
     <group ref={ref}>
       <mesh castShadow receiveShadow onClick={onClick}
-        onPointerOver={e => { e.stopPropagation(); room.set({ hover: { id: 'page', label: slot === 0 ? 'click to turn the page' : '' } }) }}
+        onPointerMove={e => { e.stopPropagation(); const l = label(e); if (room.get().hover?.label !== l) room.set({ hover: l ? { id: 'page', label: l } : null }) }}
         onPointerOut={() => room.set({ hover: null })}>
         <boxGeometry args={[PW, PH, 0.0006]} />
         <meshStandardMaterial attach="material-4" map={tex} roughness={0.88} />
@@ -253,13 +270,19 @@ export default function Dossier() {
     e.stopPropagation()
     if (moving >= 0) return
     const top = order[0]
+    // last page: only the case-study line leaves the room; anywhere else
+    // on it just turns back to the cover
+    if (top === PAGES - 1 && onCaseLink(e.uv)) {
+      window.dispatchEvent(new CustomEvent('room-open-project', { detail: PROJECTS[idx].slug }))
+      return
+    }
     setMoving(top)
     setTimeout(() => {
       const next = [...order.slice(1), top]
       setOrder(next)
       setMoving(-1)
       room.set({ page: next[0] })
-    }, 420)
+    }, FLIP_S * 1000)
   }
 
   if (!pages) return null
@@ -281,7 +304,7 @@ export default function Dossier() {
         const slot = order.indexOf(n)
         const lifting = moving === n
         return (
-          <Page key={n} tex={t} slot={lifting ? PAGES - 1 : slot} moving={lifting} jitter={jitters[n]}
+          <Page key={n} tex={t} slot={lifting ? PAGES : slot} moving={lifting} jitter={jitters[n]} last={n === PAGES - 1}
             onClick={slot === 0 ? turn : e => e.stopPropagation()} />
         )
       })}

@@ -20,6 +20,8 @@ const FOCUS = {
   corkboard: { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 1.55), look: V(BOARD.x, BOARD.y, BACK) },
   phone:     { pos: V(0.39, 0.9, -0.32), look: V(0.5, 0.83, -0.6) },
   sheet:     { pos: V(0.66, 1.2, 0.5),  look: V(0.56, 0.98, -0.15) },
+  sides:     { pos: V(0.78, 1.0, 0.42), look: V(0.55, 0.4, -0.12) },
+  sidecard:  { pos: V(0.66, 0.86, 0.42), look: V(0.55, 0.58, -0.04) },
   card:      { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 1.02), look: V(BOARD.x, BOARD.y - 0.02, BACK) },
 }
 
@@ -31,6 +33,7 @@ export default function CameraRig() {
   const focus = useRoom(s => s.focus)
   const folder = useRoom(s => s.folder)
   const pin = useRoom(s => s.pin)
+  const side = useRoom(s => s.side)
   const pos = useRef(V(1.0, 1.25, 0.9))
   const look = useRef(V(-0.17, 0.86, -0.8))
   const tmp = useMemo(() => ({ sp: V(0, 0, 0), sn: V(0, 0, 1), close: V(0, 0, 0), mid: V(0, 0, 0), a: V(0, 0, 0), b: V(0, 0, 0) }), [])
@@ -50,7 +53,7 @@ export default function CameraRig() {
     tmp.close.copy(tmp.sp).addScaledVector(tmp.sn, dist)
 
     const target = tmp.a, at = tmp.b
-    const f = focus === 'drawer' && folder >= 0 ? FOCUS.sheet : focus === 'corkboard' && pin ? FOCUS.card : FOCUS[focus]
+    const f = focus === 'drawer' && folder >= 0 ? FOCUS.sheet : focus === 'corkboard' && pin ? FOCUS.card : focus === 'sides' && side >= 0 ? FOCUS.sidecard : FOCUS[focus]
     if (focus === 'laptop') {
       target.copy(tmp.sp).addScaledVector(tmp.sn, dist * 1.35)
       at.copy(tmp.sp)

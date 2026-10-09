@@ -288,9 +288,13 @@ export default function RoomScene() {
       gl={{ antialias: !cfg.post, powerPreference: 'high-performance', stencil: false }}
       camera={{ position: [1, 1.25, 0.9], fov: 36, near: 0.01, far: 40 }}
       style={{ position: 'fixed', inset: 0, zIndex: 0, touchAction: room.get().roam ? 'none' : 'auto' }}
+      // clicking empty space closes one layer at a time: a held photo or
+      // pulled-out card first, then the object itself
       onPointerMissed={() => {
-        if (room.get().photo >= 0) room.set({ photo: -1 })
-        else if (room.get().focus) room.set({ folder: -1, pin: null })
+        const s = room.get()
+        if (s.photo >= 0) room.set({ photo: -1 })
+        else if (s.folder >= 0 || s.pin || s.side >= 0) room.set({ folder: -1, pin: null, side: -1 })
+        else if (s.focus) room.set({ focus: null })
       }}
     >
       <SceneContent />

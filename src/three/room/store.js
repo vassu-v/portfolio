@@ -13,6 +13,8 @@ let state = {
   hour: typeof window !== 'undefined' ? readHour() : 21,
   debug: params.has('debug'),
   folder: -1,        // project folder pulled out of the drawer
+  side: -1,          // side-project index card lifted out of the second drawer
+  tourStop: 'intro', // scroll-tour stop the camera is at (CameraRig TOUR)
   pin: null,         // corkboard item brought forward (corkData id)
   spread: 0,         // diary spread currently open
   page: 0,           // dossier page on top
@@ -62,7 +64,7 @@ export function useRoom(selector) {
 }
 
 export function focusOn(id) {
-  room.set({ focus: id, folder: -1, pin: null, hover: null, spread: 0, photo: -1 })
+  room.set({ focus: id, folder: -1, side: -1, pin: null, hover: null, spread: 0, photo: -1 })
 }
 
 if (typeof window !== 'undefined' && params.has('debug')) window.__room = room, window.__live = live
