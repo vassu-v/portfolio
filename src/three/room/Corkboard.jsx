@@ -162,12 +162,12 @@ function Item({ it, index }) {
     if (!g) return
     g.userData.k = damp(g.userData.k ?? 0, sel ? 1 : 0, 6, dt)
     g.userData.h = damp(g.userData.h ?? 0, hover.current && focus === 'corkboard' ? 1 : 0, 10, dt)
-    const k = g.userData.k, hv = g.userData.h
+    const k = g.userData.k, hv = g.userData.h * (1 - k)
     const [x, y, r] = it.pos
-    g.position.set(x + (PRESENT.x - x) * k, y + (PRESENT.y - y) * k, 0.004 + index * 0.0004 + hv * 0.012 + PRESENT.z * k)
-    g.rotation.z = r * (1 - Math.max(k, hv * 0.6))
-    g.rotation.x = Math.sin(hv * Math.PI) * 0.04
-    g.scale.setScalar(1 + (big - 1) * k)
+    // hover lifts a card off the board and enlarges it enough to read
+    g.position.set(x + (PRESENT.x - x) * k, y + (PRESENT.y - y) * k, 0.004 + index * 0.0004 + hv * 0.06 + PRESENT.z * k)
+    g.rotation.z = r * (1 - Math.max(k, hv))
+    g.scale.setScalar(1 + (big - 1) * k + hv * 0.45)
   })
 
   return (
@@ -183,26 +183,32 @@ function Item({ it, index }) {
 }
 
 // Supporting material that pulls up beside the selected item.
+// Hovering one (or tapping a note / stat on touch) zooms it to reading size.
 function Support({ it, slot, order, parentPos, onPick }) {
   const ref = useRef()
-  const st = useRef({ k: 0, t: 0 })
+  const st = useRef({ k: 0, t: 0, z: 0, hover: false, pinned: false })
   const [sx, sy] = SUPPORT_SLOTS[slot % SUPPORT_SLOTS.length]
+  const isLink = !!(it.href || it.project)
   useFrame((_, dt) => {
     const s = st.current
     s.t += dt
     const want = s.t > 0.12 + order * 0.09 ? 1 : 0
     s.k = damp(s.k, want, 7, dt)
+    s.z = damp(s.z, s.hover || s.pinned ? 1 : 0, 9, dt)
     const g = ref.current
     if (!g) return
-    const k = s.k
-    g.position.set(parentPos[0] + (sx - parentPos[0]) * k, parentPos[1] + (sy - parentPos[1]) * k, 0.02 + 0.2 * k)
-    g.rotation.z = (slot % 2 ? 0.05 : -0.05) * k
-    g.scale.setScalar(0.3 + 0.95 * k)
+    const k = s.k, z = s.z
+    // zoom pulls it towards the middle and forward, over its neighbours
+    const tx = sx + (PRESENT.x - sx) * 0.35 * z, ty = sy + (PRESENT.y - sy) * 0.35 * z
+    g.position.set(parentPos[0] + (tx - parentPos[0]) * k, parentPos[1] + (ty - parentPos[1]) * k, 0.02 + 0.2 * k + 0.09 * z)
+    g.rotation.z = (slot % 2 ? 0.05 : -0.05) * k * (1 - z)
+    g.scale.setScalar((0.3 + 0.95 * k) * (1 + 0.8 * z))
   })
   return (
-    <group ref={ref} onClick={e => { e.stopPropagation(); onPick?.(it) }}
-      onPointerOver={e => { e.stopPropagation(); if (it.href || it.project) room.set({ hover: { id: 'sup', label: it.href ? 'open ' + it.title : 'open project' } }) }}
-      onPointerOut={() => room.set({ hover: null })}>
+    <group ref={ref}
+      onClick={e => { e.stopPropagation(); if (isLink) onPick?.(it); else st.current.pinned = !st.current.pinned }}
+      onPointerOver={e => { e.stopPropagation(); st.current.hover = true; room.set({ hover: { id: 'sup', label: isLink ? (it.href ? 'open ' + it.title : 'open project') : 'tap to zoom' } }) }}
+      onPointerOut={() => { st.current.hover = false; room.set({ hover: null }) }}>
       <Paper it={it} texKey={`sup-${it.kind}-${it.title || it.big || it.src}`} pinColor="#e9e4da" />
     </group>
   )
@@ -273,11 +279,21 @@ function Header({ text, pos }) {
     const ctx = c.getContext('2d')
     const t = new THREE.CanvasTexture(c)
     t.colorSpace = THREE.SRGBColorSpace
+    // a torn strip of cream paper behind the words — dark ink straight on
+    // cork vanished into the texture
     const draw = () => {
       ctx.clearRect(0, 0, 640, 160)
-      ctx.fillStyle = '#1d1712'; ctx.font = 'italic 92px "Instrument Serif", serif'; ctx.fillText(text, 14, 104)
+      ctx.font = 'italic 92px "Instrument Serif", serif'
+      const tw = Math.min(612, ctx.measureText(text).width + 56)
+      ctx.fillStyle = '#f4ecdc'
+      ctx.beginPath(); ctx.moveTo(6, 14)
+      for (let x = 6; x <= tw; x += 24) ctx.lineTo(x, 10 + ((x * 7) % 9))
+      ctx.lineTo(tw, 150)
+      for (let x = tw; x >= 6; x -= 24) ctx.lineTo(x, 146 + ((x * 5) % 8))
+      ctx.closePath(); ctx.fill()
+      ctx.fillStyle = '#1d1712'; ctx.fillText(text, 30, 106)
       ctx.strokeStyle = '#F07A1A'; ctx.lineWidth = 6
-      ctx.beginPath(); ctx.moveTo(18, 130); ctx.quadraticCurveTo(300, 118, 590, 134); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(32, 128); ctx.quadraticCurveTo(tw / 2, 118, tw - 24, 132); ctx.stroke()
       t.needsUpdate = true
     }
     draw(); document.fonts?.ready.then(draw)

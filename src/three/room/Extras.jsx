@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { prepModel, Hotspot } from './common'
 import { BACK } from './Room'
-import { wake } from './store'
+import { wake, dirtyShadows } from './store'
 
 const mods = import.meta.glob('./props/*.js', { eager: true })
 const get = (file, fn) => mods[`./props/${file}.js`]?.[fn]
@@ -47,9 +47,41 @@ function WallPlug() {
   )
 }
 
+// Click-to-jiggle for small desk things: a hop and a damped wobble about
+// the base, like knocking it with a knuckle.
+function Wobbly({ id, label, children, hop = 0.012, ...props }) {
+  const ref = useRef()
+  const st = useRef({ a: 0, v: 0, y: 0, vy: 0, dir: 1 })
+  useFrame((_, rawDt) => {
+    const s = st.current, g = ref.current
+    if (!g || (Math.abs(s.v) < 0.001 && Math.abs(s.a) < 0.001 && s.y === 0)) return
+    const dt = Math.min(rawDt, 1 / 30)
+    s.v += (-s.a * 260 - s.v * 9) * dt
+    s.a += s.v * dt
+    s.vy -= 9.8 * dt
+    s.y = Math.max(0, s.y + s.vy * dt)
+    if (s.y === 0) s.vy = 0
+    g.rotation.z = s.a * s.dir
+    g.rotation.x = s.a * 0.5
+    g.position.y = s.y
+    wake(120)
+    dirtyShadows(2)
+  })
+  return (
+    <Hotspot id={id} label={label} onClick={() => { const s = st.current; s.v += 2.6; s.vy = Math.sqrt(2 * 9.8 * hop); s.dir = Math.random() > 0.5 ? 1 : -1 }} {...props}>
+      <group ref={ref}>{children}</group>
+    </Hotspot>
+  )
+}
+
 function portraitTexture() {
   const t = new THREE.TextureLoader().load('/preview (1).jpg')
   t.colorSpace = THREE.SRGBColorSpace
+  // square photo in a portrait opening: crop to fit (cover) instead of
+  // squashing it — the print area is ~0.1 × 0.14 m
+  const aspect = (0.12 - 0.0204) / (0.16 - 0.0292)
+  t.repeat.set(aspect, 1)
+  t.offset.set((1 - aspect) / 2, 0)
   return t
 }
 
@@ -111,8 +143,8 @@ export default function Extras() {
           <primitive object={board} />
         </Hotspot>
       )}
-      {cup && <primitive object={cup} position={[0.12, Y, -0.88]} rotation={[0, 0.6, 0]} />}
-      {bin && <primitive object={bin} position={[0.98, 0, -0.74]} />}
+      {cup && <Wobbly id="pencup" label="pen stand" position={[0.12, Y, -0.88]} rotation={[0, 0.6, 0]}><primitive object={cup} /></Wobbly>}
+      {bin && <Wobbly id="bin" label="the bin — try throwing paper in" hop={0.006} position={[0.98, 0, -0.74]}><primitive object={bin} /></Wobbly>}
       {frame && <primitive object={frame} position={[-0.43, 1.634, BACK + 0.12]} rotation={[0, 0.12, 0]} />}
       {trophy && <primitive object={trophy} position={[-0.25, 1.634, BACK + 0.11]} rotation={[0, -0.3, 0]} />}
       {strip && <primitive object={strip} position={STRIP_POS} />}

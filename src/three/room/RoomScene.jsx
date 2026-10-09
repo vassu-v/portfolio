@@ -19,7 +19,7 @@ import IntroPhoto from './IntroPhoto'
 import CameraRig from './CameraRig'
 import PerfProbe from './PerfProbe'
 import { sky as skyAt } from './timeOfDay'
-import { room, live, useRoom, wake, off } from './store'
+import { room, live, useRoom, wake, off, closeLayer } from './store'
 import { TIERS, downgrade, rememberTier, dprFor } from './tier'
 
 RectAreaLightUniformsLib.init()
@@ -131,20 +131,34 @@ function Driver({ idleFps }) {
 
 // Watches real frame times once the intro has settled; if this device can't
 // hold the tier it was given, step down once and remember it for next visit.
+// Only back-to-back frames count (frameloop is on demand, so the gap after an
+// idle spell says nothing about the GPU), and the first seconds are skipped —
+// that's shader compiles and texture uploads, which made capable laptops look
+// slow and wrongly offered them the CLI.
 function TierProbe() {
   const tier = useRoom(s => s.tier)
   const samples = useRef([])
   const done = useRef(false)
-  useEffect(() => { samples.current = []; done.current = false }, [tier])
+  const started = useRef(0)
+  const lastActive = useRef(false)
+  useEffect(() => { samples.current = []; done.current = false; started.current = 0 }, [tier])
   useFrame((_, dt) => {
-    if (done.current || live.intro < 1 || performance.now() > live.activeUntil) return
+    const now = performance.now()
+    const active = now < live.activeUntil
+    const consecutive = active && lastActive.current
+    lastActive.current = active
+    if (done.current || live.intro < 1 || !consecutive || dt > 0.5) return
+    if (!started.current) started.current = now
+    if (now - started.current < 2500) return
     samples.current.push(dt)
-    if (samples.current.length < 90) return
+    if (samples.current.length < 120) return
     done.current = true
     const s = [...samples.current].sort((a, b) => a - b)
     const fps = 1 / s[Math.floor(s.length / 2)]
-    const floor = tier === 'high' ? 45 : tier === 'mid' ? 32 : 22
-    if (fps < 20 && tier === 'low') room.set({ struggling: true })
+    const floor = tier === 'high' ? 40 : tier === 'mid' ? 26 : 22
+    // the "try CLI mode" nudge is for genuinely struggling devices only
+    const roomy = (navigator.deviceMemory || 0) >= 8 || (navigator.hardwareConcurrency || 0) >= 8
+    if (tier === 'low' && fps < (roomy ? 10 : 16)) room.set({ struggling: true })
     if (fps < floor && tier !== 'low') {
       const next = downgrade(tier)
       room.set({ tier: next, tierReason: `measured ${Math.round(fps)} fps on ${tier}` })
@@ -292,14 +306,7 @@ export default function RoomScene() {
       gl={{ antialias: !cfg.post, powerPreference: 'high-performance', stencil: false }}
       camera={{ position: [1, 1.25, 0.9], fov: 36, near: 0.01, far: 40 }}
       style={{ position: 'fixed', inset: 0, zIndex: 0, touchAction: room.get().roam ? 'none' : 'auto' }}
-      // clicking empty space closes one layer at a time: a held photo or
-      // pulled-out card first, then the object itself
-      onPointerMissed={() => {
-        const s = room.get()
-        if (s.photo >= 0) room.set({ photo: -1 })
-        else if (s.folder >= 0 || s.pin || s.side >= 0) room.set({ folder: -1, pin: null, side: -1 })
-        else if (s.focus) room.set({ focus: null })
-      }}
+      onPointerMissed={closeLayer}
     >
       <SceneContent />
     </Canvas>

@@ -27,7 +27,8 @@ export function dprFor(cfg, w = window.innerWidth, h = window.innerHeight) {
 }
 export const ORDER = ['high', 'mid', 'low', 'poster']
 
-const KEY = 'room-tier-v1'
+// v2: v1's probe could wrongly pin capable laptops to 'low' — start fresh
+const KEY = 'room-tier-v2'
 
 function gpuName() {
   try {

@@ -205,7 +205,11 @@ function useLeafGeometry() {
 export default function Diary() {
   const focus = useRoom(s => s.focus)
   const spread = useRoom(s => s.spread)
-  const open = focus === 'diary'
+  const tourStop = useRoom(s => s.tourStop)
+  // the tour's diary stop opens it and turns to the first entry by itself,
+  // so it reads as a real book of posts, not a prop
+  const tourOpen = !focus && tourStop === 'diary'
+  const open = focus === 'diary' || tourOpen
   const hinge = useRef()
   const leaf = useRef()
   const band = useRef()
@@ -258,6 +262,11 @@ export default function Diary() {
   }, [spread, draw])
 
   useEffect(() => { if (!open) room.set({ spread: 0 }) }, [open])
+  useEffect(() => {
+    if (!tourOpen) return
+    const id = setTimeout(() => { if (room.get().spread === 0) room.set({ spread: 1 }) }, 900)
+    return () => clearTimeout(id)
+  }, [tourOpen])
 
   useFrame((_, dt) => {
     if (hinge.current) {

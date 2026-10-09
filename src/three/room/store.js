@@ -64,6 +64,15 @@ export function useRoom(selector) {
   return useSyncExternalStore(room.subscribe, () => selector(state), () => selector(state))
 }
 
+// Clicking "away" closes one layer at a time: a held photo or a pulled-out
+// card first, then the object itself.
+export function closeLayer() {
+  const s = state
+  if (s.photo >= 0) room.set({ photo: -1 })
+  else if (s.folder >= 0 || s.pin || s.side >= 0) room.set({ folder: -1, pin: null, side: -1 })
+  else if (s.focus) room.set({ focus: null })
+}
+
 export function focusOn(id) {
   room.set({ focus: id, folder: -1, side: -1, pin: null, hover: null, spread: 0, photo: -1 })
 }

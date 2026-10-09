@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { room, live, useRoom } from './store'
@@ -20,7 +20,7 @@ const OVERVIEW_TALL = { pos: V(0.85, 1.38, 1.05), look: V(0.12, 0.88, -0.62) }
 // The scroll tour (order in tourData.js). The camera holds at each stop for
 // the first part of its scroll segment, then travels to the next.
 const SHOTS = {
-  intro: { pos: PHOTO.center.clone().addScaledVector(PHOTO.normal, 0.5), look: PHOTO.center.clone().add(V(0.06, -0.01, 0)) },
+  intro: { pos: PHOTO.center.clone().addScaledVector(PHOTO.normal, 0.5), look: PHOTO.center.clone().add(V(0, -0.012, 0)) },
   experience: { pos: V(BOARD.x - 0.04, BOARD.y + 0.11, BACK + 1.12), look: V(BOARD.x, BOARD.y + 0.15, BACK) },
   wins: { pos: V(BOARD.x + 0.05, BOARD.y - 0.1, BACK + 1.2), look: V(BOARD.x, BOARD.y - 0.18, BACK) },
   projects: { pos: V(0.66, 1.2, 0.36), look: V(0.55, 0.62, -0.28) },
@@ -53,7 +53,7 @@ export function tourAt(s) {
 }
 
 export default function CameraRig() {
-  const { camera, size } = useThree()
+  const { camera, size, gl } = useThree()
   const focus = useRoom(s => s.focus)
   const folder = useRoom(s => s.folder)
   const pin = useRoom(s => s.pin)
@@ -61,6 +61,33 @@ export default function CameraRig() {
   const pos = useRef(TOUR[0].pos.clone().addScaledVector(PHOTO.normal, 0.35))
   const look = useRef(TOUR[0].look.clone())
   const tmp = useMemo(() => ({ sp: V(0, 0, 0), sn: V(0, 0, 1), a: V(0, 0, 0), b: V(0, 0, 0), c: V(0, 0, 0), q: new THREE.Quaternion() }), [])
+
+  // free-roam stop: drag to pan / tilt the view (a drag never counts as a click)
+  const look2 = useRef({ yaw: 0, pitch: 0, ty: 0, tp: 0 })
+  useEffect(() => {
+    const el = gl.domElement
+    let down = null, dragged = false
+    const can = () => !room.get().focus && room.get().tourStop === 'free'
+    const pd = e => { if (can() && e.button === 0) { down = { x: e.clientX, y: e.clientY }; dragged = false } }
+    const pm = e => {
+      if (!down) return
+      const dx = e.clientX - down.x, dy = e.clientY - down.y
+      if (!dragged && Math.hypot(dx, dy) < 6) return
+      dragged = true
+      const l = look2.current
+      l.ty = THREE.MathUtils.clamp(l.ty - (e.movementX || 0) * 0.0035, -0.75, 0.75)
+      if (e.pointerType !== 'touch') l.tp = THREE.MathUtils.clamp(l.tp - (e.movementY || 0) * 0.003, -0.35, 0.3)
+      document.body.style.cursor = 'grabbing'
+    }
+    const pu = () => { down = null; document.body.style.cursor = '' }
+    const click = e => { if (dragged) { dragged = false; e.stopPropagation() } }
+    el.addEventListener('pointerdown', pd)
+    window.addEventListener('pointermove', pm)
+    window.addEventListener('pointerup', pu)
+    window.addEventListener('click', click, true)
+    el.style.touchAction = 'pan-y'
+    return () => { el.removeEventListener('pointerdown', pd); window.removeEventListener('pointermove', pm); window.removeEventListener('pointerup', pu); window.removeEventListener('click', click, true) }
+  }, [gl])
 
   useFrame((_, dt) => {
     const aspect = size.width / size.height
@@ -90,8 +117,6 @@ export default function CameraRig() {
       const ov = tall ? OVERVIEW_TALL : OVERVIEW
       target.copy(a.id === 'free' ? ov.pos : a.pos).lerp(b.id === 'free' ? ov.pos : b.pos, k)
       at.copy(a.id === 'free' ? ov.look : a.look).lerp(b.id === 'free' ? ov.look : b.look, k)
-      // photo sits left of the name on wide screens, centred above it on tall
-      if (tall && i === 0) at.x -= 0.06 * (1 - k)
       if (b.id !== 'free' || k < 1) backOff(target, at, i === 0 && k < 0.5 ? 0.5 : 1.1)
       // load-in: settle forward onto the photo
       const intro = ease(live.intro)
@@ -99,6 +124,17 @@ export default function CameraRig() {
       const par = (stop === 'free' ? 0.08 : 0.012) * (1 - (i === 0 ? 1 - k : 0) * 0.6)
       target.x += live.pointer.x * par
       target.y += live.pointer.y * par * 0.6
+      // pan / tilt offsets from dragging (eased back to centre off the free stop)
+      const l = look2.current
+      if (stop !== 'free') { l.ty = 0; l.tp = 0 }
+      l.yaw = THREE.MathUtils.damp(l.yaw, l.ty, 8, dt)
+      l.pitch = THREE.MathUtils.damp(l.pitch, l.tp, 8, dt)
+      if (Math.abs(l.yaw) > 0.0005 || Math.abs(l.pitch) > 0.0005) {
+        tmp.c.copy(at).sub(target)
+        const right = tmp.sn.set(0, 1, 0).cross(tmp.c).normalize()
+        tmp.c.applyAxisAngle(V(0, 1, 0), l.yaw).applyAxisAngle(right, -l.pitch)
+        at.copy(target).add(tmp.c)
+      }
       const s = room.get()
       if (s.tourStop !== stop || s.explore !== (stop !== 'intro')) room.set({ tourStop: stop, explore: stop !== 'intro' })
     }

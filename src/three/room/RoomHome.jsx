@@ -9,7 +9,6 @@ import LaptopTerminal from './LaptopTerminal'
 import { useRoute } from '../../router'
 import { useMobile } from '../../hooks/useMobile'
 import { room, live, useRoom, focusOn } from './store'
-import { isNight } from './hour'
 import { forgetTier } from './tier'
 import { TOUR } from './tourData'
 import { AGE } from '../../utils/meta'
@@ -49,7 +48,7 @@ const STOP_COPY = {
   projects: { n: '03', label: 'the drawer', title: "Things I've built.", line: 'Every folder is a project. Pull one out and flip through it.' },
   diary: { n: '04', label: 'the log', title: 'I write things down.', line: 'Essays on building, tech and thinking clearly. Tap the diary to read.' },
   finale: { n: '05', label: 'say hi', title: 'Want to build something together?', line: "The phone's already lit up. Tap it, or the laptop." },
-  free: { n: '', label: 'the room is yours', title: 'Look around.', line: 'Click anything — open it, close it, throw paper at the bin.' },
+  free: { n: '', label: 'the room is yours', title: 'Look around.', line: 'Drag to look around. Click anything — open it, close it, throw paper at the bin.' },
 }
 
 // Tour text. The intro is the name over the lit photo, with the rest of the
@@ -68,10 +67,10 @@ function TourCopy({ focus, mobile }) {
       const [x, y] = live.photoPx || [window.innerWidth * 0.4, window.innerHeight * 0.45]
       if (veil.current) {
         veil.current.style.opacity = String((1 - lift) * (focus ? 0 : 1))
-        veil.current.style.background = `radial-gradient(${mobile ? 260 : 340}px ${mobile ? 300 : 380}px at ${x}px ${y}px, rgba(8,7,6,0) 0%, rgba(8,7,6,0.55) 55%, rgba(8,7,6,0.94) 100%)`
+        veil.current.style.background = `radial-gradient(${mobile ? window.innerWidth * 0.62 : window.innerWidth * 0.5}px ${mobile ? 320 : 400}px at ${x}px ${y}px, rgba(8,7,6,0) 0%, rgba(8,7,6,0.35) 60%, rgba(8,7,6,0.88) 100%)`
       }
       if (name.current) {
-        name.current.style.opacity = String(Math.max(0, 1 - lift * 1.6) * Math.min(1, live.intro * 1.6) * (focus ? 0 : 1))
+        name.current.style.opacity = String(Math.max(0, 1 - lift * 2.5) * Math.min(1, live.intro * 1.6) * (focus ? 0 : 1))
         name.current.style.transform = `translateY(${-lift * 40}px)`
       }
     }
@@ -82,13 +81,10 @@ function TourCopy({ focus, mobile }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
       <div ref={veil} style={{ position: 'absolute', inset: 0 }} />
-      <div ref={name} style={mobile
-        ? { position: 'absolute', left: 16, right: 16, bottom: 92, textAlign: 'center' }
-        : { position: 'absolute', left: '54%', top: '50%', marginTop: -90, maxWidth: 560 }}>
-        <p style={{ ...mono, fontSize: '0.66rem', letterSpacing: '0.26em', color: 'var(--cu)', marginBottom: 14 }}>HELLO, I'M</p>
-        <h1 style={{ ...serif, fontSize: mobile ? 'clamp(2.6rem, 12vw, 3.6rem)' : 'clamp(3rem, 6.2vw, 5.6rem)', lineHeight: 0.95, color: '#f6efe4', textShadow: '0 2px 40px rgba(0,0,0,0.6)' }}>Shoryavardhaan</h1>
-        <p style={{ ...mono, marginTop: 16, fontSize: '0.75rem', color: 'rgba(240,230,216,0.72)', letterSpacing: '0.06em' }}>builder · {AGE} · kolkata</p>
-        <p style={{ ...mono, marginTop: mobile ? 26 : 46, fontSize: '0.6rem', letterSpacing: '0.24em', color: 'rgba(240,230,216,0.5)' }}>SCROLL TO STEP INTO THE ROOM ↓</p>
+      {/* the name itself is in 3D, behind the cut-out (IntroPhoto) */}
+      <div ref={name} style={{ position: 'absolute', left: 16, right: 16, bottom: mobile ? 40 : 46, textAlign: 'center' }}>
+        <p style={{ ...mono, fontSize: '0.75rem', color: 'rgba(240,230,216,0.72)', letterSpacing: '0.08em' }}>builder · {AGE} · kolkata</p>
+        <p style={{ ...mono, marginTop: 14, fontSize: '0.6rem', letterSpacing: '0.24em', color: 'rgba(240,230,216,0.5)' }}>SCROLL TO STEP INTO THE ROOM ↓</p>
       </div>
       <AnimatePresence mode="wait">
         {c && !focus && (
@@ -313,6 +309,34 @@ function DeviceChoice({ onContinue, reason, still }) {
   )
 }
 
+const RETURN_KEY = 'room-return'
+function readReturn() {
+  try {
+    const r = JSON.parse(sessionStorage.getItem(RETURN_KEY) || 'null')
+    sessionStorage.removeItem(RETURN_KEY)
+    return r && Date.now() - r.at < 30 * 60 * 1000 ? r : null
+  } catch { return null }
+}
+
+// Sun / moon switch for the desk lamp (= the site's light / dark).
+function LampToggle({ on }) {
+  const flip = () => { const v = !room.get().lampOn; room.set({ lampOn: v }); document.documentElement.dataset.theme = v ? 'warm' : 'dark' }
+  const icon = { width: 14, height: 14, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' }
+  return (
+    <button onClick={flip} role="switch" aria-checked={on} aria-label={on ? 'lamp on — switch it off' : 'lamp off — switch it on'} title={on ? 'lamp on' : 'lamp off'}
+      style={{ pointerEvents: 'auto', position: 'relative', display: 'flex', alignItems: 'center', gap: 10, padding: '6px 9px', borderRadius: 999, border: '1px solid rgba(132,208,232,0.35)', background: 'rgba(14,11,8,0.55)', backdropFilter: 'blur(8px)', color: 'rgba(240,230,216,0.55)' }}>
+      <motion.span layout transition={{ type: 'spring', stiffness: 500, damping: 34 }}
+        style={{ position: 'absolute', top: 3, bottom: 3, width: 26, borderRadius: 999, background: on ? 'var(--go)' : 'var(--cu)', left: on ? 3 : 'auto', right: on ? 'auto' : 3 }} />
+      <svg viewBox="0 0 24 24" {...icon} style={{ position: 'relative', color: on ? '#120d08' : undefined }}>
+        <circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
+      </svg>
+      <svg viewBox="0 0 24 24" {...icon} style={{ position: 'relative', color: on ? undefined : '#0b1418' }}>
+        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+      </svg>
+    </button>
+  )
+}
+
 // One-liners from the room itself (paper-ball shots…), gone after ~2 s.
 function RoomToast() {
   const toast = useRoom(s => s.toast)
@@ -359,7 +383,6 @@ export default function RoomHome() {
   useScrollProgress()
   const focus = useRoom(s => s.focus)
   const tourStop = useRoom(s => s.tourStop)
-  const hour = useRoom(s => s.hour)
   const debug = useRoom(s => s.debug)
   const lampOn = useRoom(s => s.lampOn)
   const roam = useRoom(s => s.roam)
@@ -383,8 +406,17 @@ export default function RoomHome() {
 
   useEffect(() => {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
-    window.scrollTo(0, 0)
-    window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: 0 }))
+    // back from a case study / post: land where the visitor left — same tour
+    // spot, same object open, the pulled-out folder or card filed away
+    const mountedAt = performance.now()
+    const back = readReturn()
+    const y = back ? back.y : 0
+    window.scrollTo(0, y)
+    window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: y }))
+    if (back) {
+      live.intro = 1
+      room.set({ focus: back.focus, folder: -1, side: -1, pin: null, photo: -1, spread: back.focus === 'diary' ? back.spread : 0, hover: null })
+    } else room.set({ focus: null, folder: -1, side: -1, pin: null, photo: -1, hover: null })
     let raf, t0
     const delay = setTimeout(() => {
       const run = now => {
@@ -398,10 +430,13 @@ export default function RoomHome() {
     if (new URLSearchParams(window.location.search).has('capture')) { live.intro = 1; live.scroll = 1 }
     const onKey = e => { if (e.key === 'Escape') room.set({ focus: null, folder: -1, side: -1, pin: null }) }
     window.addEventListener('keydown', onKey)
-    return () => { clearTimeout(delay); cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey) }
+    return () => {
+      clearTimeout(delay); cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey)
+      const s = room.get()
+      // (dev StrictMode remounts instantly — that's not the visitor leaving)
+      if (performance.now() - mountedAt > 1500) try { sessionStorage.setItem(RETURN_KEY, JSON.stringify({ y: window.scrollY, focus: s.focus, spread: s.spread, at: Date.now() })) } catch { /* storage blocked */ }
+    }
   }, [])
-
-  const timeWord = isNight(hour) ? 'night' : hour < 11 ? 'morning' : hour < 16.5 ? 'afternoon' : 'evening'
 
   return (
     <>
@@ -416,9 +451,9 @@ export default function RoomHome() {
 
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px var(--pad)', pointerEvents: 'none' }}>
         <span style={{ ...mono, color: 'var(--cu)', fontSize: '0.9rem', letterSpacing: '0.12em' }}>SG</span>
-        <span style={{ ...mono, color: 'rgba(240,230,216,0.6)', fontSize: '0.62rem', letterSpacing: '0.1em' }}>
-          {roam ? <a href="/" style={{ color: 'inherit', pointerEvents: 'auto' }}>← back to the site</a> : <>{timeWord} light · {lampOn ? 'lamp on' : 'lamp off'} · <a href="/?classic" style={{ color: 'inherit', pointerEvents: 'auto' }}>classic view</a></>}
-        </span>
+        {roam
+          ? <a href="/" style={{ ...mono, color: 'rgba(240,230,216,0.6)', fontSize: '0.62rem', letterSpacing: '0.1em', pointerEvents: 'auto' }}>← back to the site</a>
+          : <LampToggle on={lampOn} />}
       </header>
 
       {!roam && !poster && <TourCopy focus={focus} mobile={mobile} />}
@@ -433,10 +468,9 @@ export default function RoomHome() {
             style={{ position: 'fixed', right: mobile ? 16 : 'var(--pad)', left: mobile ? 16 : 'auto', bottom: mobile ? 20 : 40, zIndex: 50, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: mobile ? 'center' : 'flex-end', maxWidth: mobile ? 'none' : 520 }}
           >
             {focus && <Chip onClick={() => room.set({ focus: null, folder: -1, side: -1, pin: null })}>← back to the desk</Chip>}
-            {(!focus || !mobile) && SPOTS.map(s => (
+            {!focus && SPOTS.map(s => (
               <Chip key={s.id} active={focus === s.id} onClick={() => focusOn(s.id)}>{s.label} · {s.hint}</Chip>
             ))}
-            {(!focus || !mobile) && <Chip onClick={() => { const on = !room.get().lampOn; room.set({ lampOn: on }); document.documentElement.dataset.theme = on ? 'warm' : 'dark' }}>lamp {lampOn ? 'off' : 'on'}</Chip>}
           </motion.nav>
         )}
       </AnimatePresence>
