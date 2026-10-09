@@ -1,431 +1,286 @@
 /**
- * terminal-ui.js
+ * terminal-ui.js — the only file here that touches the DOM.
  *
- * DOM-driving render layer for TerminalEngine (terminal-engine.js). This
- * file is the ONLY place that touches the DOM - the engine stays pure.
- *
- * Mount with:
- *   TerminalUI.mount(document.getElementById('terminal-root'));
- *
- * Expects these CSS custom properties to exist on the mounted root (see
- * terminal.html) - this file mutates them live to make `theme`/`font`
- * visibly change the rendered terminal, which the Python prototype could
- * never do:
- *   --term-fg     (theme command -> hex color)
- *   --term-font   (font command  -> font-family stack)
+ * Commands resolve in two layers: TerminalRich (portfolio commands rendered
+ * as panels from generated site data) first, then TerminalEngine (the fake
+ * shell: filesystem, nano, man, history, sudo…). Adds what makes a terminal
+ * usable by non-terminal people: clickable commands everywhere, fish-style
+ * ghost suggestions, Tab completion, history, quick-command chips, themes.
  */
 (function (global) {
   "use strict";
 
-  function escapeHtml(str) {
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+  var engine = global.TerminalEngine;
+  var rich = global.TerminalRich;
+
+  var CHIPS = ["about", "projects", "work", "blog", "wins", "contact", "help"];
+  var SHELL_CMDS = ["ls", "cd", "cat", "pwd", "nano", "man", "history", "clear", "banner", "exit", "sudo"];
+  var THEME_KEY = "cli-theme";
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
 
-  // Security note (fixed a real, if narrow, XSS finding): escapeHtml() now
-  // also encodes quotes, and this regex additionally excludes " and ' from
-  // the URL match itself (defense in depth) - previously a URL matched up
-  // to the first whitespace/'<', so file content ending in
-  // `https://x" onmouseover="...` could break out of the href="$1"
-  // attribute once inserted via innerHTML. Reachable only by a visitor
-  // saving crafted content with `nano` and viewing it with `cat` in their
-  // OWN mount-local session (no persistence, no other visitor affected),
-  // but worth closing properly regardless.
-  function linkify(escapedText) {
-    return escapedText.replace(
-      /(https?:\/\/[^\s<"']+)/g,
-      '<a class="term-hl-link" href="$1" target="_blank" rel="noreferrer">$1</a>'
-    );
+  // Engine output is plain text: give it light structure (headings, keys, links).
+  function formatPlain(text) {
+    return '<div class="plain">' + String(text).split("\n").map(function (line) {
+      var e = esc(line).replace(/(https?:\/\/[^\s<]+)/g, '<a class="k-link" href="$1" target="_blank" rel="noopener">$1</a>');
+      if (/^#\s/.test(line)) return '<span class="h">' + e.replace(/^#\s/, "") + "</span>";
+      var m = e.match(/^([A-Za-z][\w ]{0,14}):(\s+)(.*)$/);
+      if (m) return '<span class="key">' + m[1] + ":</span>" + m[2] + m[3];
+      return e;
+    }).join("\n") + "</div>";
   }
 
-  // Lightweight, presentation-only line classifier — colors labels/headers/
-  // links differently from plain body text, so command OUTPUT reads as
-  // structured content instead of one flat color for everything. Purely a
-  // UI-layer concern: the engine still just returns plain strings.
-  function formatOutputLine(line) {
-    var m;
-
-    // Markdown-style heading (from `cat`-ing a .md file)
-    m = line.match(/^(#{1,3})\s+(.*)$/);
-    if (m) return '<span class="term-hl-header">' + escapeHtml(m[2]) + "</span>";
-
-    // man-page section headers
-    if (/^(NAME|SYNOPSIS|DESCRIPTION)$/.test(line.trim())) {
-      return '<span class="term-hl-header">' + escapeHtml(line) + "</span>";
-    }
-
-    // numbered list entry ("1. Title", "1) Title" - blog listing)
-    m = line.match(/^(\s*)(\d+)([.)])(\s+)(.*)$/);
-    if (m) {
-      return (
-        escapeHtml(m[1]) +
-        '<span class="term-hl-label">' + m[2] + m[3] + "</span>" +
-        escapeHtml(m[4]) +
-        linkify(escapeHtml(m[5]))
-      );
-    }
-
-    // "Label   value" - two+ spaces separating a short label from its value
-    // (whoami/neofetch/man SYNOPSIS-style key-value lines)
-    m = line.match(/^(\s*)(\S[\w()&/'.-]*(?:\s[\w()&/'.-]+)*?)(\s{2,})(\S.*)$/);
-    if (m) {
-      return (
-        escapeHtml(m[1]) +
-        '<span class="term-hl-label">' + escapeHtml(m[2]) + "</span>" +
-        escapeHtml(m[3]) +
-        linkify(escapeHtml(m[4]))
-      );
-    }
-
-    return linkify(escapeHtml(line));
+  function distance(a, b) {
+    var d = [], i, j
+    for (i = 0; i <= a.length; i++) d[i] = [i]
+    for (j = 0; j <= b.length; j++) d[0][j] = j
+    for (i = 1; i <= a.length; i++) for (j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
+    return d[a.length][b.length]
   }
 
-  // Commands whose output reads better as a bordered panel (identity/
-  // system-info style content) than a flat scroll of lines - mirrors the
-  // box treatment already used on the curl/ANSI side.
-  var BOXED_COMMANDS = { whoami: "whoami", neofetch: "neofetch" };
-
-  // UI-only glyph table for the boot splash's name banner - deliberately
-  // NOT shared with terminal-engine.js's own banner/figlet command glyphs;
-  // that file stays a byte-for-byte content mirror of the Python original
-  // (verified by an independent review pass), so presentation-only assets
-  // like this live here instead.
-  var BANNER_FONT = {
-    S: ["#####", "#    ", "#####", "    #", "#####"],
-    H: ["#   #", "#   #", "#####", "#   #", "#   #"],
-    O: ["#####", "#   #", "#   #", "#   #", "#####"],
-    R: ["#####", "#   #", "#####", "#  # ", "#   #"],
-    Y: ["#   #", " # # ", "  #  ", "  #  ", "  #  "],
-    A: ["#####", "#   #", "#####", "#   #", "#   #"],
-    V: ["#   #", "#   #", "#   #", " # # ", "  #  "],
-    D: ["#### ", "#   #", "#   #", "#   #", "#### "],
-    N: ["#   #", "##  #", "# # #", "#  ##", "#   #"],
-    " ": ["     ", "     ", "     ", "     ", "     "],
-  };
-  var BANNER_WORD = "SHORYAVARDHAAN";
-
-  function renderNameBanner() {
-    var rows = ["", "", "", "", ""];
-    for (var i = 0; i < BANNER_WORD.length; i++) {
-      var glyph = BANNER_FONT[BANNER_WORD[i]] || BANNER_FONT[" "];
-      for (var r = 0; r < 5; r++) rows[r] += glyph[r] + " ";
-    }
-    return rows.map(function (r) { return r.replace(/\s+$/, ""); }).join("\n");
+  function portraitInto(pre) {
+    var img = new Image();
+    img.onload = function () {
+      var cols = 44, rows = 30;
+      var c = document.createElement("canvas");
+      c.width = cols; c.height = rows;
+      var ctx = c.getContext("2d");
+      var s = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width - s) / 2, Math.max(0, (img.height - s) * 0.15), s, s, 0, 0, cols, rows);
+      var px = ctx.getImageData(0, 0, cols, rows).data;
+      var ramp = " .:-=+*#%@";
+      var out = "";
+      for (var y = 0; y < rows; y++) {
+        var run = "", cls = "";
+        for (var x = 0; x < cols; x++) {
+          var i = (y * cols + x) * 4;
+          var l = (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
+          l = Math.min(1, Math.max(0, (l - 0.12) * 1.35));
+          var ch = ramp[Math.min(ramp.length - 1, Math.floor(l * ramp.length))];
+          var k = l < 0.25 ? "a1" : l < 0.5 ? "a2" : l < 0.78 ? "a3" : "a4";
+          if (k !== cls) { if (run) out += '<span class="' + cls + '">' + esc(run) + "</span>"; run = ""; cls = k; }
+          run += ch;
+        }
+        out += '<span class="' + cls + '">' + esc(run) + "</span>\n";
+      }
+      pre.innerHTML = out;
+    };
+    img.src = "/preview (1).jpg";
   }
 
-  function mount(root) {
-    var engine = global.TerminalEngine;
-    if (!engine) throw new Error("TerminalUI.mount: TerminalEngine not found - load terminal-engine.js first");
+  function mount(win) {
+    var log = win.querySelector("#log");
+    var input = win.querySelector("#cmd");
+    var form = win.querySelector("#promptbar");
+    var ghostTyped = win.querySelector(".ghost__typed");
+    var ghostRest = win.querySelector(".ghost__rest");
+    var promptPath = win.querySelector(".p-path");
+    var titlePath = win.querySelector("#title-path");
+    var chips = win.querySelector("#chips");
+    var embedded = global.top !== global.self;
+    if (embedded) document.documentElement.classList.add("embedded");
 
     var state = engine.initialState();
-    var historyCursor = null; // index into inputHistory while scrolling with up/down
-    var inputHistory = []; // separate from engine's command_history: purely for arrow recall
+    var history = [];
+    var cursor = null;
+    var suggestion = "";
 
-    // No title bar / traffic-light chrome, deliberately - per direct
-    // feedback and reference research (Alacritty/kitty/xterm defaults,
-    // real raw-terminal portfolio sites): that "app window" framing is
-    // the single strongest signal of a fake mockup vs. a real terminal.
-    root.innerHTML =
-      '<div class="term-window">' +
-      '  <div class="term-body" id="term-body">' +
-      '    <div class="term-log" id="term-log" role="log" aria-live="polite" aria-relevant="additions"></div>' +
-      '    <div class="term-inputline" id="term-inputline">' +
-      '      <span class="term-prompt" id="term-prompt" aria-hidden="true"></span>' +
-      '      <span class="term-input-wrap">' +
-      '        <input class="term-input" id="term-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command input" />' +
-      '        <span class="term-mirror" id="term-mirror" aria-hidden="true"></span>' +
-      '        <span class="term-charwidth" id="term-charwidth" aria-hidden="true">0</span>' +
-      '        <span class="term-cursor" id="term-cursor" aria-hidden="true">&nbsp;</span>' +
-      '      </span>' +
-      '    </div>' +
-      '  </div>' +
-      '</div>';
-
-    var logEl = root.querySelector("#term-log");
-    var inputEl = root.querySelector("#term-input");
-    var promptEl = root.querySelector("#term-prompt");
-    var inputLineEl = root.querySelector("#term-inputline");
-    var bodyEl = root.querySelector("#term-body");
-    var mirrorEl = root.querySelector("#term-mirror");
-    var charWidthEl = root.querySelector("#term-charwidth");
-    var cursorEl = root.querySelector("#term-cursor");
-
-    function updateCursorPosition() {
-      // Block cursor sits AT the actual caret position (measured via a
-      // hidden same-font mirror span containing only the text up to
-      // selectionStart - bug fixed: this used to mirror the whole value
-      // regardless of caret position, so it never moved off the end).
-      //
-      // Width is one real character cell (measured once via a hidden
-      // same-font span), and the cursor overlays - rather than sits in the
-      // gap beside - the character at that position: `mix-blend-mode:
-      // difference` in the CSS inverts whatever text pixel is underneath
-      // it, so the letter stays fully legible (just color-flipped) instead
-      // of being hidden by an opaque block.
-      var caretPos = inputEl.selectionStart == null ? inputEl.value.length : inputEl.selectionStart;
-      mirrorEl.textContent = inputEl.value.slice(0, caretPos);
-      cursorEl.style.transform = "translateX(" + mirrorEl.offsetWidth + "px)";
-      cursorEl.style.width = charWidthEl.offsetWidth + "px";
+    // ---------- theme ----------
+    function setTheme(t) {
+      if (!t || t === "copper") document.documentElement.removeAttribute("data-theme");
+      else document.documentElement.setAttribute("data-theme", t);
+      try { localStorage.setItem(THEME_KEY, t || "copper"); } catch (e) { /* storage blocked */ }
     }
+    try { setTheme(localStorage.getItem(THEME_KEY)); } catch (e) { /* storage blocked */ }
 
-    function applyThemeFont() {
-      var fg = engine.THEMES[state.theme] || engine.THEMES.default;
-      var fontFamily = engine.FONTS[state.font] || engine.FONTS.default;
-      root.style.setProperty("--term-fg", fg);
-      root.style.setProperty("--term-font", fontFamily);
-    }
-
-    function scrollToBottom() {
-      bodyEl.scrollTop = bodyEl.scrollHeight;
-    }
-
-    function appendLine(html, extraClass) {
+    // ---------- output ----------
+    function entry(echo, html) {
       var div = document.createElement("div");
-      div.className = "term-line" + (extraClass ? " " + extraClass : "");
-      div.innerHTML = html;
-      logEl.appendChild(div);
+      div.className = "entry";
+      div.innerHTML = (echo !== null ? '<div class="echo"><span class="p-arrow">❯</span> <b>' + esc(echo) + "</b></div>" : "") + (html || "");
+      log.appendChild(div);
+      var pre = div.querySelector("[data-ascii-portrait]");
+      if (pre) portraitInto(pre);
+      requestAnimationFrame(function () {
+        // keep the start of a tall answer in view rather than its end
+        var top = div.offsetTop - 12;
+        log.scrollTop = div.offsetHeight > log.clientHeight ? top : log.scrollHeight;
+      });
     }
 
-    function appendCommandEcho(promptText, commandText) {
-      appendLine(
-        '<span class="term-echo-prompt">' + escapeHtml(promptText) + "</span>" +
-        '<span class="term-echo-cmd">' + escapeHtml(commandText) + "</span>"
-      );
+    function syncPrompt() {
+      var p = engine.pathStr(state.cwd);
+      var shown = p === "/" ? "~" : "~" + p;
+      promptPath.textContent = state.in_editor ? "nano " + state.in_editor.display : shown;
+      titlePath.textContent = shown;
     }
 
-    function appendOutput(text) {
-      if (text === "") return;
-      var lines = text.split("\n");
-      for (var i = 0; i < lines.length; i++) {
-        appendLine(formatOutputLine(lines[i]) || "&nbsp;", "term-output");
+    function leave(to) {
+      if (embedded) { global.parent.postMessage({ type: "cli:exit" }, global.location.origin); return; }
+      setTimeout(function () { global.location.href = to; }, 450);
+    }
+
+    // ---------- run ----------
+    function run(raw) {
+      var line = raw.replace(/\s+$/, "");
+      cursor = null;
+      if (state.in_editor || state.awaiting_password) {
+        var r0 = engine.processCommand(state, raw);
+        state = r0[0];
+        entry(state.awaiting_password ? "" : line, r0[1] ? formatPlain(r0[1]) : "");
+        syncPrompt();
+        return;
       }
-    }
+      if (!line.trim()) return;
+      history.push(line);
+      win.classList.remove("errored");
+      var parts = line.trim().split(/\s+/);
+      var name = parts[0].toLowerCase(), args = parts.slice(1);
 
-    // Bordered panel for identity/system-info style output (whoami,
-    // neofetch) - built from real Unicode box-drawing characters (┌─┐│└┘)
-    // as monospace text lines, the same technique api/cli.py's box() uses
-    // for the curl/ANSI side, instead of a generic CSS `border` rectangle.
-    function appendBoxedOutput(text, title) {
-      if (text === "") return;
-      var lines = text.split("\n");
-
-      var width = 0;
-      for (var i = 0; i < lines.length; i++) width = Math.max(width, lines[i].length);
-      width = Math.max(width, title.length + 2);
-
-      var box = document.createElement("div");
-      box.className = "term-box";
-
-      function addLine(html) {
-        var div = document.createElement("div");
-        div.className = "term-box-line";
-        div.innerHTML = html;
-        box.appendChild(div);
-      }
-
-      var titleDisp = " " + title + " ";
-      var pad = width + 2 - titleDisp.length;
-      var left = Math.floor(pad / 2);
-      var right = pad - left;
-      addLine(
-        '<span class="term-box-border">┌' + "─".repeat(left) + "</span>" +
-        '<span class="term-box-title-inline">' + escapeHtml(titleDisp) + "</span>" +
-        '<span class="term-box-border">' + "─".repeat(right) + "┐</span>"
-      );
-
-      for (var j = 0; j < lines.length; j++) {
-        var fill = width - lines[j].length;
-        addLine(
-          '<span class="term-box-border">│ </span>' +
-          (formatOutputLine(lines[j]) || "&nbsp;") +
-          " ".repeat(Math.max(fill, 0)) +
-          '<span class="term-box-border"> │</span>'
-        );
+      var out = rich.run(name, args);
+      if (out) {
+        state.command_history = (state.command_history || []).concat([line]);
+        entry(line, out.html);
+        if (out.theme) setTheme(out.theme);
+        if (out.open) global.open(out.open, /^mailto:/.test(out.open) ? "_self" : "_blank", "noopener");
+        if (out.navigate) leave(out.navigate);
+        return;
       }
 
-      addLine('<span class="term-box-border">└' + "─".repeat(width + 2) + "┘</span>");
-
-      logEl.appendChild(box);
-    }
-
-    function clearLog() {
-      logEl.innerHTML = "";
-    }
-
-    function renderPromptLine() {
-      if (state.awaiting_password) {
-        promptEl.textContent = "[sudo] password for visitor: ";
-        inputEl.type = "password";
-        inputLineEl.classList.remove("term-nano-mode");
-      } else if (state.in_editor) {
-        promptEl.textContent = "";
-        inputEl.type = "text";
-        inputLineEl.classList.add("term-nano-mode");
+      var r = engine.processCommand(state, raw);
+      state = r[0];
+      if (state.clear) { log.innerHTML = ""; state.clear = false; syncPrompt(); return; }
+      var text = r[1];
+      if (/command not found/i.test(text || "")) {
+        text = null;
+        var near = rich.names.concat(SHELL_CMDS).filter(function (c) { return distance(c, name) <= 2; })[0];
+        win.classList.add("errored");
+        entry(line, '<p class="k-err">' + esc(name) + ": not a command here." +
+          (near ? ' did you mean <button type="button" class="k-cmd" data-cmd="' + near + '">' + near + "</button>?" : "") +
+          '</p><p class="k-hint">try ' +
+          '<button type="button" class="k-cmd" data-cmd="help">help</button> or one of ' +
+          CHIPS.slice(0, 4).map(function (c) { return '<button type="button" class="k-cmd" data-cmd="' + c + '">' + c + "</button>"; }).join(" ") + "</p>");
       } else {
-        promptEl.textContent = engine.prompt(state.cwd);
-        inputEl.type = "text";
-        inputLineEl.classList.remove("term-nano-mode");
+        entry(line, text ? formatPlain(text) : "");
       }
+      syncPrompt();
+      if (state.should_exit) leave("/");
     }
 
-    function renderNanoBanner(on, filename) {
-      var existing = root.querySelector(".term-nano-banner");
-      if (existing) existing.remove();
-      if (!on) return;
-      var banner = document.createElement("div");
-      banner.className = "term-nano-banner";
-      banner.textContent = "-- EDITING " + filename + " (session-only) -- type :wq to save+exit, :q to discard+exit --";
-      inputLineEl.parentNode.insertBefore(banner, inputLineEl);
+    // ---------- suggestions ----------
+    function filesHere() {
+      try {
+        var r = engine.processCommand(Object.assign({}, state, { command_history: [] }), "ls");
+        return (r[1] || "").split(/\s+/).filter(Boolean).map(function (f) { return f.replace(/[/*]$/, ""); });
+      } catch (e) { return []; }
+    }
+    function suggest(value) {
+      if (!value || /\s$/.test(value) && value.trim().split(/\s+/).length > 1) return "";
+      var parts = value.split(/\s+/);
+      if (parts.length === 1) {
+        var pool = rich.names.concat(SHELL_CMDS);
+        var hit = pool.filter(function (c) { return c.indexOf(parts[0].toLowerCase()) === 0 && c !== parts[0]; })[0];
+        return hit ? hit.slice(parts[0].length) : "";
+      }
+      var name = parts[0].toLowerCase(), arg = parts[parts.length - 1];
+      var choices = rich.argChoices(name);
+      if (name === "cd" || name === "cat" || name === "nano") choices = filesHere();
+      var pick = choices.filter(function (c) { return c.indexOf(arg) === 0 && c !== arg; })[0];
+      return pick ? pick.slice(arg.length) : "";
+    }
+    function paintGhost() {
+      suggestion = input.selectionStart === input.value.length ? suggest(input.value) : "";
+      ghostTyped.textContent = input.value;
+      ghostRest.textContent = suggestion;
     }
 
-    function submit(raw) {
-      var wasEditor = !!state.in_editor;
-      var wasPassword = !!state.awaiting_password;
-      var promptText = wasPassword
-        ? "[sudo] password for visitor: "
-        : wasEditor
-        ? ""
-        : engine.prompt(state.cwd);
-
-      if (!wasEditor) {
-        appendCommandEcho(promptText, wasPassword ? "*".repeat(raw.length) : raw);
-      } else {
-        appendCommandEcho("", raw);
-      }
-
-      var result = engine.processCommand(state, raw);
-      state = result[0];
-      var output = result[1];
-
-      if (!wasEditor && !wasPassword && raw.trim() !== "") {
-        inputHistory.push(raw);
-      }
-      historyCursor = null;
-
-      var isSudoPromptOutput = state.awaiting_password && output === "[sudo] password for visitor: ";
-
-      var cmdName = raw.trim().split(/\s+/)[0];
-      var boxedTitle = !wasEditor && !wasPassword ? BOXED_COMMANDS[cmdName] : null;
-
-      if (state.clear) {
-        clearLog();
-      } else if (output && !isSudoPromptOutput) {
-        // the sudo prompt text is rendered as the next input row's prompt
-        // instead of a log line, to avoid showing it twice.
-        if (boxedTitle) {
-          appendBoxedOutput(output, boxedTitle);
-        } else {
-          appendOutput(output);
-        }
-      }
-
-      applyThemeFont();
-      renderPromptLine();
-      renderNanoBanner(!!state.in_editor, state.in_editor ? state.in_editor.display : "");
-      scrollToBottom();
-
-      if (state.should_exit) {
-        inputEl.disabled = true;
-        appendLine('<span class="term-exited">-- leaving CLI mode, back to the real site... --</span>');
-        // This IS the portfolio's site - CLI mode is an alternate entry
-        // point off it (linked from the preloader / CRT click / laptop
-        // click), not a separate destination. `exit` should return the
-        // visitor to the normal site, not just freeze the input.
-        setTimeout(function () { window.location.href = "/"; }, 700);
-      }
-    }
-
-    inputEl.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
+    // ---------- events ----------
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var v = input.value;
+      input.value = "";
+      paintGhost();
+      run(v);
+    });
+    input.addEventListener("input", paintGhost);
+    input.addEventListener("keydown", function (e) {
+      if ((e.key === "Tab" || (e.key === "ArrowRight" && input.selectionStart === input.value.length)) && suggestion) {
         e.preventDefault();
-        var val = inputEl.value;
-        inputEl.value = "";
-        submit(val);
-        updateCursorPosition();
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        if (!inputHistory.length) return;
+        input.value += suggestion;
+        paintGhost();
+      } else if (e.key === "Tab") {
         e.preventDefault();
-        if (historyCursor === null) historyCursor = inputHistory.length;
-        historyCursor = Math.max(0, historyCursor - 1);
-        inputEl.value = inputHistory[historyCursor];
-        updateCursorPosition();
-        return;
-      }
-      if (e.key === "ArrowDown") {
-        if (historyCursor === null) return;
+      } else if (e.key === "ArrowUp") {
+        if (!history.length) return;
         e.preventDefault();
-        historyCursor += 1;
-        if (historyCursor >= inputHistory.length) {
-          historyCursor = null;
-          inputEl.value = "";
-        } else {
-          inputEl.value = inputHistory[historyCursor];
-        }
-        updateCursorPosition();
-        return;
+        cursor = cursor === null ? history.length - 1 : Math.max(0, cursor - 1);
+        input.value = history[cursor]; paintGhost();
+      } else if (e.key === "ArrowDown") {
+        if (cursor === null) return;
+        e.preventDefault();
+        cursor = cursor + 1 >= history.length ? null : cursor + 1;
+        input.value = cursor === null ? "" : history[cursor]; paintGhost();
+      } else if (e.key === "l" && e.ctrlKey) {
+        e.preventDefault(); log.innerHTML = "";
+      } else if (e.key === "Escape") {
+        input.value = ""; paintGhost();
       }
     });
+    input.addEventListener("keyup", paintGhost);
 
-    inputEl.addEventListener("input", updateCursorPosition);
-    // Caret can move without the value changing (arrow keys, Home/End,
-    // clicking mid-text) - these need their own listeners since "input"
-    // only fires on a value change.
-    inputEl.addEventListener("keyup", updateCursorPosition);
-    inputEl.addEventListener("click", updateCursorPosition);
-    inputEl.addEventListener("focus", updateCursorPosition);
+    // Chips type their command into the prompt before running it, so people
+    // learn the syntax by watching. Capped at ~300ms; any key skips it.
+    var typing = null;
+    function typeThenRun(c) {
+      if (typing || matchMedia("(prefers-reduced-motion: reduce)").matches) { run(c); return; }
+      var i = 0, step = Math.max(12, Math.min(40, 300 / c.length));
+      input.value = "";
+      typing = setInterval(function () {
+        input.value = c.slice(0, ++i); paintGhost();
+        if (i >= c.length) { clearInterval(typing); typing = null; input.value = ""; paintGhost(); run(c); }
+      }, step);
+    }
+    input.addEventListener("keydown", function () { if (typing) { clearInterval(typing); typing = null; } }, true);
 
-    root.addEventListener("click", function () {
-      if (!inputEl.disabled) inputEl.focus();
+    function clickRun(e) {
+      var b = e.target.closest("[data-cmd]");
+      if (!b) return false;
+      e.preventDefault();
+      if (b.classList.contains("chip")) typeThenRun(b.getAttribute("data-cmd"));
+      else run(b.getAttribute("data-cmd"));
+      if (!matchMedia("(pointer: coarse)").matches) input.focus();
+      return true;
+    }
+    win.addEventListener("click", function (e) {
+      if (clickRun(e)) return;
+      if (e.target.closest("a, button, input")) return;
+      if (String(global.getSelection && global.getSelection())) return; // let people copy text
+      input.focus();
     });
 
-    // ── Boot sequence ──────────────────────────────────────────────────
-    // Staggered fake boot lines + the ASCII portrait before the shell
-    // becomes interactive - sells the "real machine" illusion instead of
-    // dropping straight into a prompt. Purely cosmetic, no engine state
-    // involved.
-    var BOOT_LINES = [
-      "booting ShoryaOS kernel...",
-      "mounting /home/shorya...              [ OK ]",
-      "starting personality module...        [ OK ]",
-      "loading portfolio-terminal shell...    [ OK ]",
-    ];
+    CHIPS.concat(["theme"]).forEach(function (c) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.textContent = c; b.setAttribute("data-cmd", c);
+      chips.appendChild(b);
+    });
+    var home = document.createElement("a");
+    home.className = "chip"; home.href = "/"; home.textContent = "3D room ↗";
+    if (!embedded) chips.appendChild(home);
 
-    function bootSequence(done) {
-      inputEl.disabled = true;
-      var i = 0;
-      function next() {
-        if (i < BOOT_LINES.length) {
-          appendLine(escapeHtml(BOOT_LINES[i]), "term-boot-line");
-          i++;
-          scrollToBottom();
-          setTimeout(next, 140);
-          return;
-        }
-        appendLine('<pre class="term-banner-gradient">' + escapeHtml(renderNameBanner()) + "</pre>");
-        appendOutput("Type `help` to see available commands. Type `exit` to leave.");
-        inputEl.disabled = false;
-        scrollToBottom();
-        inputEl.focus();
-        done && done();
-      }
-      setTimeout(next, 120);
-    }
+    // ---------- start ----------
+    entry(null, rich.run("welcome", []).html);
+    var first = new URLSearchParams(global.location.search).get("cmd") || decodeURIComponent((global.location.hash || "").slice(1)).replace(/-/g, " ");
+    if (first) run(first);
+    syncPrompt();
+    if (!matchMedia("(pointer: coarse)").matches) input.focus();
 
-    applyThemeFont();
-    renderPromptLine();
-    updateCursorPosition();
-    bootSequence();
-
-    return {
-      getState: function () { return state; },
-    };
+    return { run: run, getState: function () { return state; } };
   }
 
   global.TerminalUI = { mount: mount };
-})(typeof window !== "undefined" ? window : this);
+})(typeof self !== "undefined" ? self : this);

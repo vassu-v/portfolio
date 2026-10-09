@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { live, useRoom } from './store'
+import { live, room, useRoom } from './store'
 
 // Solve the 3×3 homography mapping the unit rectangle (w×h) onto a quad and
 // express it as a CSS matrix3d, so a flat DOM element lands exactly on the
@@ -37,6 +37,12 @@ export default function LaptopTerminal() {
   const on = focus === 'laptop'
 
   useEffect(() => {
+    const onMsg = e => { if (e.origin === window.location.origin && e.data?.type === 'cli:exit') room.set({ focus: null }) }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [])
+
+  useEffect(() => {
     if (!on) return
     let raf
     const t = setTimeout(() => setReady(true), 900)
@@ -55,7 +61,7 @@ export default function LaptopTerminal() {
       <iframe
         ref={ref}
         title="Terminal"
-        src="/terminal/index.html"
+        src="/terminal/index.html?embed"
         style={{
           position: 'absolute', left: 0, top: 0, width: TW, height: TH, border: 0,
           transformOrigin: '0 0', background: '#0b0907', pointerEvents: ready ? 'auto' : 'none',

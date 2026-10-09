@@ -195,6 +195,62 @@ function Inspector({ full }) {
   )
 }
 
+const MODE_KEY = 'room-mode'
+function storedMode() {
+  try { return localStorage.getItem(MODE_KEY) } catch { return null }
+}
+function rememberMode(m) {
+  try { localStorage.setItem(MODE_KEY, m) } catch { /* storage blocked */ }
+}
+
+// Weak devices get asked before anything heavy loads: the fast text-only
+// CLI, or the 3D room anyway. Phones aren't flagged just for being phones —
+// only real signals (no WebGL2, data saver, low RAM / cores, software GPU).
+function shouldAsk(tier, reason) {
+  if (new URLSearchParams(window.location.search).has('ask')) return true
+  if (storedMode()) return false
+  return tier === 'poster' || (tier === 'low' && /RAM|core|software/i.test(reason || ''))
+}
+
+function DeviceChoice({ onContinue, reason, still }) {
+  const mobile = useMobile(768)
+  return (
+    <motion.div role="dialog" aria-modal="true" aria-labelledby="dc-title"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'grid', placeItems: 'center', padding: 16, background: 'radial-gradient(900px 600px at 50% 0%, rgba(197,123,43,0.12), transparent 60%), #0b0907' }}>
+      <div style={{ width: 'min(520px, 100%)', ...mono, color: '#efe6d8', border: '1px solid rgba(255,240,220,0.1)', borderRadius: 14, padding: mobile ? '26px 20px' : '34px 34px 28px', background: 'rgba(255,240,220,0.02)' }}>
+        <p style={{ fontSize: '0.66rem', letterSpacing: '0.18em', color: 'var(--cu)', marginBottom: 14 }}>BEFORE WE LOAD THE ROOM</p>
+        <h2 id="dc-title" style={{ ...serif, fontSize: mobile ? '2.1rem' : '2.6rem', lineHeight: 1.05, marginBottom: 12, color: '#f6efe4' }}>This device might find the 3D room heavy.</h2>
+        <p style={{ fontSize: '0.8rem', lineHeight: 1.7, color: 'rgba(239,230,216,0.72)', marginBottom: 22 }}>
+          The CLI version has everything (projects, work, writing, contact) and opens instantly. Or load the 3D room anyway; you can switch any time.
+        </p>
+        <div style={{ display: 'grid', gap: 10 }}>
+          <a href="/terminal/" onClick={() => rememberMode('cli')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '14px 18px', borderRadius: 10, background: 'var(--go)', color: '#120d08', fontWeight: 500, fontSize: '0.85rem' }}>
+            open CLI mode — fast, text-first
+          </a>
+          <button onClick={() => { rememberMode('3d'); onContinue() }} style={{ ...mono, padding: '13px 18px', borderRadius: 10, background: 'transparent', color: '#efe6d8', border: '1px solid rgba(212,152,58,0.4)', fontSize: '0.85rem' }}>
+            {still ? 'continue to the site' : 'continue to the 3D room'}
+          </button>
+        </div>
+        <p style={{ marginTop: 16, fontSize: '0.62rem', color: 'rgba(239,230,216,0.4)' }}>why: {reason}</p>
+      </div>
+    </motion.div>
+  )
+}
+
+function SlowToast() {
+  const [hidden, setHidden] = useState(false)
+  if (hidden) return null
+  return (
+    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+      style={{ position: 'fixed', top: 64, left: '50%', transform: 'translateX(-50%)', zIndex: 60, ...mono, fontSize: '0.72rem', color: '#efe6d8', background: 'rgba(12,10,8,0.85)', border: '1px solid rgba(212,152,58,0.35)', borderRadius: 999, padding: '8px 10px 8px 16px', display: 'flex', gap: 10, alignItems: 'center', backdropFilter: 'blur(8px)' }}>
+      running slow?
+      <a href="/terminal/" onClick={() => rememberMode('cli')} style={{ color: 'var(--go)' }}>try CLI mode →</a>
+      <button aria-label="dismiss" onClick={() => setHidden(true)} style={{ ...mono, background: 'none', border: 0, color: 'rgba(239,230,216,0.5)', fontSize: '0.8rem' }}>✕</button>
+    </motion.div>
+  )
+}
+
 // Devices that can't run the 3D get a still of the same room and the same
 // chips, so every section is still one tap away.
 function Poster() {
@@ -218,6 +274,9 @@ export default function RoomHome() {
   const mobile = useMobile(768)
   const poster = tier === 'poster'
   const { navigate } = useRoute()
+  const tierReason = useRoom(s => s.tierReason)
+  const struggling = useRoom(s => s.struggling)
+  const [asking, setAsking] = useState(() => shouldAsk(tier, tierReason))
 
   useEffect(() => {
     const open = e => e.detail && navigate(`/blog/${e.detail}`)
@@ -252,7 +311,9 @@ export default function RoomHome() {
 
   return (
     <>
-      {poster ? <Poster /> : <Suspense fallback={null}><RoomScene /></Suspense>}
+      <AnimatePresence>{asking && <DeviceChoice key="choice" reason={tierReason} still={poster} onContinue={() => setAsking(false)} />}</AnimatePresence>
+      {struggling && !roam && <SlowToast />}
+      {poster ? <Poster /> : !asking && <Suspense fallback={null}><RoomScene /></Suspense>}
       {roam && <Inspector full />}
       {!roam && debug && <Inspector />}
       {capture ? null : <>

@@ -142,6 +142,7 @@ function TierProbe() {
     const s = [...samples.current].sort((a, b) => a - b)
     const fps = 1 / s[Math.floor(s.length / 2)]
     const floor = tier === 'high' ? 45 : tier === 'mid' ? 32 : 22
+    if (fps < 20 && tier === 'low') room.set({ struggling: true })
     if (fps < floor && tier !== 'low') {
       const next = downgrade(tier)
       room.set({ tier: next, tierReason: `measured ${Math.round(fps)} fps on ${tier}` })

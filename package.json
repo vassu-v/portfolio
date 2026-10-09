@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate:blog": "node scripts/generate-blog-static.mjs",
-    "generate:projects": "node scripts/generate-project-static.mjs"
+    "generate:projects": "node scripts/generate-project-static.mjs",
+    "generate:terminal": "node scripts/generate-terminal-data.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

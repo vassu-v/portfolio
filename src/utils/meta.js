@@ -1,4 +1,5 @@
-const BIRTH = new Date('2009-09-02')
+export const BIRTH_ISO = '2009-09-02'
+const BIRTH = new Date(BIRTH_ISO)
 
 function calcAge() {
   const today = new Date()
