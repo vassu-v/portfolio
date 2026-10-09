@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createModel as createPhone } from './lib/iphone'
 import { prepModel, Hotspot, damp } from './common'
 import { bakeStatic } from './bake'
-import { room, live, useRoom, focusOn, wake, dirtyShadows } from './store'
+import { room, live, useRoom, wake, dirtyShadows } from './store'
+import { goToStop } from './tourData'
 import { PINGS, ping } from './pings'
 
 const extra = import.meta.glob('./props/stand.js', { eager: true })
@@ -112,50 +113,71 @@ function drawCard(ctx, w, h, ui) {
   ctx.globalAlpha = 1
 }
 
-function notifCanvas() {
+// Two cards: the 'incoming' invitation, and the big line at the finale
+// (the phone screen is too small to carry it on its own).
+function cardCanvas(kind) {
   const c = document.createElement('canvas')
-  c.width = 1024; c.height = 300
+  c.width = 1024; c.height = kind === 'invite' ? 300 : 360
   const ctx = c.getContext('2d')
   const t = new THREE.CanvasTexture(c)
   t.colorSpace = THREE.SRGBColorSpace
   t.anisotropy = 8
   const draw = () => {
-    ctx.clearRect(0, 0, 1024, 300)
+    const H = c.height
+    ctx.clearRect(0, 0, 1024, H)
     ctx.fillStyle = 'rgba(22,30,36,0.96)'
-    rr(ctx, 6, 6, 1012, 288, 64); ctx.fill()
-    ctx.strokeStyle = 'rgba(132,208,232,0.7)'; ctx.lineWidth = 4; rr(ctx, 6, 6, 1012, 288, 64); ctx.stroke()
-    ctx.fillStyle = '#F07A1A'; ctx.beginPath(); ctx.arc(110, 110, 56, 0, 7); ctx.fill()
-    ctx.fillStyle = '#1d1208'; ctx.font = '600 44px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('SG', 110, 126); ctx.textAlign = 'left'
-    ctx.fillStyle = '#84D0E8'; ctx.font = '600 40px "JetBrains Mono", monospace'; ctx.fillText('Shorya', 200, 94)
-    ctx.fillStyle = 'rgba(239,230,216,0.55)'; ctx.font = '400 32px "JetBrains Mono", monospace'; ctx.fillText('now', 900, 94)
-    ctx.fillStyle = '#f6efe4'; ctx.font = 'italic 300 62px "Instrument Serif", serif'
-    ctx.fillText('Want to collaborate on', 200, 172)
-    ctx.fillText('building something cool?', 200, 240)
+    rr(ctx, 6, 6, 1012, H - 12, 64); ctx.fill()
+    ctx.strokeStyle = 'rgba(132,208,232,0.7)'; ctx.lineWidth = 4; rr(ctx, 6, 6, 1012, H - 12, 64); ctx.stroke()
+    if (kind === 'invite') {
+      ctx.fillStyle = '#F07A1A'; ctx.beginPath(); ctx.arc(110, 110, 56, 0, 7); ctx.fill()
+      ctx.fillStyle = '#1d1208'; ctx.font = '600 44px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('SG', 110, 126); ctx.textAlign = 'left'
+      ctx.fillStyle = '#84D0E8'; ctx.font = '600 40px "JetBrains Mono", monospace'; ctx.fillText('Shorya', 200, 94)
+      ctx.fillStyle = 'rgba(239,230,216,0.55)'; ctx.font = '400 32px "JetBrains Mono", monospace'; ctx.fillText('now', 900, 94)
+      ctx.fillStyle = '#f6efe4'; ctx.font = 'italic 300 62px "Instrument Serif", serif'
+      ctx.fillText('Want to collaborate on', 200, 172)
+      ctx.fillText('building something cool?', 200, 240)
+    } else {
+      ctx.textAlign = 'center'
+      ctx.fillStyle = '#F07A1A'; ctx.font = '500 34px "JetBrains Mono", monospace'; ctx.fillText('● SAY HI', 512, 82)
+      ctx.fillStyle = '#f6efe4'; ctx.font = 'italic 300 96px "Instrument Serif", serif'
+      ctx.fillText('Want to build', 512, 182)
+      ctx.fillText('something together?', 512, 276)
+      ctx.textAlign = 'left'
+    }
     t.needsUpdate = true
   }
   draw(); document.fonts?.ready.then(draw)
   return t
 }
 
-// The notification itself, popping up out of the phone screen like the
-// phone ads do: rises off the glass, turns to face you, glows.
-function NotifCard({ on }) {
+// A card popping up out of the phone like the phone ads do: rises off the
+// glass, turns to face you, glows. Waits a beat after you arrive.
+const CARD_DELAY = 1100
+function PopCard({ kind, on, holder }) {
   const ref = useRef()
-  const tex = useMemo(() => notifCanvas(), [])
-  const k = useRef(0)
-  const from = useMemo(() => DESK_POS.clone().add(new THREE.Vector3(0, 0.004, 0)), [])
-  const to = useMemo(() => DESK_POS.clone().add(new THREE.Vector3(-0.03, 0.14, 0.05)), [])
+  const tex = useMemo(() => cardCanvas(kind), [kind])
+  const st = useRef({ k: 0, since: 0 })
+  const tmp = useMemo(() => ({ p: new THREE.Vector3(), up: new THREE.Vector3(), q: new THREE.Quaternion() }), [])
+  const h = kind === 'invite' ? 0.0586 : 0.0703
   useFrame(({ camera, clock, size }, dt) => {
-    const g = ref.current
-    k.current = damp(k.current, on ? 1 : 0, on ? 3.2 : 6, dt)
-    const t = k.current
+    const g = ref.current, s = st.current
+    const now = performance.now()
+    if (!on) s.since = 0
+    else if (!s.since) s.since = now
+    const want = on && now - s.since > CARD_DELAY ? 1 : 0
+    s.k = damp(s.k, want, want ? 3 : 6, dt)
+    const t = s.k
     g.visible = t > 0.01
+    if (on && !want) wake(200)
     if (!g.visible) return
     const e = 1 - Math.pow(1 - t, 3)
-    g.position.lerpVectors(from, to, e)
-    g.position.y += Math.sin(clock.elapsedTime * 1.6) * 0.003 * e
-    // lies on the glass, then stands up to face the camera
-    g.quaternion.slerpQuaternions(DESK_QUAT, camera.quaternion, Math.min(1, e * 1.2))
+    // from the phone's glass, up and towards the camera
+    holder.current.getWorldPosition(tmp.p)
+    holder.current.getWorldQuaternion(tmp.q)
+    tmp.up.copy(camera.position).sub(tmp.p).normalize()
+    g.position.copy(tmp.p).addScaledVector(tmp.up, 0.06 * e)
+    g.position.y += (kind === 'invite' ? 0.11 : 0.12) * e + Math.sin(clock.elapsedTime * 1.6) * 0.003 * e
+    g.quaternion.slerpQuaternions(tmp.q, camera.quaternion, Math.min(1, e * 1.2))
     // phones see the desk from further back — a bigger card to stay readable
     const big = size.width / size.height < 1 ? 1.9 : 1
     g.scale.setScalar((0.25 + 0.75 * e) * big)
@@ -166,7 +188,7 @@ function NotifCard({ on }) {
   return (
     <group ref={ref} visible={false}>
       <mesh renderOrder={3}>
-        <planeGeometry args={[0.2, 0.0586]} />
+        <planeGeometry args={[0.2, h]} />
         <meshStandardMaterial color="#000" map={tex} emissive="#ffffff" emissiveMap={tex} emissiveIntensity={1.6} transparent depthWrite={false} />
       </mesh>
     </group>
@@ -182,7 +204,10 @@ export default function Phone() {
   // the stop before it: the phone lights up flat on the desk and the
   // message pops out of it in 3D (NotifCard)
   const incoming = !focus && tourStop === 'ping'
-  const focused = focus === 'phone' || finale
+  // once it has been stood up it stays on the stand — no flopping back down
+  const [stood, setStood] = useState(false)
+  if (finale && !stood) setStood(true)
+  const focused = focus === 'phone' || finale || stood
   const holder = useRef()
   const glow = useRef()
   // screen UI state, read by the canvas draw callback outside React's render
@@ -228,8 +253,10 @@ export default function Phone() {
 
   // arriving at the incoming stop: the invitation lands, with a buzz
   useEffect(() => {
-    if (incoming) live.ping = { ...PINGS[0], until: performance.now() + 60000, id: -2 }
-    else if (live.ping?.id === -2) live.ping = null
+    if (!incoming) { if (live.ping?.id === -2) live.ping = null; return }
+    // arrive first, then the message lands
+    const id = setTimeout(() => { live.ping = { ...PINGS[0], until: performance.now() + 60000, id: -2 }; wake(1500) }, CARD_DELAY)
+    return () => clearTimeout(id)
   }, [incoming])
 
   const tmp = useMemo(() => ({ p: new THREE.Vector3(), q: new THREE.Quaternion() }), [])
@@ -238,7 +265,7 @@ export default function Phone() {
     const now = performance.now()
     const p = live.ping
     if (p && p.where === 'phone' && p.id !== u.pingId) { u.pingId = p.id; u.msg = p; u.buzz = 1; u.dirty = true }
-    const notifOn = focused || incoming || (p?.where === 'phone' && now < p.until)
+    const notifOn = focused || (p?.where === 'phone' && now < p.until)
     if (focused && u.msg !== PINGS[0]) { u.msg = PINGS[0]; u.dirty = true }
     const before = u.notif + u.wake + u.app
     u.notif = damp(u.notif, notifOn ? 1 : 0, 6, dt)
@@ -286,13 +313,14 @@ export default function Phone() {
   return (
     <>
       {stand && <primitive object={stand} position={STAND_POS} rotation={[0, STAND_ROT, 0]} />}
-      <NotifCard on={incoming} />
+      <PopCard kind="invite" on={incoming} holder={holder} />
+      <PopCard kind="hello" on={finale} holder={holder} />
       <group ref={holder}>
         <Hotspot id="phone" label={focused ? 'tap a button' : 'Phone — 1 new message'} onClick={e => {
-          if (!focused) return focusOn('phone')
+          if (!focused) return goToStop('finale')
           const i = hitButton(e)
           if (i >= 0) window.open(BUTTONS[i].href, BUTTONS[i].href.startsWith('mailto') ? '_self' : '_blank', 'noopener')
-          else if (focus !== 'phone') focusOn('phone')
+          else if (tourStop !== 'finale') goToStop('finale')
         }}>
           <group onPointerMove={e => {
             const i = hitButton(e)

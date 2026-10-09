@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { PROJECTS } from '../../data/projects'
 import { damp } from './common'
-import { room, useRoom } from './store'
+import { room, useRoom, inHand } from './store'
 import { folderWorld } from './Desk'
 
 // A project pulled out of the drawer as a real stack of A4 pages. The top
@@ -228,7 +228,7 @@ function Page({ tex, slot, moving, onClick, jitter, last }) {
 }
 
 export default function Dossier() {
-  const focus = useRoom(s => s.focus)
+  const focus = useRoom(inHand)
   const folder = useRoom(s => s.folder)
   const active = focus === 'drawer' && folder >= 0
   const group = useRef()

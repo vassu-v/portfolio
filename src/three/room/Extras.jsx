@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { prepModel, Hotspot } from './common'
 import { BACK } from './Room'
 import { wake, dirtyShadows } from './store'
+import { goToStop } from './tourData'
 
 const mods = import.meta.glob('./props/*.js', { eager: true })
 const get = (file, fn) => mods[`./props/${file}.js`]?.[fn]
@@ -145,7 +146,11 @@ export default function Extras() {
       )}
       {cup && <Wobbly id="pencup" label="pen stand" position={[0.12, Y, -0.88]} rotation={[0, 0.6, 0]}><primitive object={cup} /></Wobbly>}
       {bin && <Wobbly id="bin" label="the bin — try throwing paper in" hop={0.006} position={[0.98, 0, -0.74]}><primitive object={bin} /></Wobbly>}
-      {frame && <primitive object={frame} position={[-0.43, 1.634, BACK + 0.12]} rotation={[0, 0.12, 0]} />}
+      {frame && (
+        <Hotspot id="photo-frame" label="back to the start" onClick={() => goToStop('intro')} position={[-0.43, 1.634, BACK + 0.12]} rotation={[0, 0.12, 0]}>
+          <primitive object={frame} />
+        </Hotspot>
+      )}
       {trophy && <primitive object={trophy} position={[-0.25, 1.634, BACK + 0.11]} rotation={[0, -0.3, 0]} />}
       {strip && <primitive object={strip} position={STRIP_POS} />}
       {ends && (

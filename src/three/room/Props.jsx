@@ -10,6 +10,7 @@ import { AGE } from '../../utils/meta'
 import { prepModel, Hotspot, damp } from './common'
 import { bakeStatic } from './bake'
 import { createScreen } from './screen'
+import { goToStop } from './tourData'
 import { room, live, useRoom, focusOn, dirtyShadows, off } from './store'
 import { DESK } from './Desk'
 import { TIERS } from './tier'
@@ -330,13 +331,13 @@ export default function Props({ tier = 'high' }) {
 
       {/* sticky notes — on the wall by the shelf, on the laptop bezel, on the desk */}
       {/* the wall notes double as shortcuts */}
-      <Hotspot id="note-hi" label="back to the start" onClick={() => window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: 0 }))}>
+      <Hotspot id="note-hi" label="back to the start" onClick={() => goToStop('intro')}>
         <Sticky lines={['hi, i\'m shorya', `${AGE} · kolkata`]} color="#f7e27a" position={[-0.62, 1.32, BACK + 0.004]} rotation={[0, 0, 0.05]} curl={0.15} />
       </Hotspot>
-      <Hotspot id="note-collab" label="open to collab — say hi" onClick={() => focusOn('phone')}>
+      <Hotspot id="note-collab" label="open to collab — say hi" onClick={() => goToStop('finale')}>
         <Sticky lines={['open to', 'collab →']} color="#f4b98a" position={[-0.5, 1.27, BACK + 0.004]} rotation={[0, 0, -0.07]} curl={0.2} />
       </Hotspot>
-      <Hotspot id="note-ship" label="ship it — see what I've shipped" onClick={() => focusOn('drawer')}>
+      <Hotspot id="note-ship" label="ship it — see what I've shipped" onClick={() => goToStop('projects')}>
         <Sticky lines={['ship it.']} color="#bfe3c0" position={[-0.4, 1.35, BACK + 0.004]} rotation={[0, 0, 0.03]} curl={0.12} />
       </Hotspot>
       <Sticky lines={['curl', 'shoryavardhaan', '.vercel.app']} color="#f7e27a" size={0.07} position={[0.07, Y + 0.0012, -0.58]} rotation={[-Math.PI / 2, 0, -0.25]} curl={0.02} />

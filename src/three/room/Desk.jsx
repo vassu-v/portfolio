@@ -7,6 +7,7 @@ import { SIDE_PROJECTS } from '../../data/sideProjects'
 import { walnutTexture } from './textures'
 import { Hotspot, damp } from './common'
 import { room, useRoom, focusOn } from './store'
+import { goToStop } from './tourData'
 import { BACK } from './Room'
 import Baked from './Baked'
 
@@ -105,14 +106,15 @@ function Drawer() {
 
   useFrame((state, dt) => {
     if (!ref.current) return
-    ref.current.position.z = damp(ref.current.position.z, open ? DRAWER_TRAVEL : 0, 6, dt)
+    // slow and heavy, like a real drawer full of files
+    ref.current.position.z = damp(ref.current.position.z, open ? DRAWER_TRAVEL : 0, 2, dt)
   })
 
   return (
     <group position={[(PED.x0 + PED.x1) / 2, DESK.top - DESK.th - 0.095, (PED.z0 + PED.z1) / 2]}>
       <group ref={ref}>
-        <Hotspot id="drawer" always={open} label={focus === 'drawer' ? 'close the drawer' : 'Projects — open the drawer'}
-          onClick={() => (focus === 'drawer' ? room.set({ focus: null, folder: -1 }) : focusOn('drawer'))}>
+        <Hotspot id="drawer" always={open} label={open ? 'pick a folder' : 'Projects — the drawer'}
+          onClick={() => (open ? room.set({ folder: -1 }) : goToStop('projects'))}>
           {/* front panel + pull */}
           <RoundedBox args={[W + 0.016, 0.15, 0.02]} radius={0.003} position={[0, 0, D / 2 + 0.03]} material={front} castShadow receiveShadow />
           <mesh position={[0, 0.03, D / 2 + 0.048]} rotation={[0, 0, Math.PI / 2]} castShadow>
@@ -135,7 +137,7 @@ function Drawer() {
               z={slotZ(i)}
               open={open}
               selected={p && folder === PROJECTS.indexOf(p)}
-              onPick={idx => room.set({ focus: 'drawer', folder: room.get().folder === idx ? -1 : idx, page: 0 })}
+              onPick={idx => room.set({ folder: room.get().folder === idx ? -1 : idx, page: 0 })}
             />
           ))}
         </group>

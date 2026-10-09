@@ -8,22 +8,23 @@ import { PHOTOS } from './DeskPhotos'
 import LaptopTerminal from './LaptopTerminal'
 import { useRoute } from '../../router'
 import { useMobile } from '../../hooks/useMobile'
-import { room, live, useRoom, focusOn } from './store'
+import { room, live, useRoom, focusOn, closeLayer, inHand } from './store'
 import { forgetTier } from './tier'
-import { TOUR } from './tourData'
-import { AGE } from '../../utils/meta'
+import { TOUR, goToStop } from './tourData'
 
 const RoomScene = lazy(() => import('./RoomScene'))
 
 const mono = { fontFamily: 'JetBrains Mono, monospace' }
 const serif = { fontFamily: 'Instrument Serif, serif', fontStyle: 'italic', fontWeight: 300 }
 
+// Chips scroll the tour to a section's stop; only the side drawer and the
+// laptop (no stop of their own) open directly.
 const SPOTS = [
-  { id: 'drawer', label: 'projects', hint: 'drawer' },
+  { id: 'drawer', label: 'projects', hint: 'drawer', stop: 'projects' },
   { id: 'sides', label: 'side projects', hint: 'drawer 2' },
-  { id: 'diary', label: 'log', hint: 'diary' },
-  { id: 'corkboard', label: 'experience', hint: 'corkboard' },
-  { id: 'phone', label: 'contact', hint: 'phone' },
+  { id: 'diary', label: 'log', hint: 'diary', stop: 'diary' },
+  { id: 'corkboard', label: 'experience', hint: 'corkboard', stop: 'experience' },
+  { id: 'phone', label: 'contact', hint: 'phone', stop: 'finale' },
   { id: 'laptop', label: 'terminal', hint: 'laptop' },
 ]
 
@@ -45,50 +46,100 @@ function useScrollProgress() {
 const STOP_COPY = {
   experience: { n: '01', label: 'the work so far', title: "Where I've been.", line: 'Five roles, one string, oldest → newest. Tap a card to pull it off the board.' },
   wins: { n: '02', label: 'wins & receipts', title: 'Proof, pinned.', line: 'A national semi-final, a first international payment, a preprint, a book at fourteen.' },
-  projects: { n: '03', label: 'the drawer', title: "Things I've built.", line: 'Every folder is a project. Pull one out and flip through it.' },
-  diary: { n: '04', label: 'the log', title: 'I write things down.', line: 'Essays on building, tech and thinking clearly. Tap the diary to read.' },
+  projects: { n: '03', label: 'the drawer', title: "Things I've built.", line: 'Every folder is a project. Pull one out and flip through it.', ps: 'P.S. the drawer below holds the side projects — the not-so-serious ones.' },
+  diary: { n: '04', label: 'the log', title: 'I write things down.', line: 'Essays on building, tech and thinking clearly. Tap a page to turn it.' },
   ping: { n: '05', label: 'incoming', title: 'Something just came in.', line: 'Your phone, actually. Keep scrolling.' },
-  finale: { n: '06', label: 'say hi', title: 'Want to build something together?', line: 'Every way to reach me is on the phone. Tap it.' },
-  free: { n: '', label: 'the room is yours', title: 'Look around.', line: 'Drag to look around. Click anything — open it, close it, throw paper at the bin.' },
+  finale: { n: '06', label: 'say hi', title: 'Want to build something together?', line: 'shoryavardhaans2@gmail.com', links: true },
 }
 
-// Tour text. The intro is the name over the lit photo, with the rest of the
-// room held in shadow; it lifts as you scroll. Each later stop gets a short
-// caption while the camera holds there.
-function TourCopy({ focus, mobile }) {
+const ic = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }
+const SOCIALS = [
+  { name: 'Email', href: 'mailto:shoryavardhaans2@gmail.com', icon: <svg {...ic}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 6 8.5 7 8.5-7" /></svg> },
+  { name: 'Book a 30-min call', href: 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true', icon: <svg {...ic}><rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9.5h18M8 2.5v4M16 2.5v4" /></svg> },
+  { name: 'LinkedIn', href: 'https://www.linkedin.com/in/shoryavardhaan', icon: <svg {...ic}><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10.5V17M8 7.2v.1M12 17v-3.6a2.4 2.4 0 0 1 4.8 0V17M12 10.5V17" /></svg> },
+  { name: 'GitHub', href: 'https://github.com/vassu-v', icon: <svg {...ic}><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" /></svg> },
+  { name: 'X / Twitter', href: 'https://x.com/shoryavardhaan', icon: <svg {...ic}><path d="M4 4l16 16M20 4 4 20" /></svg> },
+  { name: 'CLI mode — the web terminal', href: '/terminal/', icon: <svg {...ic}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="m7 9 3 3-3 3M12.5 15H17" /></svg> },
+]
+
+// icon row: hover (or keyboard focus) shows the full name; each opens in a new tab
+function Socials() {
+  const [hot, setHot] = useState(-1)
+  return (
+    <div style={{ marginTop: 16, pointerEvents: 'auto' }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {SOCIALS.map((l, i) => (
+          <a key={l.name} href={l.href} target={l.href.startsWith('mailto') ? undefined : '_blank'} rel="noreferrer" aria-label={l.name}
+            onMouseEnter={() => setHot(i)} onMouseLeave={() => setHot(-1)} onFocus={() => setHot(i)} onBlur={() => setHot(-1)}
+            style={{ display: 'grid', placeItems: 'center', width: 40, height: 40, borderRadius: 10, color: hot === i ? '#120d08' : '#efe6d8', background: hot === i ? 'var(--cu)' : 'rgba(255,240,220,0.06)', border: '1px solid rgba(132,208,232,0.35)', transition: 'background .15s, color .15s' }}>
+            {l.icon}
+          </a>
+        ))}
+      </div>
+      <p style={{ ...mono, marginTop: 10, minHeight: '1.2em', fontSize: '0.66rem', letterSpacing: '0.06em', color: hot >= 0 ? 'var(--cu)' : 'rgba(240,230,216,0.4)' }}>
+        {hot >= 0 ? SOCIALS[hot].name + ' ↗' : 'hover an icon'}
+      </p>
+    </div>
+  )
+}
+
+// The end of the tour has no big caption — just a small rotating reminder
+// that the room is still yours to poke at.
+const HINTS = ['drag to look around', 'click anything — it opens', 'throw a paper ball at the bin', 'the lamp switch is top right', 'click the curtains', 'scroll back up any time']
+function FreeHints({ mobile }) {
+  const stop = useRoom(s => s.tourStop)
+  const busy = useRoom(s => !!(s.focus || s.pin || s.folder >= 0 || s.side >= 0))
+  const [n, setN] = useState(-1)
+  useEffect(() => {
+    if (stop !== 'free') return
+    let k = 0, hide
+    const show = () => { setN(k++ % HINTS.length); clearTimeout(hide); hide = setTimeout(() => setN(-1), 3800) }
+    const first = setTimeout(show, 900)
+    const every = setInterval(show, 14000)
+    return () => { clearTimeout(first); clearInterval(every); clearTimeout(hide); setN(-1) }
+  }, [stop])
+  return (
+    <AnimatePresence>
+      {n >= 0 && !busy && stop === 'free' && (
+        <motion.div key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+          style={{ position: 'fixed', left: 0, right: 0, top: mobile ? 70 : 80, zIndex: 45, textAlign: 'center', pointerEvents: 'none' }}>
+          <span style={{ ...mono, fontSize: '0.7rem', letterSpacing: '0.08em', color: '#efe6d8', background: 'rgba(12,10,8,0.6)', border: '1px solid rgba(132,208,232,0.3)', borderRadius: 999, padding: '7px 14px', backdropFilter: 'blur(8px)' }}>
+            {HINTS[n]}
+          </span>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// Tour text. The intro's lettering lives in 3D (IntroPhoto) — here is only
+// the shadow veil around the lit photo, lifting as you scroll. Each later
+// stop gets a short caption while the camera holds there.
+function TourCopy({ hidden, mobile }) {
   const stop = useRoom(s => s.tourStop)
   const veil = useRef()
-  const name = useRef()
   useEffect(() => {
     let raf
     const run = () => {
       raf = requestAnimationFrame(run)
       const u = live.scroll * (TOUR.length - 1)
-      const lift = Math.min(1, Math.max(0, (u - 0.04) / 0.32))
+      const lift = Math.min(1, Math.max(0, (u - 0.1) / 0.6))
       const [x, y] = live.photoPx || [window.innerWidth * 0.4, window.innerHeight * 0.45]
       if (veil.current) {
-        veil.current.style.opacity = String((1 - lift) * (focus ? 0 : 1))
-        veil.current.style.background = `radial-gradient(${mobile ? window.innerWidth * 0.62 : window.innerWidth * 0.5}px ${mobile ? 320 : 400}px at ${x}px ${y}px, rgba(8,7,6,0) 0%, rgba(8,7,6,0.35) 60%, rgba(8,7,6,0.88) 100%)`
-      }
-      if (name.current) {
-        name.current.style.opacity = String(Math.max(0, 1 - lift * 2.5) * Math.min(1, live.intro * 1.6) * (focus ? 0 : 1))
-        name.current.style.transform = `translateY(${-lift * 40}px)`
+        veil.current.style.opacity = String((1 - lift) * (hidden ? 0 : 1))
+        // clear over the photo and the name above it, dark towards the edges
+        veil.current.style.background = `radial-gradient(${window.innerWidth * (mobile ? 0.75 : 0.62)}px ${window.innerHeight * 0.62}px at ${x}px ${y - window.innerHeight * 0.1}px, rgba(8,7,6,0) 0%, rgba(8,7,6,0) 55%, rgba(8,7,6,0.85) 100%)`
       }
     }
     raf = requestAnimationFrame(run)
     return () => cancelAnimationFrame(raf)
-  }, [focus, mobile])
+  }, [hidden, mobile])
   const c = STOP_COPY[stop]
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
       <div ref={veil} style={{ position: 'absolute', inset: 0 }} />
-      {/* the name itself is in 3D, behind the cut-out (IntroPhoto) */}
-      <div ref={name} style={{ position: 'absolute', left: 16, right: 16, bottom: mobile ? 40 : 46, textAlign: 'center' }}>
-        <p style={{ ...mono, fontSize: '0.75rem', color: 'rgba(240,230,216,0.72)', letterSpacing: '0.08em' }}>builder · {AGE} · kolkata</p>
-        <p style={{ ...mono, marginTop: 14, fontSize: '0.6rem', letterSpacing: '0.24em', color: 'rgba(240,230,216,0.5)' }}>SCROLL TO STEP INTO THE ROOM ↓</p>
-      </div>
       <AnimatePresence mode="wait">
-        {c && !focus && (
+        {c && !hidden && (
           <motion.div key={stop}
             initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
@@ -99,7 +150,11 @@ function TourCopy({ focus, mobile }) {
             }}>
             <p style={{ ...mono, fontSize: '0.62rem', letterSpacing: '0.2em', color: 'var(--cu)', marginBottom: 10, textTransform: 'uppercase' }}>{c.n && <span style={{ color: 'var(--go)' }}>{c.n} — </span>}{c.label}</p>
             <p style={{ ...serif, fontSize: mobile ? '2rem' : 'clamp(2.2rem, 3.6vw, 3.2rem)', lineHeight: 1.02, color: '#f6efe4', textShadow: '0 2px 30px rgba(0,0,0,0.6)' }}>{c.title}</p>
-            <p style={{ ...mono, marginTop: 12, fontSize: '0.74rem', lineHeight: 1.6, color: 'rgba(240,230,216,0.78)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>{c.line}</p>
+            {c.links
+              ? <a href="mailto:shoryavardhaans2@gmail.com" style={{ ...mono, display: 'inline-block', marginTop: 12, fontSize: '0.78rem', color: 'var(--cu)', pointerEvents: 'auto', borderBottom: '1px solid rgba(132,208,232,0.4)', textDecoration: 'none' }}>{c.line}</a>
+              : <p style={{ ...mono, marginTop: 12, fontSize: '0.74rem', lineHeight: 1.6, color: 'rgba(240,230,216,0.78)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>{c.line}</p>}
+            {c.ps && <p style={{ ...mono, marginTop: 10, fontSize: '0.7rem', lineHeight: 1.6, color: 'var(--go)' }}>{c.ps}</p>}
+            {c.links && <Socials />}
           </motion.div>
         )}
       </AnimatePresence>
@@ -384,6 +439,10 @@ export default function RoomHome() {
   useScrollProgress()
   const focus = useRoom(s => s.focus)
   const tourStop = useRoom(s => s.tourStop)
+  const hand = useRoom(inHand)
+  // a detail panel shows for anything explicitly opened, or a card / folder
+  // pulled out at a tour stop
+  const panelFor = useRoom(s => s.focus || (s.pin ? 'corkboard' : s.folder >= 0 ? 'drawer' : s.side >= 0 ? 'sides' : null))
   const debug = useRoom(s => s.debug)
   const lampOn = useRoom(s => s.lampOn)
   const roam = useRoom(s => s.roam)
@@ -457,26 +516,27 @@ export default function RoomHome() {
           : <LampToggle on={lampOn} />}
       </header>
 
-      {!roam && !poster && <TourCopy focus={focus} mobile={mobile} />}
+      {!roam && !poster && <TourCopy hidden={!!panelFor} mobile={mobile} />}
+      {!roam && !poster && <FreeHints mobile={mobile} />}
 
       {/* explore chips — also the accessible way to reach every object */}
       <AnimatePresence>
-        {!roam && (tourStop === 'free' || poster || focus) && (
+        {!roam && (tourStop === 'free' || poster || panelFor) && (
           <motion.nav
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             style={{ position: 'fixed', right: mobile ? 16 : 'var(--pad)', left: mobile ? 16 : 'auto', bottom: mobile ? 20 : 40, zIndex: 50, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: mobile ? 'center' : 'flex-end', maxWidth: mobile ? 'none' : 520 }}
           >
-            {focus && <Chip onClick={() => room.set({ focus: null, folder: -1, side: -1, pin: null })}>← back to the desk</Chip>}
-            {!focus && SPOTS.map(s => (
-              <Chip key={s.id} active={focus === s.id} onClick={() => focusOn(s.id)}>{s.label} · {s.hint}</Chip>
+            {panelFor && <Chip onClick={closeLayer}>{focus ? '← back to the desk' : '← back'}</Chip>}
+            {!panelFor && SPOTS.map(s => (
+              <Chip key={s.id} active={hand === s.id} onClick={() => (s.stop ? goToStop(s.stop) : focusOn(s.id))}>{s.label} · {s.hint}</Chip>
             ))}
           </motion.nav>
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">{focus && <FocusPanel key={focus} focus={focus} />}</AnimatePresence>
+      <AnimatePresence mode="wait">{panelFor && <FocusPanel key={panelFor} focus={panelFor} />}</AnimatePresence>
       <AnimatePresence>
         {photo >= 0 && (
           <motion.div key={'photo' + photo} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}

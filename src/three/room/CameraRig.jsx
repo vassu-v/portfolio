@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { room, live, useRoom } from './store'
+import { room, live, useRoom, inHand } from './store'
 import { anchors } from './Props'
 import { BOARD } from './Corkboard'
 import { BACK } from './Room'
@@ -50,7 +50,9 @@ export function tourAt(s) {
   const u = THREE.MathUtils.clamp(s, 0, 1) * (TOUR.length - 1)
   const i = Math.min(TOUR.length - 2, Math.floor(u))
   const f = u - i
-  return { i, f, k: easeInOut(THREE.MathUtils.smoothstep(f, 0.3, 0.95)), stop: TOUR[f < 0.62 ? i : i + 1].id }
+  // the opening holds longer (the name dissolve plays out first)
+  const k = easeInOut(THREE.MathUtils.smoothstep(f, i === 0 ? 0.62 : 0.3, 0.97))
+  return { i, f, k, stop: TOUR[f < (i === 0 ? 0.8 : 0.62) ? i : i + 1].id }
 }
 
 export default function CameraRig() {
@@ -99,7 +101,16 @@ export default function CameraRig() {
     const backOff = (t, a, m = 1.1) => { if (tall) t.sub(a).multiplyScalar(1 + (1 - aspect) * m).add(a) }
 
     const target = tmp.a, at = tmp.b
-    const f = focus === 'drawer' && folder >= 0 ? FOCUS.sheet : focus === 'corkboard' && pin ? FOCUS.card : focus === 'sides' && side >= 0 ? FOCUS.sidecard : FOCUS[focus]
+    // the tour stop is tracked even while something is open: scrolling on
+    // always wins — it files away whatever was in your hands
+    const tour = tourAt(live.scroll)
+    const st = room.get()
+    if (st.tourStop !== tour.stop || st.explore !== (tour.stop !== 'intro')) {
+      const leaving = st.tourStop !== tour.stop
+      room.set({ tourStop: tour.stop, explore: tour.stop !== 'intro', ...(leaving ? { focus: null, folder: -1, pin: null, side: -1, photo: -1 } : {}) })
+    }
+    const hand = inHand(room.get())
+    const f = hand === 'drawer' && folder >= 0 ? FOCUS.sheet : hand === 'corkboard' && pin ? FOCUS.card : focus === 'sides' && side >= 0 ? FOCUS.sidecard : FOCUS[focus]
     if (focus === 'laptop') {
       anchors.screen.getWorldPosition(tmp.sp)
       tmp.sn.set(0, 0, 1).applyQuaternion(anchors.screen.getWorldQuaternion(tmp.q))
@@ -113,7 +124,7 @@ export default function CameraRig() {
       at.copy(f.look)
       backOff(target, at)
     } else {
-      const { i, k, stop } = tourAt(live.scroll)
+      const { i, k, stop } = tour
       const a = TOUR[i], b = TOUR[i + 1]
       const ov = tall ? OVERVIEW_TALL : OVERVIEW
       target.copy(a.id === 'free' ? ov.pos : a.pos).lerp(b.id === 'free' ? ov.pos : b.pos, k)
@@ -136,11 +147,9 @@ export default function CameraRig() {
         tmp.c.applyAxisAngle(V(0, 1, 0), l.yaw).applyAxisAngle(right, -l.pitch)
         at.copy(target).add(tmp.c)
       }
-      const s = room.get()
-      if (s.tourStop !== stop || s.explore !== (stop !== 'intro')) room.set({ tourStop: stop, explore: stop !== 'intro' })
     }
 
-    const k = focus ? 3.2 : 6
+    const k = f || focus === 'laptop' ? 3.2 : 6
     pos.current.x = THREE.MathUtils.damp(pos.current.x, target.x, k, dt)
     pos.current.y = THREE.MathUtils.damp(pos.current.y, target.y, k, dt)
     pos.current.z = THREE.MathUtils.damp(pos.current.z, target.z, k, dt)

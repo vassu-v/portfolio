@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { readHour } from './hour'
 import { detectTier } from './tier'
+import { STOP_OBJECT } from './tourData'
 
 const listeners = new Set()
 
@@ -60,6 +61,10 @@ export const room = {
     return () => listeners.delete(l)
   },
 }
+
+// The object in the visitor's hands: one opened explicitly (laptop, side
+// drawer) or the one the current tour stop is about.
+export const inHand = s => s.focus || STOP_OBJECT[s.tourStop] || null
 
 export function useRoom(selector) {
   return useSyncExternalStore(room.subscribe, () => selector(state), () => selector(state))

@@ -26,6 +26,7 @@ After `cli-v3-rice`: site-wide palette (portrait blue `#84D0E8` + turban orange 
 - Notifications: `src/three/room/pings.js`.
 - Paper balls: `PaperBalls.jsx` — click to pick up, click a spot to throw.
 - Round 5: name sits behind the cut-out and particle-dissolves on first scroll (`IntroPhoto.jsx`); tour gained an `incoming` stop (3D notification pops out of the phone, laptop mirrors it) before `finale`; curtains draw shut on click and dim the sun; sun/moon lamp switch in the header; pan/tilt by dragging at the free stop; returning from a case study restores the spot (`sessionStorage room-return`); FPS probe fixed (remembered tier key bumped to `room-tier-v2`).
+- Round 6: clicking a section (object or chip) scrolls the tour to its stop (`goToStop` in `tourData.js`) — the stop's object is "in hand" (`inHand` in `store.js`) and usable right there; scrolling away files anything pulled out. Intro lettering (name at turban height + scroll hint below the photo) all particle-dissolves, slower. Phone stays on its stand once stood. Finale: big 3D "Want to build something together?" card over the phone + icon socials in the caption. Free stop: small rotating hints instead of a caption. P.S. on the projects stop points at the side-projects drawer.
 
 ## Open decisions (asked, not answered yet)
 0. Side-projects list (user to send)

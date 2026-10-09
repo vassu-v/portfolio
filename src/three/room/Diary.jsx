@@ -3,7 +3,8 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { POSTS } from '../../data/blog'
 import { Hotspot, damp } from './common'
-import { room, useRoom, focusOn } from './store'
+import { room, useRoom } from './store'
+import { goToStop } from './tourData'
 
 // A5 leather diary. Spine along local z at x = 0; closed it lies on x ∈ [0, W].
 // Opening rotates the front half π about the spine so it lies flat on x ∈ [-W, 0].
@@ -310,7 +311,7 @@ export default function Diary() {
   const onRight = e => { if (!open) return; e.stopPropagation(); go(room.get().spread + 1) }
 
   return (
-    <Hotspot id="diary" label="Diary — the log" enabled={!open} onClick={() => focusOn('diary')} position={[-0.53, 0.75 + 0.0005, -0.47]} rotation={[0, 0.3, 0]}>
+    <Hotspot id="diary" label="Diary — the log" enabled={!open} onClick={() => goToStop('diary')} position={[-0.53, 0.75 + 0.0005, -0.47]} rotation={[0, 0.3, 0]}>
       {/* back cover + right page block */}
       <mesh position={[W / 2, COVER / 2, 0]} material={cover} castShadow receiveShadow>
         <boxGeometry args={[W + 0.004, COVER, D + 0.006]} />

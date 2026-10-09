@@ -4,7 +4,8 @@ import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { corkTexture, walnutTexture } from './textures'
 import { Hotspot, damp } from './common'
-import { room, useRoom, focusOn } from './store'
+import { room, useRoom, inHand } from './store'
+import { goToStop } from './tourData'
 import { BACK } from './Room'
 import { ITEMS, HEADERS, CHRONO } from './corkData'
 
@@ -152,7 +153,7 @@ function Paper({ it, texKey, pinColor }) {
 function Item({ it, index }) {
   const ref = useRef()
   const hover = useRef(false)
-  const focus = useRoom(s => s.focus)
+  const focus = useRoom(inHand)
   const sel = useRoom(s => s.pin === it.id)
   const h = SIZE[it.kind][1]
   // presented at ~half the screen height, so even the receipt is readable
@@ -238,7 +239,7 @@ function Yarn() {
 // lamp's falloff and every card (and anything pulled forward) reads near-black.
 // Always mounted so toggling never recompiles shaders — only intensity moves.
 function PictureLight() {
-  const focus = useRoom(s => s.focus)
+  const focus = useRoom(inHand)
   const lampOn = useRoom(s => s.lampOn)
   const spot = useRef()
   const front = useRef()
@@ -309,7 +310,7 @@ function Header({ text, pos }) {
 }
 
 export default function Corkboard() {
-  const focus = useRoom(s => s.focus)
+  const focus = useRoom(inHand)
   const pin = useRoom(s => s.pin)
   const cork = useMemo(() => new THREE.MeshStandardMaterial({ map: corkTexture(), roughness: 0.95 }), [])
   const frame = useMemo(() => new THREE.MeshStandardMaterial({ map: walnutTexture(), roughness: 0.5 }), [])
@@ -324,7 +325,7 @@ export default function Corkboard() {
 
   return (
     <group position={[BOARD.x, BOARD.y, BOARD.z]}>
-      <Hotspot id="corkboard" label="Corkboard — experience & wins" enabled={focus !== 'corkboard'} onClick={() => focusOn('corkboard')}>
+      <Hotspot id="corkboard" label="Corkboard — experience & wins" enabled={focus !== 'corkboard'} onClick={() => goToStop('experience')}>
         <mesh material={cork} receiveShadow castShadow>
           <boxGeometry args={[w, h, 0.012]} />
         </mesh>
