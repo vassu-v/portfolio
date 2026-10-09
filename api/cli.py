@@ -1,506 +1,272 @@
 """
-The actual "curl my site" feature - zero install required for the visitor,
-since curl ships on every modern OS by default.
+`curl shoryavardhaan.vercel.app` — the zero-install CLI version of the site.
 
-v4: raw-terminal feel per direct feedback - gradient banner (lolcat-style
-per-character RGB interpolation, a real CLI technique), the banner
-animates in character-by-character over a streamed/chunked response (curl
-renders this live, no -N needed for a TTY), a boxed whoami panel with
-richer info (current roles + a "more info" link), boxed commands list,
-and role-based color elsewhere (rule dividers for projects/blog, matching
-wttr.in/ancv.povel.dev-style resume tools).
+v5 (stripped down): same look and same data as the web terminal at
+/terminal/ — a screenfetch-style card, pacman-style `::` headers, cyan keys,
+portrait blue (#84D0E8) with turban-orange (#F07A1A) accents.
 
-Tradeoff, by design: ANSI escape codes render as colored text in any real
-terminal, but show up as literal escape bytes if output is piped to a file
-or a non-terminal consumer. Not detectable server-side, so this only ever
-activates for requests already identified as curl via User-Agent - a
-non-curl client gets the plain JSON fallback instead.
+Content is NOT hand-copied any more: it reads api/cli_data.json, generated
+from src/data (projects, blog), Experience.jsx and corkData.js by
+`npm run generate:terminal` (the same run that writes the web terminal's
+data). Age is computed from the stored birth date — never a literal.
 
-Deployed at: /  and /api/cli (see vercel.json - curl is routed here by
-User-Agent, everyone else gets the real static site / web terminal).
+vercel.json routes requests whose User-Agent contains "curl" here; everyone
+else gets the real site. Non-curl clients hitting these paths get JSON.
+`?plain` strips ANSI colour (for piping into a file).
 """
 
+import json
 import re
-import asyncio
+import textwrap
+from datetime import date
+from pathlib import Path
+
 import fastapi
-from fastapi.responses import PlainTextResponse, JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 app = fastapi.FastAPI()
+DATA = json.loads((Path(__file__).parent / "cli_data.json").read_text(encoding="utf-8"))
+SITE = "https://shoryavardhaan.vercel.app"
+WIDTH = 72
 
-# ── ANSI helpers ─────────────────────────────────────────────────────────
-
-RESET = "\033[0m"
-BOLD = "\033[1m"
-DIM = "\033[2m"
-
-# Role-based palette, 60/30/10: FG/MUTED are the dominant neutral (body text
-# + borders/rules), ACCENT/VIOLET/TEAL are the three supporting hues doing
-# real semantic work (links / labels-keys / headline-values), and COPPER is
-# held to a small minority - the name banner gradient and section-title
-# accents only. It is NOT the default color for every label/border anymore.
-COPPER = "\033[38;2;197;123;43m"   # banner + section-title accent only - matches var(--cu)
-FG = "\033[38;2;192;202;245m"      # body text (Tokyo Night foreground, matches web terminal)
-ACCENT = "\033[38;2;125;207;255m"  # links/URLs
-MUTED = "\033[38;2;86;95;137m"     # rule characters, box borders, secondary text
-VIOLET = "\033[38;2;157;124;216m"  # labels/keys (whoami field names, contact labels, list indices)
-TEAL = "\033[38;2;115;218;202m"    # headline-style values (project/blog titles, box titles)
-
-GRADIENT_START = (197, 123, 43)    # copper
-GRADIENT_END = (125, 207, 255)     # accent cyan
-
-_ANSI_RE = re.compile(r"\033\[[0-9;]*m")
-
-RULE_WIDTH = 64
+# ── palette (matches /terminal/ "shorya" theme) ──────────────────────────
+RESET, BOLD = "\033[0m", "\033[1m"
+BLUE = "\033[38;2;132;208;232m"
+ORANGE = "\033[38;2;240;122;26m"
+FG = "\033[38;2;213;227;234m"
+DIM = "\033[38;2;117;144;160m"
+FAINT = "\033[38;2;61;80;91m"
+OK = "\033[38;2;158;206;106m"
+_ANSI = re.compile(r"\033\[[0-9;]*m")
 
 
-def _visible_len(s: str) -> int:
-    return len(_ANSI_RE.sub("", s))
+def c(text, *codes):
+    return "".join(codes) + str(text) + RESET
 
 
-def c(text: str, code: str) -> str:
-    return f"{code}{text}{RESET}"
+def age():
+    b = date.fromisoformat(DATA.get("birth", "2009-09-02"))
+    t = date.today()
+    return t.year - b.year - ((t.month, t.day) < (b.month, b.day))
 
 
-def gradient_char(ch: str, t: float) -> str:
-    r = round(GRADIENT_START[0] + (GRADIENT_END[0] - GRADIENT_START[0]) * t)
-    g = round(GRADIENT_START[1] + (GRADIENT_END[1] - GRADIENT_START[1]) * t)
-    b = round(GRADIENT_START[2] + (GRADIENT_END[2] - GRADIENT_START[2]) * t)
-    return f"\033[38;2;{r};{g};{b}m{ch}{RESET}"
+def header(title):
+    return c("::", BOLD, ORANGE) + " " + c(title, BOLD, FG)
 
 
-def gradient_line(line: str, width: int) -> str:
-    out = []
-    for i, ch in enumerate(line):
-        if ch == " ":
-            out.append(ch)
-            continue
-        out.append(gradient_char(ch, i / max(width - 1, 1)))
-    return "".join(out)
+def sub(title):
+    return c("==>", BOLD, BLUE) + " " + c(title, BOLD, FG)
 
 
-def rule(width: int = RULE_WIDTH) -> str:
-    return c("─" * width, MUTED)
+def wrap(text, indent=""):
+    return "\n".join(textwrap.fill(p, WIDTH, initial_indent=indent, subsequent_indent=indent)
+                     for p in str(text or "").split("\n") if p.strip())
 
 
-def rule_with_title(title: str, width: int = RULE_WIDTH) -> str:
-    label = f" {title} "
-    pad = width - _visible_len(label)
-    left = pad // 2
-    right = pad - left
-    return c("─" * left, MUTED) + c(label, COPPER) + c("─" * right, MUTED)
+def kv(rows, key_w=10):
+    return "\n".join(c(f"{k}:".ljust(key_w), BOLD, BLUE) + " " + v for k, v in rows)
 
 
-def box(lines: list, title: str = None, width: int = None, title_color: str = TEAL) -> str:
-    inner_w = width or max((_visible_len(l) for l in lines), default=0)
-    inner_w = max(inner_w, _visible_len(title) + 2 if title else 0)
-
-    if title:
-        title_disp = f" {title} "
-        pad = inner_w + 2 - _visible_len(title_disp)
-        left = pad // 2
-        right = pad - left
-        top = c("┌" + "─" * left, MUTED) + c(title_disp, title_color) + c("─" * right + "┐", MUTED)
-    else:
-        top = c("┌" + "─" * (inner_w + 2) + "┐", MUTED)
-
-    bottom = c("└" + "─" * (inner_w + 2) + "┘", MUTED)
-
-    body = []
-    for line in lines:
-        fill = inner_w - _visible_len(line)
-        body.append(c("│ ", MUTED) + line + " " * fill + c(" │", MUTED))
-
-    return "\n".join([top] + body + [bottom])
+def footer(*paths):
+    host = SITE.split("//")[1]
+    return "\n" + "\n".join(c("next  ", DIM) + c(f"curl {host}{p}", BLUE) for p in paths)
 
 
-# ── Banner: 3D block-shadow effect ────────────────────────────────────────
-# Real block-drawing characters (█ solid, ░ light shade) instead of a flat
-# '#' outline - the shade layer is offset one row/column down-right behind
-# the solid layer, giving a genuine drop-shadow "3D" look purely through
-# character placement (no terminal overlap tricks, works everywhere).
+# ── screens ──────────────────────────────────────────────────────────────
 
-BANNER_FONT = {
-    "S": ["#####", "#    ", "#####", "    #", "#####"],
-    "H": ["#   #", "#   #", "#####", "#   #", "#   #"],
-    "O": ["#####", "#   #", "#   #", "#   #", "#####"],
-    "R": ["#####", "#   #", "#####", "#  # ", "#   #"],
-    "Y": ["#   #", " # # ", "  #  ", "  #  ", "  #  "],
-    "A": ["#####", "#   #", "#####", "#   #", "#   #"],
-    "V": ["#   #", "#   #", "#   #", " # # ", "  #  "],
-    "D": ["#### ", "#   #", "#   #", "#   #", "#### "],
-    "N": ["#   #", "##  #", "# # #", "#  ##", "#   #"],
-    " ": ["     ", "     ", "     ", "     ", "     "],
-}
-BANNER_WORD = "SHORYAVARDHAAN"
-GLYPH_W = 5
-GLYPH_H = 5
-GLYPH_GAP = 1
-
-SHADOW = "\033[38;2;74;46;18m"  # dim copper - the drop-shadow layer
-
-
-def _banner_grid():
-    total_cols = len(BANNER_WORD) * (GLYPH_W + GLYPH_GAP)
-    main = set()
-    col = 0
-    for ch in BANNER_WORD:
-        glyph = BANNER_FONT.get(ch, BANNER_FONT[" "])
-        for r in range(GLYPH_H):
-            for ci, gc in enumerate(glyph[r]):
-                if gc == "#":
-                    main.add((r, col + ci))
-        col += GLYPH_W + GLYPH_GAP
-    shadow = {(r + 1, c + 1) for (r, c) in main} - main
-    grid_h, grid_w = GLYPH_H + 1, total_cols + 1
-    return main, shadow, grid_h, grid_w
-
-
-def banner_rows_plain() -> list:
-    main, shadow, grid_h, grid_w = _banner_grid()
-    rows = []
-    for r in range(grid_h):
-        row = "".join(
-            "#" if (r, c) in main else ("." if (r, c) in shadow else " ")
-            for c in range(grid_w)
-        )
-        rows.append(row.rstrip())
-    return rows
-
-
-def render_banner() -> str:
-    main, shadow, grid_h, grid_w = _banner_grid()
-    lines = []
-    for r in range(grid_h):
-        line = []
-        for c_ in range(grid_w):
-            if (r, c_) in main:
-                line.append(gradient_char("█", c_ / max(grid_w - 1, 1)))
-            elif (r, c_) in shadow:
-                line.append(f"{SHADOW}░{RESET}")
-            else:
-                line.append(" ")
-        lines.append("".join(line))
-    return "\n".join(lines)
-
-
-# ── ASCII portrait (compact v3 - replaces both earlier partial/oversized
-# versions; small enough to sit next to text, README/neofetch-style) ─────
-
-ASCII_PORTRAIT_LINES = [
-    "                      .=***###*+**-.",
-    "                   .+###%#*##*##+#%%%+",
-    "                   *%##%%%%@@@%%@%#%%%*:",
-    "                  +%@@@@%%%#++**#%%%%%#*.",
-    "                  *%@%*=-:.....:--=+#%##.",
-    "                  +@%=:...   .......:%%%:",
-    "                  -@=-=+*#*=--=***=-:.*%:",
-    "                  =#.-*####+:.=**%#*+:.*=:",
-    "                  -=.  .::..  ....    .+=.",
-    "                  .:.    :: ... --....:::",
-    "                   .:---++-=***=-++==-::",
-    "                    .-==+##=:::-*++=--:",
-    "                     .=+=--==++=--=+=-",
-    "                    .=-+*+-:....:=+++.*:",
-    "                .+#*#= +***********+=+ ####+.",
-    "               +*####  :++**###**+++*   *%##*-",
-    "            .+*#####%.  :**++++++***   .%##%##*=.",
-    "        .-***#%%%%%%#*.*=:++++++++= + -#%%%%#%%#**+:.",
-    "      *####%%%%%%@%%%%%#-:: ----:.==#%%%%%@@@%%%%%%##*+.",
-    "      #%%%%%%%%%%%%%@@%@%%#.  :.:-%%%@%@@%%%%%%%%%%%%%##-",
-    "      %@@%%@%%%%%%%%%@%@@@@@@-:#@@@@@@%%%%%%%%%%%@%%@%%%#-",
+LOGO = [
+    "          /\\          ",
+    "         /oo\\         ",
+    "        /oooo\\        ",
+    "       /++++++\\       ",
+    "      /--------\\      ",
+    "     /ssssssssss\\     ",
+    "    /ssss    ssss\\    ",
+    "   /ooo        ooo\\   ",
 ]
-ASCII_PORTRAIT = "\n".join(ASCII_PORTRAIT_LINES)
 
 
-def two_column(left_lines: list, right_lines: list, gap: int = 3) -> str:
-    """README/neofetch-style layout: art on the left, info on the right,
-    line by line - not a separate full-width block above the text."""
-    left_w = max((_visible_len(l) for l in left_lines), default=0)
-    rows = max(len(left_lines), len(right_lines))
-    out = []
-    for i in range(rows):
-        left = left_lines[i] if i < len(left_lines) else ""
-        right = right_lines[i] if i < len(right_lines) else ""
-        pad = left_w - _visible_len(left)
-        out.append(left + " " * pad + " " * gap + right)
+def screen_home():
+    d = DATA
+    info = [
+        c("visitor", BOLD, BLUE) + c("@", FG) + c("shorya", BOLD, BLUE),
+        c("─" * 22, FAINT),
+        c("OS:", BOLD, BLUE) + " ShoryaOS (arch, btw)",
+        c("Kernel:", BOLD, BLUE) + f" {age()}.0-builder",
+        c("Location:", BOLD, BLUE) + " Kolkata, IN",
+        c("Packages:", BOLD, BLUE) + f" {len(d['projects'])} projects, {len(d['posts'])} essays, {len(d['wins'])} wins",
+        c("Now:", BOLD, BLUE) + " Bits&Bytes · 4MQ.org",
+        c("Status:", BOLD, BLUE) + " " + c("open to collab", OK),
+    ]
+    art = [c(line, BOLD, ORANGE if i == 4 else BLUE) for i, line in enumerate(LOGO)]
+    lines = [(art[i] if i < len(art) else " " * 22) + "  " + (info[i] if i < len(info) else "") for i in range(max(len(art), len(info)))]
+    intro = wrap(f"Shoryavardhaan Gupta, {age()}, builds civic tech, hardware and AI from Kolkata. "
+                 "I don't wait to be qualified: I ship things, see what breaks, and figure it out from there.")
+    return "\n".join(["", *lines, "", c(intro, FG), "", screen_help(short=True)])
+
+
+COMMANDS = [
+    ("", "this card"),
+    ("/projects", "things I've built"),
+    ("/projects/<name>", "one project, e.g. /projects/buy4chai"),
+    ("/work", "roles & where I've been"),
+    ("/blog", "essays"),
+    ("/contact", "every way to say hi"),
+    ("/help", "this list"),
+]
+
+
+def screen_help(short=False):
+    host = SITE.split("//")[1]
+    rows = [c(p.ljust(20), BOLD, BLUE) + c(desc, DIM) for p, desc in COMMANDS[1:]]
+    return "\n".join([header("commands") + c(f"  curl {host}<path>", DIM), *rows, "",
+                      c("add ?plain to strip colour, e.g. curl …/work?plain > work.txt", DIM),
+                      c("full web version: ", DIM) + c(f"{SITE}/terminal/", BLUE)])
+
+
+def screen_projects():
+    out = ["", header("projects")]
+    for i, p in enumerate(DATA["projects"], 1):
+        out.append(c(f"{i:02d}", FAINT) + "  " + c(p["name"], BOLD, BLUE) + c(f"  {p.get('period') or ''}", DIM))
+        out.append(wrap(p["tagline"], "    "))
+        out.append(c(f"    curl {SITE.split('//')[1]}/projects/{p['slug']}", FAINT))
     return "\n".join(out)
 
 
-# ── Real content ─────────────────────────────────────────────────────────
+def find_project(key):
+    key = key.lower()
+    for i, p in enumerate(DATA["projects"], 1):
+        if key in (p["slug"], str(i)) or p["slug"].startswith(key) or p["name"].lower().startswith(key):
+            return p
+    return None
 
-WHOAMI_PLAIN = (
-    "Shoryavardhaan Gupta - Kolkata, India.\n"
-    "Student developer building AI applications, civic tech, and hardware projects.\n"
-    "Currently: Kolkata Fork Lead @ Bits&Bytes, Youth Partner @ 4MQ.org.\n"
-    "Also: Consultant @ 4MQ.org, Freelance UI/landing-page design.\n"
-    "Published research: grounded/embodied AI planning, on ORCID.\n"
-    "More info: https://shoryavardhaan.vercel.app/blog/why-i-build\n"
-    "Portfolio: https://shoryavardhaan.vercel.app\n"
-)
 
-PROJECTS = [
-    ("Buy4Chai", "self-hosted supporter page, Razorpay/UPI native", "https://github.com/vassu-v/Buy4Chai"),
-    ("SarkarSathi", "AI co-pilot for municipal accountability in India", "https://github.com/vassu-v/india-innovates-CivicNTech"),
-    ("Disaster-Resilient LiFi", "off-grid IR mesh, solar street lamps as nodes", "https://github.com/vassu-v/D-LiFi-Proto"),
-    ("ChemX", "browser-controlled physical chemistry simulator", "https://github.com/vassu-v/ChemX_001"),
-    ("Grounded Planning", "published AI planning research, written at 15", "https://zenodo.org/records/19513284"),
+def screen_project(p):
+    out = ["", header(p["name"]) + c(f"  · {p.get('period') or ''}", DIM), wrap(p["tagline"]), ""]
+    out.append(" ".join(c("[", FAINT) + c(t, ORANGE) + c("]", FAINT) for t in p.get("tags", [])))
+    out += ["", sub("problem"), wrap(p.get("problem")), "", sub("solution"), wrap(p.get("solution"))]
+    if p.get("how"):
+        out += ["", sub("how it works")]
+        out += [textwrap.fill(f"- {h['label']}: {h['text']}", WIDTH, initial_indent="  ", subsequent_indent="    ") for h in p["how"]]
+    if p.get("impact"):
+        out += ["", sub("impact")] + ["  " + c(m["val"].ljust(6), BOLD, OK) + " " + c(m["label"], DIM) for m in p["impact"]]
+    links = [("case study", f"{SITE}/project/{p['slug']}")]
+    if p.get("github"):
+        links.insert(0, ("source", p["github"]))
+    if p.get("live"):
+        links.insert(1, ("live", p["live"]))
+    out += ["", kv([(k, c(v, BLUE)) for k, v in links], key_w=12)]
+    return "\n".join(out)
+
+
+def screen_work():
+    out = ["", header("work")]
+    for e in DATA["work"]:
+        dot = c("●", OK) if e.get("live") else c("○", FAINT)
+        out.append(f"{dot} {c(e['org'], BOLD, BLUE)} {c('— ' + e['role'], FG)}  {c(e['period'], DIM)}")
+        out.append(wrap(e["desc"], "  "))
+        for x in e.get("extra") or []:
+            out.append(c(f"  + {x['title']} · {x['period']} · {x['type']}", DIM))
+        out.append("")
+    out.append(c("● = current", DIM))
+    return "\n".join(out)
+
+
+def screen_blog():
+    out = ["", header("the log")]
+    for i, p in enumerate(DATA["posts"], 1):
+        out.append(c(f"{i:02d}", FAINT) + "  " + c(p["title"], BOLD, BLUE))
+        out.append(c(f"    {p.get('category') or ''} · {p['date']} · {p.get('readTime') or ''}", DIM))
+        out.append(c(f"    {p.get('external') or SITE + '/blog/' + p['slug']}", FAINT))
+    return "\n".join(out)
+
+
+CONTACT = [
+    ("email", "shoryavardhaans2@gmail.com"),
+    ("call", "https://cal.com/shoryavardhaan/30min"),
+    ("linkedin", "https://www.linkedin.com/in/shoryavardhaan"),
+    ("github", "https://github.com/vassu-v"),
+    ("x", "https://x.com/shoryavardhaan"),
 ]
 
-BLOG_POSTS = [
-    ("Nobody told me to start. That was the point.", "https://shoryavardhaan.vercel.app/blog/why-i-build"),
-    ("Why Indian developers can't get paid online, and how I fixed it", "https://shoryavardhaan.vercel.app/blog/building-buy4chai"),
-    ("Markets don't get disrupted. They get aged out.", "https://shoryavardhaan.vercel.app/blog/markets-dont-get-disrupted"),
-    ("Apple's been playing a different game since 2017", "https://shoryavardhaan.vercel.app/blog/apple-ai-decade"),
-    ("Both groups are losing. Just differently.", "https://shoryavardhaan.vercel.app/blog/both-groups-are-losing"),
-    ('Why "needs vs. wants" is the wrong framework', "https://shoryavardhaan.vercel.app/blog/hardware-failure"),
-]
 
-# NOTE: base cal.com link only, per direct feedback - not the 30-min
-# overlay-specific URL used on the main site's "book a call" CTA.
-CONTACT_PLAIN = (
-    "Reach out any time: shoryavardhaans2@gmail.com\n"
-    "Calendar: https://cal.com/shoryavardhaan\n"
-)
+def screen_contact():
+    return "\n".join(["", header("contact"), c("Want to build something together?", BOLD, FG), "",
+                      kv([(k, c(v, BLUE)) for k, v in CONTACT])])
 
 
-# ── Rendered (TUI) bodies ──────────────────────────────────────────────────
+# ── routing ──────────────────────────────────────────────────────────────
 
-def render_whoami() -> str:
-    info = [
-        c("Shoryavardhaan Gupta", BOLD + FG) + c("  -  Kolkata, India", MUTED),
-        "11th grade, South Point High School. Student developer building",
-        "AI applications, civic tech, and hardware projects.",
-        "",
-        c("Currently   ", VIOLET) + "Kolkata Fork Lead @ Bits&Bytes",
-        c("            ", VIOLET) + "Youth Partner @ 4MQ.org",
-        c("Also        ", VIOLET) + "Consultant @ 4MQ.org",
-        c("            ", VIOLET) + "Freelance UI / landing-page design",
-        c("Research    ", VIOLET) + "Grounded/embodied AI planning - published on",
-        c("            ", VIOLET) + "Zenodo, written at 15. ORCID 0009-0009-1370-5230",
-        c("Recognition ", VIOLET) + "India Innovates 2026 - Top 1,000 / 26,000+ entries",
-        c("            ", VIOLET) + "CBSE Regional Science Exhibition 2025-26",
-        "",
-        c("GitHub      ", VIOLET) + c("https://github.com/vassu-v", ACCENT),
-        c("LinkedIn    ", VIOLET) + c("https://www.linkedin.com/in/shoryavardhaan", ACCENT),
-        c("More info   ", VIOLET) + c("https://shoryavardhaan.vercel.app/blog/why-i-build", ACCENT),
-        c("Portfolio   ", VIOLET) + c("https://shoryavardhaan.vercel.app", ACCENT),
-    ]
-    art = [c(line, MUTED) for line in ASCII_PORTRAIT_LINES]
-    return two_column(art, info)
+def is_curl(request):
+    return "curl" in request.headers.get("user-agent", "").lower()
 
 
-def render_commands(host: str) -> str:
-    rows = [
-        (f"curl {host}", "this screen"),
-        (f"curl {host}/whoami", "who this is"),
-        (f"curl {host}/projects", "project list"),
-        (f"curl {host}/blog", "writing"),
-        (f"curl {host}/contact", "get in touch"),
-        (f"curl {host}/animate", "watch this"),
-    ]
-    w = max(len(a) for a, _ in rows)
-    lines = []
-    for a, b in rows:
-        lines.append(c(a.ljust(w), ACCENT) + "   " + c(b, MUTED))
-    return box(lines, title="commands")
+def respond(request, body, nexts=("/projects", "/contact")):
+    text = body + "\n" + footer(*nexts) + "\n\n"
+    if "plain" in request.query_params:
+        text = _ANSI.sub("", text)
+    return PlainTextResponse(text)
 
 
-def render_projects() -> str:
-    lines = [rule_with_title("projects"), ""]
-    for i, (name, desc, url) in enumerate(PROJECTS):
-        lines.append(c(name, BOLD + TEAL))
-        lines.append(c(f"  {desc}", MUTED))
-        lines.append("  " + c(url, ACCENT))
-        if i != len(PROJECTS) - 1:
-            lines.append("")
-    return "\n".join(lines)
-
-
-def render_blog() -> str:
-    lines = [rule_with_title("blog"), ""]
-    for i, (title, url) in enumerate(BLOG_POSTS, start=1):
-        lines.append(c(f"{i}. ", VIOLET) + c(title, BOLD + TEAL))
-        lines.append("   " + c(url, ACCENT))
-        if i != len(BLOG_POSTS):
-            lines.append("")
-    return "\n".join(lines)
-
-
-def render_contact() -> str:
-    lines = [
-        rule_with_title("contact"),
-        "",
-        c("Email     ", VIOLET) + c("shoryavardhaans2@gmail.com", ACCENT),
-        c("Calendar  ", VIOLET) + c("https://cal.com/shoryavardhaan", ACCENT),
-    ]
-    return "\n".join(lines)
-
-
-def render_root_static(host: str) -> str:
-    """Non-animated fallback (used for the JSON/non-curl path's reference
-    URL and available for testing) - the live curl path streams instead,
-    see stream_root()."""
-    return "\n".join([
-        "",
-        render_banner(),
-        "",
-        render_whoami(),
-        "",
-        render_commands(host),
-        "",
-        c("Full site: ", MUTED) + c("https://shoryavardhaan.vercel.app", ACCENT),
-        "",
-    ])
-
-
-async def stream_root(host: str):
-    """Animates the name in as it streams to curl - a real chunked HTTP
-    response, not a trick; curl renders each chunk as it arrives. Streamed
-    row-by-row (not character-by-character): each yield is a real network
-    flush on Vercel's serverless runtime, and hundreds of tiny per-char
-    chunks measured ~6s end-to-end in practice - row-sized chunks with a
-    short pause between rows reads as animated without the latency cost."""
-    yield "\n"
-    main, shadow, grid_h, grid_w = _banner_grid()
-    for r in range(grid_h):
-        line = []
-        for c_ in range(grid_w):
-            if (r, c_) in main:
-                line.append(gradient_char("█", c_ / max(grid_w - 1, 1)))
-            elif (r, c_) in shadow:
-                line.append(f"{SHADOW}░{RESET}")
-            else:
-                line.append(" ")
-        yield "".join(line).rstrip() + "\n"
-        await asyncio.sleep(0.09)
-    yield "\n"
-    yield render_whoami() + "\n\n"
-    yield render_commands(host) + "\n\n"
-    yield c("Full site: ", MUTED) + c("https://shoryavardhaan.vercel.app", ACCENT) + "\n\n"
-
-
-# ── Animation easter egg: `curl <host>/animate` ────────────────────────────
-# parrot.live-style clear-and-redraw: each frame is a full clear + repaint of
-# the same handful of lines in place, not a scroll-down log. Real chunked
-# HTTP response, one yield per WHOLE frame (never character-by-character -
-# see stream_root()'s docstring for why that measured ~6s on Vercel), with
-# asyncio.sleep between frames doing the actual pacing.
-
-CLEAR = "\033[H\033[2J"
-
-
-def _double_box(lines: list, border_color: str = COPPER) -> str:
-    """The one deliberate special-occasion use of heavy/double box-drawing
-    in this file, reserved for the /animate reveal payoff. Everywhere else
-    uses the light single-line box() above - do not change that."""
-    inner_w = max((_visible_len(l) for l in lines), default=0)
-    top = c("╔" + "═" * (inner_w + 2) + "╗", border_color)
-    bottom = c("╚" + "═" * (inner_w + 2) + "╝", border_color)
-    body = []
-    for line in lines:
-        fill = inner_w - _visible_len(line)
-        body.append(c("║ ", border_color) + line + " " * fill + c(" ║", border_color))
-    return "\n".join([top] + body + [bottom])
-
-
-async def stream_animate():
-    # Frame 1 (~0s): empty prompt, cursor blinking
-    yield CLEAR + "\n" + box([c("$ ", COPPER) + c("whoami_", FG)]) + "\n"
-    await asyncio.sleep(0.9)
-
-    # Frame 2 (~0.9s): typing the response, mid-word
-    yield CLEAR + "\n" + box([
-        c("$ ", COPPER) + c("whoami", FG),
-        c("> ", VIOLET) + c("shoryavardh-", TEAL),
-    ]) + "\n"
-    await asyncio.sleep(0.9)
-
-    # Frame 3 (~1.8s): full name, loading starts
-    yield CLEAR + "\n" + box([
-        c("$ ", COPPER) + c("whoami", FG),
-        c("> ", VIOLET) + c("shoryavardhaan gupta", TEAL),
-        c("loading... ", MUTED) + c("█████░░░░░", ACCENT),
-    ]) + "\n"
-    await asyncio.sleep(0.9)
-
-    # Frame 4 (~2.7s): loading complete, "done." - about to transition
-    yield CLEAR + "\n" + box([
-        c("$ ", COPPER) + c("whoami", FG),
-        c("> ", VIOLET) + c("shoryavardhaan gupta", TEAL),
-        c("loading... ", MUTED) + c("██████████", ACCENT),
-        c("done.", MUTED),
-    ]) + "\n"
-    await asyncio.sleep(0.9)
-
-    # Frame 5 (~3.6s, final): the real banner, held longer as the payoff
-    banner_lines = render_banner().split("\n")
-    fact = "17, Kolkata, India - building AI applications, civic tech, hardware"
-    reveal_lines = banner_lines + ["", c(fact, MUTED)]
-    yield CLEAR + "\n" + _double_box(reveal_lines, border_color=TEAL) + "\n\n"
-    await asyncio.sleep(2.0)
-
-
-# ── Routing ──────────────────────────────────────────────────────────────
-
-def is_curl(request: fastapi.Request) -> bool:
-    ua = request.headers.get("user-agent", "")
-    return "curl" in ua.lower()
-
-
-# NOTE: with vercel.json's legacy `routes` format, `dest` selects which
-# serverless function handles the request, but the ASGI scope's path stays
-# the ORIGINAL public path (confirmed against the real deployment) - so
-# routes here must match the public paths, not the function's own file path.
-# /api/cli itself stays reachable directly too, as a manual fallback.
+# NOTE: with vercel.json's legacy `routes`, `dest` picks this function but the
+# ASGI path stays the ORIGINAL public path — so routes match public paths.
+# /api/cli/* stays reachable directly as a manual fallback.
 
 @app.get("/")
-@app.get("/api/cli")
-async def cli_root(request: fastapi.Request):
-    if not is_curl(request):
-        return JSONResponse({
-            "hint": "this endpoint is meant for curl - try: curl " + str(request.url)
-        })
-    host = f"{request.url.scheme}://{request.url.netloc}"
-    return StreamingResponse(stream_root(host), media_type="text/plain")
-
-
 @app.get("/whoami")
-@app.get("/api/cli/whoami")
-async def cli_whoami(request: fastapi.Request):
+@app.get("/api/cli")
+async def home(request: fastapi.Request):
     if not is_curl(request):
-        return JSONResponse({"whoami": WHOAMI_PLAIN.strip()})
-    return PlainTextResponse("\n" + render_whoami() + "\n")
+        return JSONResponse({"hint": "this endpoint is for curl — try: curl " + str(request.url)})
+    return respond(request, screen_home(), ("/projects", "/work"))
+
+
+@app.get("/help")
+@app.get("/api/cli/help")
+async def help_(request: fastapi.Request):
+    if not is_curl(request):
+        return JSONResponse({"commands": [p or "/" for p, _ in COMMANDS]})
+    return respond(request, "\n" + screen_help(), ("/projects",))
 
 
 @app.get("/projects")
 @app.get("/api/cli/projects")
-async def cli_projects(request: fastapi.Request):
+async def projects(request: fastapi.Request):
     if not is_curl(request):
-        return JSONResponse({"projects": [{"name": n, "desc": d, "url": u} for n, d, u in PROJECTS]})
-    return PlainTextResponse("\n" + render_projects() + "\n")
+        return JSONResponse({"projects": [{"name": p["name"], "tagline": p["tagline"], "url": f"{SITE}/project/{p['slug']}"} for p in DATA["projects"]]})
+    return respond(request, screen_projects(), ("/projects/1", "/work"))
+
+
+@app.get("/projects/{key}")
+@app.get("/api/cli/projects/{key}")
+async def project(request: fastapi.Request, key: str):
+    p = find_project(key)
+    if not is_curl(request):
+        return JSONResponse(p or {"error": "no such project"}, status_code=200 if p else 404)
+    if not p:
+        return respond(request, "\n" + c(f"no project matching '{key}'", ORANGE) + "\n\n" + screen_projects(), ("/projects",))
+    return respond(request, screen_project(p), ("/projects", "/contact"))
+
+
+@app.get("/work")
+@app.get("/api/cli/work")
+async def work(request: fastapi.Request):
+    if not is_curl(request):
+        return JSONResponse({"work": DATA["work"]})
+    return respond(request, screen_work(), ("/projects", "/contact"))
 
 
 @app.get("/blog")
 @app.get("/api/cli/blog")
-async def cli_blog(request: fastapi.Request):
+async def blog(request: fastapi.Request):
     if not is_curl(request):
-        return JSONResponse({"blog": [{"title": t, "url": u} for t, u in BLOG_POSTS]})
-    return PlainTextResponse("\n" + render_blog() + "\n")
+        return JSONResponse({"blog": [{"title": p["title"], "url": f"{SITE}/blog/{p['slug']}"} for p in DATA["posts"]]})
+    return respond(request, screen_blog(), ("/projects", "/contact"))
 
 
 @app.get("/contact")
 @app.get("/api/cli/contact")
-async def cli_contact(request: fastapi.Request):
+async def contact(request: fastapi.Request):
     if not is_curl(request):
-        return JSONResponse({"contact": CONTACT_PLAIN.strip().split("\n")})
-    return PlainTextResponse("\n" + render_contact() + "\n")
-
-
-@app.get("/animate")
-@app.get("/api/cli/animate")
-async def cli_animate(request: fastapi.Request):
-    if not is_curl(request):
-        return JSONResponse({
-            "hint": "this is a curl-only animation - try: curl " + str(request.url)
-        })
-    return StreamingResponse(stream_animate(), media_type="text/plain")
+        return JSONResponse({"contact": dict(CONTACT)})
+    return respond(request, screen_contact(), ("/projects",))

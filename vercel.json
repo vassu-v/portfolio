@@ -17,10 +17,12 @@
 
     { "src": "/", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/whoami", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/help", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/projects", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/projects/(.*)", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/work", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/blog", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/contact", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
-    { "src": "/animate", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/api/cli/(.*)", "dest": "/api/cli" },
 
     { "handle": "filesystem" },
