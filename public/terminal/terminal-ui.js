@@ -170,7 +170,7 @@
       var div = document.createElement("div");
       div.className = "entry";
       var path = promptPath.textContent;
-      div.innerHTML = (echo !== null ? '<div class="echo"><span class="seg seg--user">visitor</span><span class="seg seg--path">' + esc(path) + '</span><b>' + esc(echo) + "</b></div>" : "") + (html || "");
+      div.innerHTML = (echo !== null ? '<div class="echo"><span class="ps">[<i>visitor</i>@<i>shorya</i> <u>' + esc(path) + "</u>]$</span><b>" + esc(echo) + "</b></div>" : "") + (html || "");
       log.appendChild(div);
       var pre = div.querySelector("[data-ascii-portrait]");
       if (pre) portraitInto(pre);
@@ -355,6 +355,20 @@
       var b = e.target.closest("[data-cmd]");
       if (b) { e.preventDefault(); run(b.getAttribute("data-cmd")); }
     });
+    var started = Date.now();
+    function tickMods() {
+      var m = Math.floor((Date.now() - started) / 60000);
+      document.getElementById("mod-up").textContent = "up " + (m < 60 ? m + "m" : Math.floor(m / 60) + "h " + (m % 60) + "m");
+      document.getElementById("mod-net").textContent = "net: " + (navigator.onLine ? "online" : "offline");
+      document.getElementById("mod-date").textContent = new Date().toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" });
+    }
+    if (navigator.getBattery) navigator.getBattery().then(function (b) {
+      var el = document.getElementById("mod-bat");
+      var paint = function () { el.hidden = false; el.textContent = "bat: " + Math.round(b.level * 100) + "%" + (b.charging ? " +" : ""); };
+      paint(); b.addEventListener("levelchange", paint); b.addEventListener("chargingchange", paint);
+    }).catch(function () {});
+    tickMods();
+    setInterval(tickMods, 30000);
     function tickClocks() {
       document.getElementById("clock-kol").textContent = kolTime();
       document.getElementById("clock-you").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -367,17 +381,18 @@
       renderTop(document.getElementById("top"));
     }
 
-    CHIPS.concat(["theme"]).forEach(function (c) {
+    ["help", "ls", "projects", "work", "contact", "↑"].forEach(function (c) {
       var b = document.createElement("button");
-      b.type = "button"; b.className = "chip"; b.textContent = c; b.setAttribute("data-cmd", c);
+      b.type = "button"; b.className = "chip"; b.textContent = c;
+      if (c === "↑") b.addEventListener("click", function () { if (history.length) { input.value = history[history.length - 1]; paintGhost(); input.focus(); } });
+      else b.setAttribute("data-cmd", c);
       chips.appendChild(b);
     });
-    var home = document.createElement("a");
-    home.className = "chip"; home.href = "/"; home.textContent = "3D room ↗";
-    if (!embedded) chips.appendChild(home);
 
     // ---------- start ----------
-    entry(null, rich.run(tiled ? "motd" : "welcome", []).html);
+    var last = new Date(Date.now() - 1000 * 60 * 47);
+    entry(null, '<p class="k-dim">Welcome to ShoryaOS (arch, btw) · tty1<br>Last login: ' + esc(last.toDateString()) + " " + esc(last.toTimeString().slice(0, 5)) + " from your browser</p>");
+    entry("screenfetch", rich.run("screenfetch", []).html);
     var first = new URLSearchParams(global.location.search).get("cmd") || decodeURIComponent((global.location.hash || "").slice(1)).replace(/-/g, " ");
     if (first) run(first);
     syncPrompt();

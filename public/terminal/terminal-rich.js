@@ -97,6 +97,55 @@
   C.neofetch = C.welcome;
   C.fastfetch = C.welcome;
 
+  // screenfetch: a hand-drawn ASCII mark (a peak with a dawn line — Kolkata
+  // builder, arch-flavoured) beside system info, some of it the visitor's own.
+  function logo() {
+    var rows = 17, out = [];
+    for (var y = 0; y < rows; y++) {
+      var half = Math.round((y + 1) * 1.15), pad = 20 - half, line = "";
+      for (var x = 0; x < half * 2; x++) {
+        var edge = x === 0 || x === half * 2 - 1;
+        var inner = y > 9 && Math.abs(x - half + 0.5) < (y - 9) * 0.9;
+        var c = edge ? (x === 0 ? "/" : "\\") : inner ? " " : y < 3 ? "o" : y < 7 ? "+" : y < 12 ? "s" : "o";
+        if (y === 6 && !edge) c = "-";
+        line += c;
+      }
+      var cls = y === 6 ? "lg2" : "lg1";
+      out.push(" ".repeat(Math.max(0, pad)) + '<span class="' + cls + '">' + esc(line) + "</span>");
+    }
+    return out;
+  }
+  C.screenfetch = function () {
+    var d = D, born = new Date(d.birth || "2009-09-02"), now = new Date();
+    var months = (now.getFullYear() - born.getFullYear()) * 12 + now.getMonth() - born.getMonth();
+    var scr = (global.screen ? global.screen.width + "x" + global.screen.height : "unknown");
+    var cores = (global.navigator && global.navigator.hardwareConcurrency) || "?";
+    var mem = global.navigator && global.navigator.deviceMemory;
+    var info = [
+      '<span class="sf-who">visitor<span class="sf-at">@</span>shorya</span>',
+      ["OS", "ShoryaOS x86_64 (arch, btw)"],
+      ["Kernel", age() + ".0-builder"],
+      ["Uptime", Math.floor(months / 12) + "y " + (months % 12) + "m"],
+      ["Packages", d.projects.length + " projects, " + d.posts.length + " essays, " + d.wins.length + " wins"],
+      ["Shell", "curiosity 5.9"],
+      ["Resolution", esc(scr) + " (yours)"],
+      ["WM", "hyprland"],
+      ["Theme", "shorya [blue/orange]"],
+      ["Font", "JetBrains Mono 14"],
+      ["CPU", esc(cores) + "-core (yours)"],
+      ["RAM", mem ? esc(mem) + "G+ (yours)" : "enough"],
+      ["Location", "Kolkata, IN"],
+      ["Status", '<span class="sf-ok">open to collab</span>'],
+    ].map(function (r) { return typeof r === "string" ? r : '<span class="sf-k">' + r[0] + ":</span> " + r[1]; });
+    var art = logo();
+    var n = Math.max(art.length, info.length), lines = [];
+    for (var i = 0; i < n; i++) lines.push('<span class="sf-art">' + (art[i] || "") + "</span>" + (info[i] || ""));
+    return {
+      html: '<pre class="sf">' + lines.join("\n") + "</pre>" +
+        hint("type " + cmd("help") + " or try " + cmd("about") + " " + cmd("projects") + " " + cmd("work") + " " + cmd("blog") + " " + cmd("contact")),
+    };
+  };
+
   // short greeting used when the fastfetch pane is already on screen
   C.motd = function () {
     var last = new Date(Date.now() - 1000 * 60 * 47);
