@@ -35,7 +35,7 @@ function cyl(r0, r1, h, y0, seg = 14, open = false) {
   return g;
 }
 
-function cupTexture(nPts) {
+function cupTexture(footV) {
   const c = document.createElement('canvas');
   c.width = 512;
   c.height = 512;
@@ -43,7 +43,6 @@ function cupTexture(nPts) {
   x.fillStyle = '#e7e1d5';
   x.fillRect(0, 0, 512, 512);
   // unglazed clay foot: first profile segments (v near 0 -> canvas bottom)
-  const footV = 2.6 / (nPts - 1);
   x.fillStyle = '#b88f6c';
   x.fillRect(0, 512 * (1 - footV), 512, 512 * footV);
   let s = 7;
@@ -101,7 +100,7 @@ export function createPenCup() {
   group.name = 'PenCup';
 
   // ---------------------------------------------------------------- cup
-  const prof = [
+  const raw = [
     [0.0, 0.0],
     [R_OUT - 0.004, 0.0],
     [R_OUT - 0.0012, 0.0009],
@@ -115,18 +114,18 @@ export function createPenCup() {
     [R_IN - 0.0035, FLOOR],
     [0.0, FLOOR],
   ].map(([r, y]) => new THREE.Vector2(r, y));
-  const cupMat = new THREE.MeshStandardMaterial({ map: cupTexture(prof.length), roughness: 0.62, metalness: 0 });
-  const cupGeo = new THREE.LatheGeometry(prof, 48);
-  // lathe winds inward-facing for an outward-going profile: flip
-  {
-    const idx = cupGeo.index.array;
-    for (let i = 0; i < idx.length; i += 3) {
-      const t = idx[i + 1];
-      idx[i + 1] = idx[i + 2];
-      idx[i + 2] = t;
-    }
-    cupGeo.computeVertexNormals();
-  }
+  // resample long segments so lathe UV v tracks arc length (round speckles)
+  const prof = [];
+  let footIdx = 0;
+  raw.forEach((p, i) => {
+    if (i === 0) return prof.push(p);
+    const a = raw[i - 1];
+    const n = Math.max(1, Math.ceil(a.distanceTo(p) / 0.012));
+    for (let k = 1; k <= n; k++) prof.push(a.clone().lerp(p, k / n));
+    if (i === 3) footIdx = prof.length - 1;
+  });
+  const cupMat = new THREE.MeshStandardMaterial({ map: cupTexture(footIdx / (prof.length - 1)), roughness: 0.62, metalness: 0 });
+  const cupGeo = new THREE.LatheGeometry(prof, 44);
   group.add(shadowed(new THREE.Mesh(cupGeo, cupMat)));
 
   // ---------------------------------------------------------------- contents
@@ -163,9 +162,9 @@ export function createPenCup() {
   };
 
   pencil(placement(0.016, 0.5, 0.0036), 0xe9b326, 0.15);
-  pencil(placement(0.012, 2.3, 0.0036, 0.05), 0x2c2c2e, 0.138);
+  pencil(placement(0.012, 2.3, 0.0036, -0.05), 0x2c2c2e, 0.138);
   pen(placement(0.015, 3.6, 0.0046), 0x1e3f7a);
-  pen(placement(0.006, 1.35, 0.0046, 0.08), 0xe8e6e1, 0.142);
+  pen(placement(0.006, 1.35, 0.0046, -0.08), 0xe8e6e1, 0.142);
   highlighter(placement(0.018, 4.7, 0.0072));
 
   // steel ruler, flat face roughly facing outward
@@ -178,7 +177,7 @@ export function createPenCup() {
     const uv = rg.attributes.uv;
     for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i), uv.getX(i));
     rg.rotateY(-az + Math.PI / 2);
-    rg.applyMatrix4(placement(0.014, az, 0.001, 0.02));
+    rg.applyMatrix4(placement(0.014, az, 0.001, -0.03));
     group.add(shadowed(new THREE.Mesh(rg, rulerMat)));
   }
 

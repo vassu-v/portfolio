@@ -18,7 +18,7 @@ const FOCUS = {
   drawer:    { pos: V(0.66, 1.2, 0.36),  look: V(0.55, 0.62, -0.28) },
   diary:     { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
   corkboard: { pos: V(BOARD.x, BOARD.y - 0.03, BACK + 1.3), look: V(BOARD.x, BOARD.y - 0.01, BACK) },
-  phone:     { pos: V(0.66, 1.02, -0.08), look: V(0.56, 0.85, -0.44) },
+  phone:     { pos: V(0.39, 0.9, -0.32), look: V(0.5, 0.83, -0.6) },
   sheet:     { pos: V(0.66, 1.2, 0.5),  look: V(0.56, 0.98, -0.15) },
   card:      { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 1.02), look: V(BOARD.x, BOARD.y - 0.02, BACK) },
 }

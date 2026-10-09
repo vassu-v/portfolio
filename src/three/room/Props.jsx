@@ -5,7 +5,6 @@ import { createModel as createLaptop } from './lib/laptop'
 import { createModel as createKeyboard } from './lib/mechanical-keyboard'
 import { createModel as createHeadphones } from './lib/headphones'
 import { createModel as createLamp } from './lib/desk-lamp'
-import { createModel as createPhone } from './lib/iphone'
 import { createModel as createMug } from './lib/coffee-mug'
 import { AGE } from '../../utils/meta'
 import { prepModel, Hotspot, damp } from './common'
@@ -194,73 +193,6 @@ function Mug() {
   return <primitive object={model} position={[0.33, Y, -0.68]} scale={0.034} rotation={[0, 2.2, 0]} />
 }
 
-function Phone() {
-  const focus = useRoom(s => s.focus)
-  const holder = useRef()
-  const model = useMemo(() => {
-    const m = prepModel(createPhone())
-    m.rotation.set(0, 0, 0)
-    m.userData.display((ctx, w, h) => {
-      const now = new Date()
-      const g = ctx.createLinearGradient(0, 0, 0, h)
-      g.addColorStop(0, '#22170e'); g.addColorStop(1, '#0b0907')
-      ctx.fillStyle = g
-      ctx.fillRect(0, 0, w, h)
-      ctx.textAlign = 'center'
-      ctx.fillStyle = '#efe6d8'
-      ctx.font = '300 240px "Instrument Serif", serif'
-      ctx.fillText(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }), w / 2, 520)
-      ctx.font = '500 44px "JetBrains Mono", monospace'
-      ctx.fillStyle = '#a58a6c'
-      ctx.fillText(now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }), w / 2, 600)
-      const card = (y, title, body) => {
-        ctx.fillStyle = 'rgba(255,240,220,0.1)'
-        ctx.beginPath(); ctx.roundRect(60, y, w - 120, 230, 48); ctx.fill()
-        ctx.textAlign = 'left'
-        ctx.fillStyle = '#D4983A'
-        ctx.font = '600 40px "JetBrains Mono", monospace'
-        ctx.fillText(title, 110, y + 80)
-        ctx.fillStyle = '#efe6d8'
-        ctx.font = '400 44px "JetBrains Mono", monospace'
-        ctx.fillText(body, 110, y + 160)
-        ctx.textAlign = 'center'
-      }
-      card(1020, 'Shorya · now', "let's build something.")
-      card(1290, 'Mail', 'tap to say hi →')
-      ctx.textAlign = 'left'
-    })
-    return bakeStatic(m, { keep: [m.userData.parts.screen] })
-  }, [])
-  const minute = useRef(-1)
-
-  useFrame(({ clock }, dt) => {
-    const mnow = new Date().getMinutes()
-    if (mnow !== minute.current) {
-      minute.current = mnow
-      model.userData.update(clock.elapsedTime)
-      model.position.set(0, 0, 0)
-      model.rotation.set(0, 0, 0)
-    }
-    const h = holder.current
-    const up = focus === 'phone' ? 1 : 0
-    h.userData.k = damp(h.userData.k ?? 0, up, 5, dt)
-    const k = h.userData.k
-    h.position.y = Y + 0.0045 + k * 0.1
-    h.rotation.x = -Math.PI / 2 + k * 0.9
-  })
-
-  return (
-    <group position={[0.56, 0, -0.42]} rotation={[0, -0.35, 0]}>
-      <group ref={holder}>
-        <Hotspot id="phone" label="Phone — get in touch" onClick={() => focusOn('phone')}>
-          <primitive object={model} scale={0.053} />
-        </Hotspot>
-      </group>
-    </group>
-  )
-}
-
-
 function noteTexture(lines, bg) {
   const c = document.createElement('canvas')
   c.width = c.height = 256
@@ -384,7 +316,6 @@ export default function Props({ tier = 'high' }) {
       <Lamp tier={tier} />
       <Headphones />
       <Mug />
-      <Phone />
       <Built />
       <Pen position={[-0.36, Y + 0.0045, -0.38]} rotation={[0, 0.9, 0]} />
 

@@ -1,0 +1,220 @@
+import { useEffect, useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import * as THREE from 'three'
+import { createModel as createPhone } from './lib/iphone'
+import { prepModel, Hotspot, damp } from './common'
+import { bakeStatic } from './bake'
+import { room, useRoom, focusOn, wake, dirtyShadows } from './store'
+
+const extra = import.meta.glob('./props/stand.js', { eager: true })
+const createPhoneStand = extra['./props/stand.js']?.createPhoneStand
+
+const Y = 0.75
+const DESK_POS = new THREE.Vector3(0.56, Y + 0.0045, -0.42)
+const DESK_QUAT = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, -0.35, 0, 'YXZ'))
+const STAND_POS = [0.5, Y, -0.6]
+const STAND_ROT = -0.42
+
+// Contact buttons drawn on the screen; y ranges are canvas pixels (900×1860).
+const BUTTONS = [
+  { y: 980, label: 'Email me', sub: 'shoryavardhaans2@gmail.com', href: 'mailto:shoryavardhaans2@gmail.com' },
+  { y: 1160, label: 'Book a 30-min call', sub: 'cal.com/shoryavardhaan', href: 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true' },
+  { y: 1340, label: 'LinkedIn', sub: 'in/shoryavardhaan', href: 'https://www.linkedin.com/in/shoryavardhaan' },
+  { y: 1520, label: 'GitHub', sub: 'github.com/vassu-v', href: 'https://github.com/vassu-v' },
+]
+const BTN_H = 150
+
+function rr(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, r)
+}
+
+function drawLock(ctx, w, h, ui) {
+  const now = new Date()
+  const g = ctx.createLinearGradient(0, 0, 0, h)
+  g.addColorStop(0, '#2a1b10'); g.addColorStop(1, '#0b0907')
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.globalAlpha = 0.35 + 0.65 * ui.wake
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#efe6d8'
+  ctx.font = '300 250px "Instrument Serif", serif'
+  ctx.fillText(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }), w / 2, 520)
+  ctx.font = '500 42px "JetBrains Mono", monospace'
+  ctx.fillStyle = '#a58a6c'
+  ctx.fillText(now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }), w / 2, 600)
+  ctx.textAlign = 'left'
+  ctx.globalAlpha = 1
+  // incoming notification slides down from above the clock
+  if (ui.notif > 0.01) {
+    const y = 680 - (1 - ui.notif) * 260
+    ctx.globalAlpha = ui.notif
+    ctx.fillStyle = 'rgba(255,240,220,0.14)'
+    rr(ctx, 50, y, w - 100, 260, 54); ctx.fill()
+    ctx.fillStyle = '#C57B2B'
+    ctx.beginPath(); ctx.arc(130, y + 90, 46, 0, 7); ctx.fill()
+    ctx.fillStyle = '#1d1208'; ctx.font = '600 40px "JetBrains Mono", monospace'; ctx.textAlign = 'center'
+    ctx.fillText('SG', 130, y + 104); ctx.textAlign = 'left'
+    ctx.fillStyle = '#D4983A'; ctx.font = '600 36px "JetBrains Mono", monospace'; ctx.fillText('Shorya', 200, y + 80)
+    ctx.fillStyle = 'rgba(239,230,216,0.55)'; ctx.font = '400 30px "JetBrains Mono", monospace'; ctx.fillText('now', w - 160, y + 80)
+    ctx.fillStyle = '#efe6d8'; ctx.font = '400 40px "JetBrains Mono", monospace'
+    ctx.fillText('Want to build something', 200, y + 150)
+    ctx.fillText('together?', 200, y + 204)
+    ctx.globalAlpha = 1
+  }
+}
+
+function drawCard(ctx, w, h, ui) {
+  ctx.globalAlpha = ui.app
+  ctx.fillStyle = '#120d09'; ctx.fillRect(0, 0, w, h)
+  const glow = ctx.createRadialGradient(w / 2, 300, 0, w / 2, 300, 600)
+  glow.addColorStop(0, 'rgba(197,123,43,0.35)'); glow.addColorStop(1, 'rgba(197,123,43,0)')
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h)
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#C57B2B'
+  ctx.beginPath(); ctx.arc(w / 2, 300, 110, 0, 7); ctx.fill()
+  ctx.fillStyle = '#1d1208'; ctx.font = '600 84px "JetBrains Mono", monospace'; ctx.fillText('SG', w / 2, 330)
+  ctx.fillStyle = '#f6efe4'; ctx.font = 'italic 300 84px "Instrument Serif", serif'
+  ctx.fillText('Want to build', w / 2, 560)
+  ctx.fillText('something together?', w / 2, 650)
+  ctx.fillStyle = '#a58a6c'; ctx.font = '400 34px "JetBrains Mono", monospace'
+  ctx.fillText('Shoryavardhaan · Kolkata', w / 2, 740)
+  ctx.textAlign = 'left'
+  BUTTONS.forEach((b, i) => {
+    const hot = ui.hot === i
+    const slide = Math.min(1, Math.max(0, ui.app * 1.6 - 0.25 - i * 0.12))
+    const x = 70 + (1 - slide) * 120
+    ctx.globalAlpha = ui.app * slide
+    ctx.fillStyle = hot ? '#D4983A' : 'rgba(255,240,220,0.08)'
+    rr(ctx, x, b.y, w - 140, BTN_H - 20, 40); ctx.fill()
+    ctx.strokeStyle = 'rgba(212,152,58,0.45)'; ctx.lineWidth = 3; rr(ctx, x, b.y, w - 140, BTN_H - 20, 40); ctx.stroke()
+    ctx.fillStyle = hot ? '#120d08' : '#f3e9da'; ctx.font = '600 44px "JetBrains Mono", monospace'
+    ctx.fillText(b.label, x + 50, b.y + 60)
+    ctx.fillStyle = hot ? '#3a2410' : 'rgba(239,230,216,0.55)'; ctx.font = '400 30px "JetBrains Mono", monospace'
+    ctx.fillText(b.sub, x + 50, b.y + 104)
+    ctx.fillStyle = hot ? '#120d08' : '#D4983A'; ctx.font = '600 52px "JetBrains Mono", monospace'
+    ctx.fillText('→', w - 150 - (1 - slide) * 0, b.y + 82)
+  })
+  ctx.globalAlpha = ui.app
+  ctx.textAlign = 'center'
+  ctx.fillStyle = 'rgba(239,230,216,0.4)'; ctx.font = '400 30px "JetBrains Mono", monospace'
+  ctx.fillText('or: curl shoryavardhaan.vercel.app', w / 2, 1760)
+  ctx.textAlign = 'left'
+  ctx.globalAlpha = 1
+}
+
+export default function Phone() {
+  const focus = useRoom(s => s.focus)
+  const explore = useRoom(s => s.explore)
+  const focused = focus === 'phone'
+  const holder = useRef()
+  // screen UI state, read by the canvas draw callback outside React's render
+  const ui = useMemo(() => ({ current: { notif: 0, wake: 0, app: 0, hot: -1, dirty: true, buzz: 0, minute: -1, notifUntil: 0 } }), [])
+
+  const model = useMemo(() => {
+    const m = prepModel(createPhone())
+    m.rotation.set(0, 0, 0)
+    m.userData.display((ctx, w, h) => {
+      drawLock(ctx, w, h, ui.current)
+      if (ui.current.app > 0.01) drawCard(ctx, w, h, ui.current)
+    })
+    return bakeStatic(m, { keep: [m.userData.parts.screen] })
+  }, [])
+
+  const stand = useMemo(() => (createPhoneStand ? prepModel(createPhoneStand()) : null), [])
+  const standPose = useMemo(() => {
+    const g = new THREE.Group()
+    g.position.set(...STAND_POS)
+    g.rotation.y = STAND_ROT
+    g.updateMatrixWorld(true)
+    const c = stand?.userData.cradle
+    const pos = c ? c.position.clone().applyMatrix4(g.matrixWorld) : new THREE.Vector3(STAND_POS[0], Y + 0.08, STAND_POS[2])
+    const q = g.quaternion.clone().multiply(new THREE.Quaternion().setFromEuler(c ? c.rotation : new THREE.Euler(-0.3, 0, 0)))
+    return { pos, q }
+  }, [stand])
+
+  // a message arrives shortly after the visitor reaches the room, then again
+  // every ~40 s while they're elsewhere — a nudge to pick the phone up
+  useEffect(() => {
+    if (!explore) return
+    const ping = () => {
+      if (room.get().focus === 'phone') return
+      ui.current.notifUntil = performance.now() + 6000
+      ui.current.buzz = 1
+      wake(6500)
+    }
+    const first = setTimeout(ping, 1400)
+    const again = setInterval(ping, 40000)
+    return () => { clearTimeout(first); clearInterval(again) }
+  }, [explore])
+
+  const tmp = useMemo(() => ({ p: new THREE.Vector3(), q: new THREE.Quaternion() }), [])
+  useFrame(({ clock }, dt) => {
+    const u = ui.current
+    const now = performance.now()
+    const notifOn = focused || now < u.notifUntil
+    const before = u.notif + u.wake + u.app
+    u.notif = damp(u.notif, notifOn ? 1 : 0, 6, dt)
+    u.wake = damp(u.wake, notifOn || focused ? 1 : 0, 5, dt)
+    u.app = damp(u.app, focused ? 1 : 0, 3.2, dt)
+    const minute = new Date().getMinutes()
+    if (Math.abs(u.notif + u.wake + u.app - before) > 0.0005 || u.dirty || minute !== u.minute) {
+      u.dirty = false
+      u.minute = minute
+      model.userData.update(clock.elapsedTime)
+      model.position.set(0, 0, 0)
+      model.rotation.set(0, 0, 0)
+    }
+
+    const h = holder.current
+    h.userData.k = damp(h.userData.k ?? 0, focused ? 1 : 0, 3.6, dt)
+    const k = h.userData.k
+    const e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2
+    tmp.p.lerpVectors(DESK_POS, standPose.pos, e)
+    tmp.p.y += Math.sin(e * Math.PI) * 0.12
+    tmp.q.slerpQuaternions(DESK_QUAT, standPose.q, e)
+    h.position.copy(tmp.p)
+    h.quaternion.copy(tmp.q)
+    if (k > 0.002 && k < 0.998) dirtyShadows(2)
+    // vibrate on the desk when a message lands
+    if (u.buzz > 0.01 && !focused) {
+      u.buzz = Math.max(0, u.buzz - dt * 1.4)
+      const on = Math.sin(clock.elapsedTime * 90) * (Math.floor(u.buzz * 6) % 2 ? 1 : 0)
+      h.rotateZ(on * 0.02 * u.buzz)
+      h.position.x += on * 0.0012 * u.buzz
+    }
+  })
+
+  const screen = model.userData.parts.screen
+  const hitButton = e => {
+    // the glass layer sits in front of the screen — look through it for the UV
+    const hit = focused && e.intersections?.find(i => i.object === screen)
+    if (!hit?.uv) return -1
+    const y = (1 - hit.uv.y) * 1860
+    return BUTTONS.findIndex(b => y >= b.y && y <= b.y + BTN_H - 20)
+  }
+
+  return (
+    <>
+      {stand && <primitive object={stand} position={STAND_POS} rotation={[0, STAND_ROT, 0]} />}
+      <group ref={holder}>
+        <Hotspot id="phone" label={focused ? 'tap a button' : 'Phone — 1 new message'} onClick={e => {
+          if (!focused) return focusOn('phone')
+          const i = hitButton(e)
+          if (i >= 0) window.open(BUTTONS[i].href, BUTTONS[i].href.startsWith('mailto') ? '_self' : '_blank', 'noopener')
+        }}>
+          <group onPointerMove={e => {
+            const i = hitButton(e)
+            if (i !== ui.current.hot) {
+              ui.current.hot = i
+              ui.current.dirty = true
+              wake(300)
+              room.set({ hover: i >= 0 ? { id: 'btn', label: BUTTONS[i].label } : null })
+            }
+          }}>
+            <primitive object={model} scale={0.053} />
+          </group>
+        </Hotspot>
+      </group>
+    </>
+  )
+}
+
