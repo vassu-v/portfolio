@@ -16,6 +16,7 @@ import Experience from './components/Experience'
 import Blog from './components/Blog'
 import Footer from './components/Footer'
 import DeskBackdrop from './three/DeskBackdrop'
+import RoomHome from './three/room/RoomHome'
 import ProjectPage from './pages/ProjectPage'
 import BlogPost from './pages/BlogPost'
 import BlogIndex from './pages/BlogIndex'
@@ -115,7 +116,10 @@ function Preloader({ progress }) {
   )
 }
 
+const CLASSIC = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('classic')
+
 function Portfolio() {
+  if (!CLASSIC) return <RoomHome />
   return (
     <>
       <DeskBackdrop />
@@ -359,7 +363,7 @@ export default function App() {
     // that's the whole reason a CLI-mode fallback exists, instead of
     // finishing on fonts/hero-image alone and dropping the visitor into
     // a still-loading background right after the loader disappears.
-    const deskSceneReady = import('./three/DeskScene').catch(() => {})
+    const deskSceneReady = (CLASSIC ? import('./three/DeskScene') : import('./three/room/RoomScene')).catch(() => {})
 
     Promise.race([
       Promise.all([heroImageReady, fontsReady, deskSceneReady]),
@@ -530,7 +534,7 @@ export default function App() {
 
   return (
     <Router>
-      <DotGrid />
+      {CLASSIC && <DotGrid />}
       <div id="sp" ref={spRef} />
       <div id="cursor" ref={cursorRef} />
       <div id="cursor-dot" ref={dotRef}>

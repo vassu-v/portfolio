@@ -1,0 +1,416 @@
+import { useEffect, useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import * as THREE from 'three'
+import { createModel as createLaptop } from './lib/laptop'
+import { createModel as createKeyboard } from './lib/mechanical-keyboard'
+import { createModel as createHeadphones } from './lib/headphones'
+import { createModel as createLamp } from './lib/desk-lamp'
+import { createModel as createPhone } from './lib/iphone'
+import { createModel as createMug } from './lib/coffee-mug'
+import { createModel as createBook } from './lib/book'
+import { POSTS } from '../../data/blog'
+import { AGE } from '../../utils/meta'
+import { prepModel, Hotspot, damp } from './common'
+import { createScreen } from './screen'
+import { room, live, useRoom, focusOn } from './store'
+import { DESK } from './Desk'
+import { BACK } from './Room'
+
+const extraProps = import.meta.glob('./props/*.js', { eager: true })
+const prop = (file, fn) => extraProps[`./props/${file}.js`]?.[fn]
+
+export const anchors = {
+  screen: new THREE.Object3D(),
+  screenNormal: new THREE.Vector3(0, 0, 1),
+  lampBulb: new THREE.Vector3(),
+}
+
+const Y = DESK.top
+
+function Primitive({ make, prep = {}, ...props }) {
+  const obj = useMemo(() => prepModel(make(), prep), []) // eslint-disable-line react-hooks/exhaustive-deps
+  return <primitive object={obj} {...props} />
+}
+
+function Laptop() {
+  const model = useMemo(() => {
+    const m = prepModel(createLaptop())
+    m.position.set(0, 0, 0)
+    return m
+  }, [])
+  const screen = useMemo(() => createScreen(), [])
+  const glow = useRef()
+
+  useEffect(() => {
+    const { screen: mesh } = model.userData.parts
+    mesh.material = new THREE.MeshStandardMaterial({
+      color: '#000', emissive: '#fff', emissiveMap: screen.texture, emissiveIntensity: 1.5, roughness: 0.55, metalness: 0, envMapIntensity: 0.08,
+    })
+    mesh.castShadow = false
+    mesh.add(anchors.screen)
+    model.userData.display(() => {})
+  }, [model, screen])
+
+  useFrame(({ clock }, dt) => {
+    model.userData.update(clock.elapsedTime, dt)
+    const d = THREE.MathUtils.smoothstep(live.scroll, 0.06, 0.42)
+    screen.draw(d, clock.elapsedTime)
+    const mesh = model.userData.parts.screen
+    mesh.material.color.setScalar(0)
+    if (glow.current) glow.current.intensity = 0.55
+  })
+
+  // library laptop is 4.4 units wide → ~0.31 m
+  return (
+    <Hotspot id="laptop" label="Laptop — the terminal" onClick={() => focusOn('laptop')} position={[-0.17, Y, -0.74]} rotation={[0, 0.06, 0]}>
+      <primitive object={model} scale={0.07} />
+      <rectAreaLight ref={glow} width={0.28} height={0.18} color="#ffd7a8" position={[0, 0.13, -0.06]} rotation={[-0.25, 0, 0]} intensity={0.55} />
+    </Hotspot>
+  )
+}
+
+function Keyboard() {
+  return (
+    <Primitive make={() => createKeyboard({ typing: false })} position={[-0.15, Y, -0.46]} rotation={[0, -0.05, 0]} scale={0.14} />
+  )
+}
+
+function Lamp() {
+  const lampOn = useRoom(s => s.lampOn)
+  const model = useMemo(() => {
+    const m = prepModel(createLamp())
+    m.position.set(0, 0, 0)
+    m.traverse(o => { if (o.isMesh && o.material?.isMeshBasicMaterial) o.visible = false })
+    return m
+  }, [])
+  const spot = useRef()
+  const fill = useRef()
+  const target = useMemo(() => new THREE.Object3D(), [])
+  const btn = useRef()
+
+  useEffect(() => { model.userData.setOn(lampOn) }, [model, lampOn])
+
+  useFrame(({ clock }, dt) => {
+    model.userData.update(clock.elapsedTime)
+    const { bulb } = model.userData.parts
+    bulb.getWorldPosition(anchors.lampBulb)
+    const k = spot.current.userData.k = damp(spot.current.userData.k ?? 1, lampOn ? 1 : 0, 9, dt)
+    spot.current.position.copy(anchors.lampBulb)
+    target.position.set(0.12, Y, -0.55)
+    spot.current.intensity = 9 * k
+    fill.current.position.copy(anchors.lampBulb)
+    fill.current.intensity = 0.6 * k
+    if (btn.current) btn.current.position.y = damp(btn.current.position.y, lampOn ? 0.024 : 0.019, 18, dt)
+  })
+
+  const toggle = () => {
+    const on = !room.get().lampOn
+    room.set({ lampOn: on })
+    document.documentElement.dataset.theme = on ? 'warm' : 'dark'
+  }
+
+  return (
+    <>
+      <Hotspot id="lamp" label="Lamp — switch the light" onClick={toggle} position={[0.6, Y, -0.86]} rotation={[0, Math.PI - 0.35, 0]}>
+        <primitive object={model} scale={0.1} />
+        <mesh ref={btn} position={[0.045, 0.024, 0.045]} castShadow>
+          <cylinderGeometry args={[0.012, 0.012, 0.012, 20]} />
+          <meshStandardMaterial color="#C57B2B" metalness={0.6} roughness={0.35} emissive="#C57B2B" emissiveIntensity={lampOn ? 0.6 : 0} />
+        </mesh>
+      </Hotspot>
+      <primitive object={target} />
+      <spotLight
+        ref={spot}
+        target={target}
+        color="#ffcf94"
+        angle={0.95}
+        penumbra={0.75}
+        decay={2}
+        distance={0}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0004}
+        shadow-normalBias={0.02}
+        shadow-radius={6}
+        shadow-camera-near={0.02}
+        shadow-camera-far={4}
+      />
+      <pointLight ref={fill} color="#ffcf94" distance={4} decay={2} />
+    </>
+  )
+}
+
+function Headphones() {
+  const ref = useRef()
+  const swing = useRef({ a: 0, v: 0 })
+  const model = useMemo(() => {
+    const m = prepModel(createHeadphones())
+    m.position.set(0, 0, 0)
+    // pivot the band's top onto the hook
+    const box = new THREE.Box3().setFromObject(m)
+    m.position.y = -box.max.y
+    return m
+  }, [])
+
+  useFrame((_, dt) => {
+    const s = swing.current
+    s.v += (-s.a * 22 - s.v * 1.6) * dt
+    s.a += s.v * dt
+    if (ref.current) ref.current.rotation.x = s.a
+  })
+
+  return (
+    <group position={[DESK.x0 - 0.035, Y - 0.06, -0.46]}>
+      {/* hook */}
+      <mesh position={[0.02, 0.02, 0]} castShadow>
+        <boxGeometry args={[0.03, 0.05, 0.03]} />
+        <meshStandardMaterial color="#1b1b1d" metalness={0.6} roughness={0.4} />
+      </mesh>
+      <mesh position={[-0.01, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+        <cylinderGeometry args={[0.006, 0.006, 0.06, 10]} />
+        <meshStandardMaterial color="#1b1b1d" metalness={0.6} roughness={0.4} />
+      </mesh>
+      <Hotspot id="headphones" label="Headphones" onClick={() => { swing.current.v += 2.2 }}>
+        <group ref={ref} position={[-0.025, 0.006, 0]}>
+          <primitive object={model} scale={0.055} rotation={[0, Math.PI / 2, 0]} />
+        </group>
+      </Hotspot>
+    </group>
+  )
+}
+
+function Mug() {
+  const model = useMemo(() => prepModel(createMug(), { shadows: true }), [])
+  useFrame(({ clock }) => model.userData.update(clock.elapsedTime))
+  return <primitive object={model} position={[0.33, Y, -0.68]} scale={0.034} rotation={[0, 2.2, 0]} />
+}
+
+function Phone() {
+  const focus = useRoom(s => s.focus)
+  const holder = useRef()
+  const model = useMemo(() => {
+    const m = prepModel(createPhone())
+    m.rotation.set(0, 0, 0)
+    m.userData.display((ctx, w, h) => {
+      const now = new Date()
+      const g = ctx.createLinearGradient(0, 0, 0, h)
+      g.addColorStop(0, '#22170e'); g.addColorStop(1, '#0b0907')
+      ctx.fillStyle = g
+      ctx.fillRect(0, 0, w, h)
+      ctx.textAlign = 'center'
+      ctx.fillStyle = '#efe6d8'
+      ctx.font = '300 240px "Instrument Serif", serif'
+      ctx.fillText(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }), w / 2, 520)
+      ctx.font = '500 44px "JetBrains Mono", monospace'
+      ctx.fillStyle = '#a58a6c'
+      ctx.fillText(now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }), w / 2, 600)
+      const card = (y, title, body) => {
+        ctx.fillStyle = 'rgba(255,240,220,0.1)'
+        ctx.beginPath(); ctx.roundRect(60, y, w - 120, 230, 48); ctx.fill()
+        ctx.textAlign = 'left'
+        ctx.fillStyle = '#D4983A'
+        ctx.font = '600 40px "JetBrains Mono", monospace'
+        ctx.fillText(title, 110, y + 80)
+        ctx.fillStyle = '#efe6d8'
+        ctx.font = '400 44px "JetBrains Mono", monospace'
+        ctx.fillText(body, 110, y + 160)
+        ctx.textAlign = 'center'
+      }
+      card(1020, 'Shorya · now', "let's build something.")
+      card(1290, 'Mail', 'tap to say hi →')
+      ctx.textAlign = 'left'
+    })
+    return m
+  }, [])
+
+  useFrame(({ clock }, dt) => {
+    model.userData.update(clock.elapsedTime)
+    model.position.set(0, 0, 0)
+    model.rotation.set(0, 0, 0)
+    const h = holder.current
+    const up = focus === 'phone' ? 1 : 0
+    h.userData.k = damp(h.userData.k ?? 0, up, 5, dt)
+    const k = h.userData.k
+    h.position.y = Y + 0.0045 + k * 0.1
+    h.rotation.x = -Math.PI / 2 + k * 0.9
+  })
+
+  return (
+    <group position={[0.56, 0, -0.42]} rotation={[0, -0.35, 0]}>
+      <group ref={holder}>
+        <Hotspot id="phone" label="Phone — get in touch" onClick={() => focusOn('phone')}>
+          <primitive object={model} scale={0.053} />
+        </Hotspot>
+      </group>
+    </group>
+  )
+}
+
+function Diary() {
+  const focus = useRoom(s => s.focus)
+  const model = useMemo(() => {
+    const m = prepModel(createBook())
+    m.position.set(0, 0, 0)
+    m.userData.setOpen(false)
+    m.userData.update(0, 1)
+    const titles = POSTS.slice(0, 5).map(p => {
+      const t = p.title.length > 19 ? p.title.slice(0, 18).trim() + '…' : p.title
+      return '· ' + t
+    })
+    m.userData.write('the log\n\n' + titles.join('\n'), (POSTS[0]?.date || '') + '\n\n' + wrap(POSTS[0]?.subtitle || '', 17).slice(0, 7).join('\n'))
+    return m
+  }, [])
+
+  useEffect(() => { model.userData.setOpen(focus === 'diary') }, [model, focus])
+  useFrame(({ clock }, dt) => model.userData.update(clock.elapsedTime, dt))
+
+  return (
+    <Hotspot id="diary" label="Diary — the blog" onClick={() => focusOn('diary')} position={[-0.5, Y + 0.004, -0.5]} rotation={[0, 0.32, 0]}>
+      <primitive object={model} scale={0.1} />
+    </Hotspot>
+  )
+}
+
+function wrap(text, n) {
+  const out = []
+  let line = ''
+  for (const w of text.split(' ')) {
+    if ((line + ' ' + w).trim().length > n) { out.push(line); line = w } else line = (line + ' ' + w).trim()
+  }
+  if (line) out.push(line)
+  return out
+}
+
+function noteTexture(lines, bg) {
+  const c = document.createElement('canvas')
+  c.width = c.height = 256
+  const ctx = c.getContext('2d')
+  const tex = new THREE.CanvasTexture(c)
+  tex.colorSpace = THREE.SRGBColorSpace
+  const draw = () => {
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, 256, 256)
+    const g = ctx.createLinearGradient(0, 0, 0, 256)
+    g.addColorStop(0, 'rgba(0,0,0,0.08)'); g.addColorStop(0.2, 'rgba(0,0,0,0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, 256, 256)
+    ctx.fillStyle = '#2a2018'
+    ctx.font = '600 40px Caveat, cursive'
+    lines.forEach((l, i) => ctx.fillText(l, 22, 70 + i * 46))
+    tex.needsUpdate = true
+  }
+  draw()
+  document.fonts?.ready.then(draw)
+  return tex
+}
+
+function Sticky({ lines, color = '#f7e27a', size = 0.076, curl = 0.25, ...props }) {
+  const geo = useMemo(() => {
+    const g = new THREE.PlaneGeometry(size, size, 1, 10)
+    const p = g.attributes.position
+    for (let i = 0; i < p.count; i++) {
+      const y = p.getY(i)
+      const t = (size / 2 - y) / size
+      p.setZ(i, t * t * size * curl)
+    }
+    g.computeVertexNormals()
+    return g
+  }, [size, curl])
+  const tex = useMemo(() => noteTexture(lines, color), [lines, color])
+  return (
+    <mesh geometry={geo} castShadow receiveShadow {...props}>
+      <meshStandardMaterial map={tex} roughness={0.85} side={THREE.DoubleSide} />
+    </mesh>
+  )
+}
+
+function Pen(props) {
+  return (
+    <group {...props}>
+      <mesh rotation={[0, 0, Math.PI / 2]} castShadow>
+        <cylinderGeometry args={[0.0045, 0.0045, 0.14, 12]} />
+        <meshStandardMaterial color="#141416" roughness={0.3} metalness={0.4} />
+      </mesh>
+      <mesh position={[0.075, 0, 0]} rotation={[0, 0, -Math.PI / 2]} castShadow>
+        <coneGeometry args={[0.0045, 0.012, 12]} />
+        <meshStandardMaterial color="#C57B2B" roughness={0.3} metalness={0.8} />
+      </mesh>
+    </group>
+  )
+}
+
+// Cable from a point on the desk, over the back edge, down to the socket.
+function Cable({ from, to, sag = 0.12 }) {
+  const geo = useMemo(() => {
+    const a = new THREE.Vector3(...from), b = new THREE.Vector3(...to)
+    const edge = new THREE.Vector3(a.x + (b.x - a.x) * 0.3, Y + 0.005, BACK + 0.04)
+    const drop = new THREE.Vector3(edge.x, Y - 0.25, BACK + 0.03)
+    const low = new THREE.Vector3((edge.x + b.x) / 2, b.y - sag, BACK + 0.05)
+    const curve = new THREE.CatmullRomCurve3([a, new THREE.Vector3(a.x, Y + 0.004, (a.z + edge.z) / 2), edge, drop, low, b])
+    return new THREE.TubeGeometry(curve, 80, 0.0028, 6)
+  }, [from, to, sag])
+  return (
+    <mesh geometry={geo} castShadow receiveShadow>
+      <meshStandardMaterial color="#141414" roughness={0.6} />
+    </mesh>
+  )
+}
+
+function Built() {
+  const Chair = prop('chair', 'createChair')
+  const Mouse = prop('mouse', 'createMouse')
+  const Mousepad = prop('mouse', 'createMousepad')
+  const Plant = prop('plant', 'createPlant')
+  const chair = useMemo(() => Chair && prepModel(Chair()), [Chair])
+  const mouse = useMemo(() => Mouse && prepModel(Mouse()), [Mouse])
+  const pad = useMemo(() => Mousepad && prepModel(Mousepad()), [Mousepad])
+  const plant = useMemo(() => Plant && prepModel(Plant()), [Plant])
+  const spin = useRef({ v: 0 })
+
+  useFrame(({ clock }, dt) => {
+    plant?.userData.update?.(clock.elapsedTime)
+    const seat = chair?.userData.seat
+    if (seat) {
+      spin.current.v *= Math.exp(-dt * 1.4)
+      seat.rotation.y += spin.current.v * dt
+    }
+  })
+
+  return (
+    <>
+      {chair && (
+        <Hotspot id="chair" label="Chair — give it a spin" onClick={() => { spin.current.v += 5 }} position={[-0.42, 0, 0.32]} rotation={[0, Math.PI - 0.75, 0]}>
+          <primitive object={chair} />
+        </Hotspot>
+      )}
+      {pad && <primitive object={pad} position={[0.27, Y, -0.48]} rotation={[0, -0.04, 0]} />}
+      {mouse && <primitive object={mouse} position={[0.29, Y + (pad ? 0.003 : 0), -0.46]} rotation={[0, -0.18, 0]} />}
+      {plant && <primitive object={plant} position={[-0.66, Y, -0.86]} />}
+    </>
+  )
+}
+
+export default function Props() {
+  return (
+    <group>
+      <Laptop />
+      <Keyboard />
+      <Lamp />
+      <Headphones />
+      <Mug />
+      <Phone />
+      <Diary />
+      <Built />
+      <Pen position={[-0.36, Y + 0.0045, -0.38]} rotation={[0, 0.9, 0]} />
+
+      {/* sticky notes — on the wall by the shelf, on the laptop bezel, on the desk */}
+      <Sticky lines={['hi, i\'m shorya', `${AGE} · kolkata`]} color="#f7e27a" position={[-0.62, 1.32, BACK + 0.004]} rotation={[0, 0, 0.05]} curl={0.15} />
+      <Sticky lines={['open to', 'collab →']} color="#f4b98a" position={[-0.5, 1.27, BACK + 0.004]} rotation={[0, 0, -0.07]} curl={0.2} />
+      <Sticky lines={['ship it.']} color="#bfe3c0" position={[-0.4, 1.35, BACK + 0.004]} rotation={[0, 0, 0.03]} curl={0.12} />
+      <Sticky lines={['curl', 'shoryavardhaan', '.vercel.app']} color="#f7e27a" size={0.07} position={[0.07, Y + 0.0012, -0.58]} rotation={[-Math.PI / 2, 0, -0.25]} curl={0.02} />
+
+      <Cable from={[-0.17, Y + 0.004, -0.86]} to={[-0.2, 0.32, BACK + 0.01]} />
+      <Cable from={[0.6, Y + 0.004, -0.9]} to={[-0.17, 0.3, BACK + 0.01]} sag={0.2} />
+    </group>
+  )
+}
