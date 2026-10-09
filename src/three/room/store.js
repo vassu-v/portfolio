@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { readHour } from './hour'
+import { detectTier } from './tier'
 
 const listeners = new Set()
 
@@ -14,15 +15,35 @@ let state = {
   folder: -1,        // project folder pulled out of the drawer
   card: -1,          // corkboard card brought forward
   explore: false,    // scroll intro finished, objects are clickable
+  roam: params.has('roam'), // free-orbit inspection mode, no scroll story
+  ...(typeof window !== 'undefined' ? (({ tier, reason }) => ({ tier, tierReason: reason }))(detectTier()) : { tier: 'low', tierReason: 'ssr' }),
 }
 
 // Non-reactive values updated every frame (read inside useFrame).
-export const live = { scroll: 0, intro: 0, pointer: { x: 0, y: 0 } }
+// ?off=rect,shadow,post,env,lamp — debug switches for profiling
+export const off = new Set((params.get('off') || '').split(',').filter(Boolean))
+
+export const live = {
+  scroll: 0, intro: 0, pointer: { x: 0, y: 0 }, perf: null,
+  shadowFrames: 90,  // shadow maps re-render only while this is > 0
+  activeUntil: 0,    // full-rate rendering until this timestamp, then idle cap
+}
+
+export function dirtyShadows(frames = 120) {
+  live.shadowFrames = Math.max(live.shadowFrames, frames)
+}
+
+export function wake(ms = 1200) {
+  live.activeUntil = Math.max(live.activeUntil, performance.now() + ms)
+}
 
 export const room = {
   get: () => state,
   set(patch) {
-    state = { ...state, ...(typeof patch === 'function' ? patch(state) : patch) }
+    const p = typeof patch === 'function' ? patch(state) : patch
+    state = { ...state, ...p }
+    if (Object.keys(p).some(k => k !== 'hover' && k !== 'explore')) dirtyShadows(150)
+    wake(2500)
     listeners.forEach(l => l())
   },
   subscribe(l) {
@@ -39,4 +60,4 @@ export function focusOn(id) {
   room.set({ focus: id, folder: -1, card: -1, hover: null })
 }
 
-if (typeof window !== 'undefined' && params.has('debug')) window.__room = room
+if (typeof window !== 'undefined' && params.has('debug')) window.__room = room, window.__live = live

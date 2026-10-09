@@ -7,6 +7,7 @@ import { walnutTexture } from './textures'
 import { Hotspot, damp } from './common'
 import { room, useRoom, focusOn } from './store'
 import { BACK } from './Room'
+import Baked from './Baked'
 
 export const DESK = { x0: -0.78, x1: 0.78, z0: BACK + 0.02, z1: -0.28, top: 0.75, th: 0.035 }
 const PED = { x0: 0.36, x1: 0.74, z0: DESK.z0 + 0.02, z1: DESK.z1 - 0.015 }
@@ -231,6 +232,7 @@ export default function Desk() {
 
   return (
     <group>
+      <Baked>
       <RoundedBox args={[w, DESK.th, d]} radius={0.006} smoothness={3} position={[cx, DESK.top - DESK.th / 2, cz]} material={top} castShadow receiveShadow />
 
       {/* left A-frame legs */}
@@ -259,6 +261,7 @@ export default function Desk() {
           </mesh>
         </group>
       ))}
+      </Baked>
       <Drawer />
     </group>
   )

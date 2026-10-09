@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
+import Baked from './Baked'
 import { oakFloorTexture, plasterTexture, rugTexture, walnutTexture } from './textures'
 
 // Room shell. Corner room: back wall at z = BACK, window wall at x = LEFT.
@@ -13,9 +14,12 @@ export const CEIL = 2.7
 export const WIN = { z0: -0.78, z1: 0.42, y0: 0.95, y1: 2.15 }
 const T = 0.14 // wall thickness
 
-function Box({ args, position, material, cast = true }) {
+// `wall` = [nx, ny, nz]: the inward normal. Roam mode hides a wall whenever
+// the camera is behind it, so you can orbit the whole setup.
+function Box({ args, position, material, cast = true, wall }) {
+  const data = useMemo(() => (wall ? { wall: { normal: new THREE.Vector3(...wall), center: new THREE.Vector3(...position) } } : undefined), [wall, position])
   return (
-    <mesh position={position} castShadow={cast} receiveShadow material={material}>
+    <mesh position={position} castShadow={cast} receiveShadow material={material} userData={data}>
       <boxGeometry args={args} />
     </mesh>
   )
@@ -121,7 +125,7 @@ function Skyline({ sky, depth, seed, height, x }) {
   )
 }
 
-function Curtain({ z, flip }) {
+function Curtain({ z, flip, sway: animate }) {
   const ref = useRef()
   const geo = useMemo(() => {
     const g = new THREE.PlaneGeometry(0.42, 1.55, 36, 1)
@@ -129,9 +133,11 @@ function Curtain({ z, flip }) {
     return g
   }, [])
   useFrame(({ clock }) => {
+    if (!animate && geo.userData.done) return
+    geo.userData.done = true
     const pos = geo.attributes.position
     const b = geo.userData.base
-    const t = clock.elapsedTime
+    const t = animate ? clock.elapsedTime : 0
     for (let i = 0; i < pos.count; i++) {
       const x = b[i * 3], y = b[i * 3 + 1]
       const sway = Math.sin(t * 0.6 + y * 2.0) * 0.004 * (0.775 - y)
@@ -170,7 +176,7 @@ function Books() {
   )
 }
 
-export default function Room({ sky }) {
+export default function Room({ sky, sway = true }) {
   const wall = useMemo(() => new THREE.MeshStandardMaterial({ color: '#d8d0c3', map: plasterTexture(), roughness: 0.95 }), [])
   const floor = useMemo(() => new THREE.MeshStandardMaterial({ map: oakFloorTexture(), roughness: 0.62, metalness: 0 }), [])
   const trim = useMemo(() => new THREE.MeshStandardMaterial({ color: '#efeae2', roughness: 0.6 }), [])
@@ -189,17 +195,18 @@ export default function Room({ sky }) {
         <planeGeometry args={[W, D]} />
       </mesh>
       {/* ceiling */}
-      <Box args={[W + T * 2, T, D]} position={[cx, CEIL + T / 2, cz]} material={trim} />
+      <Box args={[W + T * 2, T, D]} position={[cx, CEIL + T / 2, cz]} material={trim} wall={[0, -1, 0]} />
       {/* back wall */}
-      <Box args={[W + T * 2, CEIL, T]} position={[cx, CEIL / 2, BACK - T / 2]} material={wall} />
+      <Box args={[W + T * 2, CEIL, T]} position={[cx, CEIL / 2, BACK - T / 2]} material={wall} wall={[0, 0, 1]} />
       {/* right wall */}
-      <Box args={[T, CEIL, D]} position={[RIGHT + T / 2, CEIL / 2, cz]} material={wall} />
+      <Box args={[T, CEIL, D]} position={[RIGHT + T / 2, CEIL / 2, cz]} material={wall} wall={[-1, 0, 0]} />
       {/* left wall, built around the window opening */}
-      <Box args={[T, WIN.y0, D]} position={[lx, WIN.y0 / 2, cz]} material={wall} />
-      <Box args={[T, CEIL - WIN.y1, D]} position={[lx, (CEIL + WIN.y1) / 2, cz]} material={wall} />
-      <Box args={[T, winH, WIN.z0 - BACK]} position={[lx, (WIN.y0 + WIN.y1) / 2, (BACK + WIN.z0) / 2]} material={wall} />
-      <Box args={[T, winH, FRONT - WIN.z1]} position={[lx, (WIN.y0 + WIN.y1) / 2, (WIN.z1 + FRONT) / 2]} material={wall} />
+      <Box args={[T, WIN.y0, D]} position={[lx, WIN.y0 / 2, cz]} material={wall} wall={[1, 0, 0]} />
+      <Box args={[T, CEIL - WIN.y1, D]} position={[lx, (CEIL + WIN.y1) / 2, cz]} material={wall} wall={[1, 0, 0]} />
+      <Box args={[T, winH, WIN.z0 - BACK]} position={[lx, (WIN.y0 + WIN.y1) / 2, (BACK + WIN.z0) / 2]} material={wall} wall={[1, 0, 0]} />
+      <Box args={[T, winH, FRONT - WIN.z1]} position={[lx, (WIN.y0 + WIN.y1) / 2, (WIN.z1 + FRONT) / 2]} material={wall} wall={[1, 0, 0]} />
 
+      <Baked>
       {/* skirting */}
       <Box args={[W, 0.08, 0.015]} position={[cx, 0.04, BACK + 0.008]} material={trim} cast={false} />
       <Box args={[0.015, 0.08, D]} position={[LEFT + 0.008, 0.04, cz]} material={trim} cast={false} />
@@ -219,19 +226,10 @@ export default function Room({ sky }) {
         </mesh>
       </group>
       <Box args={[0.2, 0.035, winW + 0.16]} position={[LEFT + 0.03, WIN.y0 - 0.0175, winZ]} material={trim} />
-
-      <Curtain z={WIN.z0 - 0.05} />
-      <Curtain z={WIN.z1 + 0.05} flip />
       <mesh position={[LEFT + 0.09, WIN.y1 + 0.12, winZ]} rotation={[Math.PI / 2, 0, 0]} castShadow>
         <cylinderGeometry args={[0.012, 0.012, winW + 0.7, 12]} />
         <meshStandardMaterial color="#1c1a18" metalness={0.7} roughness={0.35} />
       </mesh>
-
-
-      {/* outside */}
-      <Sky sky={sky} />
-      <Skyline sky={sky} depth={0.25} seed={7} height={1} x={LEFT - 4.2} />
-      <Skyline sky={sky} depth={0.75} seed={91} height={1.6} x={LEFT - 5.4} />
 
       {/* wall shelf above the desk, left */}
       <group position={[-0.5, 1.62, BACK + 0.11]}>
@@ -256,6 +254,15 @@ export default function Room({ sky }) {
         <boxGeometry args={[0.09, 0.09, 0.012]} />
         <meshStandardMaterial color="#f2efe9" roughness={0.5} />
       </mesh>
+      </Baked>
+
+      <Curtain z={WIN.z0 - 0.05} sway={sway} />
+      <Curtain z={WIN.z1 + 0.05} flip sway={sway} />
+
+      {/* outside */}
+      <Sky sky={sky} />
+      <Skyline sky={sky} depth={0.25} seed={7} height={1} x={LEFT - 4.2} />
+      <Skyline sky={sky} depth={0.75} seed={91} height={1.6} x={LEFT - 5.4} />
     </group>
   )
 }

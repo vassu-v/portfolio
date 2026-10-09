@@ -11,9 +11,11 @@ import { createModel as createBook } from './lib/book'
 import { POSTS } from '../../data/blog'
 import { AGE } from '../../utils/meta'
 import { prepModel, Hotspot, damp } from './common'
+import { bakeStatic } from './bake'
 import { createScreen } from './screen'
-import { room, live, useRoom, focusOn } from './store'
+import { room, live, useRoom, focusOn, dirtyShadows, off } from './store'
 import { DESK } from './Desk'
+import { TIERS } from './tier'
 import { BACK } from './Room'
 
 const extraProps = import.meta.glob('./props/*.js', { eager: true })
@@ -28,7 +30,7 @@ export const anchors = {
 const Y = DESK.top
 
 function Primitive({ make, prep = {}, ...props }) {
-  const obj = useMemo(() => prepModel(make(), prep), []) // eslint-disable-line react-hooks/exhaustive-deps
+  const obj = useMemo(() => bakeStatic(prepModel(make(), prep)), []) // eslint-disable-line react-hooks/exhaustive-deps
   return <primitive object={obj} {...props} />
 }
 
@@ -36,7 +38,8 @@ function Laptop() {
   const model = useMemo(() => {
     const m = prepModel(createLaptop())
     m.position.set(0, 0, 0)
-    return m
+    // lid stays open; everything but the live screen collapses to a few meshes
+    return bakeStatic(m, { keep: [m.userData.parts.screen] })
   }, [])
   const screen = useMemo(() => createScreen(), [])
   const glow = useRef()
@@ -51,37 +54,34 @@ function Laptop() {
     model.userData.display(() => {})
   }, [model, screen])
 
-  useFrame(({ clock }, dt) => {
-    model.userData.update(clock.elapsedTime, dt)
+  useFrame(({ clock }) => {
     const d = THREE.MathUtils.smoothstep(live.scroll, 0.06, 0.42)
     screen.draw(d, clock.elapsedTime)
-    const mesh = model.userData.parts.screen
-    mesh.material.color.setScalar(0)
-    if (glow.current) glow.current.intensity = 0.55
   })
 
   // library laptop is 4.4 units wide → ~0.31 m
   return (
     <Hotspot id="laptop" label="Laptop — the terminal" onClick={() => focusOn('laptop')} position={[-0.17, Y, -0.74]} rotation={[0, 0.06, 0]}>
       <primitive object={model} scale={0.07} />
-      <rectAreaLight ref={glow} width={0.28} height={0.18} color="#ffd7a8" position={[0, 0.13, -0.06]} rotation={[-0.25, 0, 0]} intensity={0.55} />
+      {!off.has('rect') && <rectAreaLight ref={glow} width={0.28} height={0.18} color="#ffd7a8" position={[0, 0.13, -0.06]} rotation={[-0.25, 0, 0]} intensity={0.55} />}
     </Hotspot>
   )
 }
 
 function Keyboard() {
   return (
-    <Primitive make={() => createKeyboard({ typing: false })} position={[-0.15, Y, -0.46]} rotation={[0, -0.05, 0]} scale={0.14} />
+    <Primitive make={() => createKeyboard({ typing: false, legends: false })} position={[-0.15, Y, -0.46]} rotation={[0, -0.05, 0]} scale={0.14} />
   )
 }
 
-function Lamp() {
+function Lamp({ tier }) {
   const lampOn = useRoom(s => s.lampOn)
   const model = useMemo(() => {
     const m = prepModel(createLamp())
     m.position.set(0, 0, 0)
     m.traverse(o => { if (o.isMesh && o.material?.isMeshBasicMaterial) o.visible = false })
-    return m
+    m.userData.setManualControl(true)
+    return bakeStatic(m, { keep: [m.userData.parts.bulb] })
   }, [])
   const spot = useRef()
   const fill = useRef()
@@ -91,13 +91,13 @@ function Lamp() {
   useEffect(() => { model.userData.setOn(lampOn) }, [model, lampOn])
 
   useFrame(({ clock }, dt) => {
-    model.userData.update(clock.elapsedTime)
     const { bulb } = model.userData.parts
     bulb.getWorldPosition(anchors.lampBulb)
     const k = spot.current.userData.k = damp(spot.current.userData.k ?? 1, lampOn ? 1 : 0, 9, dt)
     spot.current.position.copy(anchors.lampBulb)
     target.position.set(0.12, Y, -0.55)
-    spot.current.intensity = 9 * k
+    const flicker = 1 + Math.sin(clock.elapsedTime * 23) * 0.01 + Math.sin(clock.elapsedTime * 7.3) * 0.015
+    spot.current.intensity = 9 * k * flicker
     fill.current.position.copy(anchors.lampBulb)
     fill.current.intensity = 0.6 * k
     if (btn.current) btn.current.position.y = damp(btn.current.position.y, lampOn ? 0.024 : 0.019, 18, dt)
@@ -127,13 +127,14 @@ function Lamp() {
         penumbra={0.75}
         decay={2}
         distance={0}
-        castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.02}
         shadow-radius={6}
         shadow-camera-near={0.02}
         shadow-camera-far={4}
+        castShadow={(TIERS[tier]?.lampShadow ?? false) && !off.has('shadow')}
+        onUpdate={l => l.shadow.camera.layers.enable(1)}
       />
       <pointLight ref={fill} color="#ffcf94" distance={4} decay={2} />
     </>
@@ -149,13 +150,14 @@ function Headphones() {
     // pivot the band's top onto the hook
     const box = new THREE.Box3().setFromObject(m)
     m.position.y = -box.max.y
-    return m
+    return bakeStatic(m)
   }, [])
 
   useFrame((_, dt) => {
     const s = swing.current
     s.v += (-s.a * 22 - s.v * 1.6) * dt
     s.a += s.v * dt
+    if (Math.abs(s.v) > 0.002) dirtyShadows(2)
     if (ref.current) ref.current.rotation.x = s.a
   })
 
@@ -180,7 +182,11 @@ function Headphones() {
 }
 
 function Mug() {
-  const model = useMemo(() => prepModel(createMug(), { shadows: true }), [])
+  const model = useMemo(() => {
+    const m = prepModel(createMug())
+    m.userData.parts.wisps?.forEach?.(w => w.traverse(o => { o.castShadow = false }))
+    return bakeStatic(m, { keep: [m.userData.parts.coffee, ...(m.userData.parts.wisps || [])] })
+  }, [])
   useFrame(({ clock }) => model.userData.update(clock.elapsedTime))
   return <primitive object={model} position={[0.33, Y, -0.68]} scale={0.034} rotation={[0, 2.2, 0]} />
 }
@@ -220,13 +226,18 @@ function Phone() {
       card(1290, 'Mail', 'tap to say hi →')
       ctx.textAlign = 'left'
     })
-    return m
+    return bakeStatic(m, { keep: [m.userData.parts.screen] })
   }, [])
+  const minute = useRef(-1)
 
   useFrame(({ clock }, dt) => {
-    model.userData.update(clock.elapsedTime)
-    model.position.set(0, 0, 0)
-    model.rotation.set(0, 0, 0)
+    const mnow = new Date().getMinutes()
+    if (mnow !== minute.current) {
+      minute.current = mnow
+      model.userData.update(clock.elapsedTime)
+      model.position.set(0, 0, 0)
+      model.rotation.set(0, 0, 0)
+    }
     const h = holder.current
     const up = focus === 'phone' ? 1 : 0
     h.userData.k = damp(h.userData.k ?? 0, up, 5, dt)
@@ -361,18 +372,24 @@ function Built() {
   const Mouse = prop('mouse', 'createMouse')
   const Mousepad = prop('mouse', 'createMousepad')
   const Plant = prop('plant', 'createPlant')
-  const chair = useMemo(() => Chair && prepModel(Chair()), [Chair])
-  const mouse = useMemo(() => Mouse && prepModel(Mouse()), [Mouse])
+  const chair = useMemo(() => {
+    if (!Chair) return null
+    const c = prepModel(Chair())
+    bakeStatic(c.userData.seat)
+    bakeStatic(c.userData.base)
+    return c
+  }, [Chair])
+  const mouse = useMemo(() => Mouse && bakeStatic(prepModel(Mouse())), [Mouse])
   const pad = useMemo(() => Mousepad && prepModel(Mousepad()), [Mousepad])
-  const plant = useMemo(() => Plant && prepModel(Plant()), [Plant])
+  const plant = useMemo(() => Plant && bakeStatic(prepModel(Plant())), [Plant])
   const spin = useRef({ v: 0 })
 
-  useFrame(({ clock }, dt) => {
-    plant?.userData.update?.(clock.elapsedTime)
+  useFrame((_, dt) => {
     const seat = chair?.userData.seat
-    if (seat) {
+    if (seat && Math.abs(spin.current.v) > 0.001) {
       spin.current.v *= Math.exp(-dt * 1.4)
       seat.rotation.y += spin.current.v * dt
+      dirtyShadows(2)
     }
   })
 
@@ -390,12 +407,12 @@ function Built() {
   )
 }
 
-export default function Props() {
+export default function Props({ tier = 'high' }) {
   return (
     <group>
       <Laptop />
       <Keyboard />
-      <Lamp />
+      <Lamp tier={tier} />
       <Headphones />
       <Mug />
       <Phone />

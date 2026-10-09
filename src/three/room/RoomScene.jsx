@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { Environment, Lightformer, Sparkles, PerformanceMonitor } from '@react-three/drei'
+import { useEffect, useMemo, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Environment, Lightformer, Sparkles, OrbitControls } from '@react-three/drei'
 import { EffectComposer, N8AO, Bloom, ToneMapping, SMAA, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js'
@@ -10,31 +10,28 @@ import Desk from './Desk'
 import Props from './Props'
 import Corkboard from './Corkboard'
 import CameraRig from './CameraRig'
+import PerfProbe from './PerfProbe'
 import { sky as skyAt } from './timeOfDay'
-import { room, live, useRoom } from './store'
+import { room, live, useRoom, wake, off } from './store'
+import { TIERS, downgrade, rememberTier } from './tier'
 
 RectAreaLightUniformsLib.init()
 
-const lowTier = () =>
-  typeof window !== 'undefined' &&
-  (window.matchMedia('(pointer: coarse)').matches || (navigator.hardwareConcurrency || 8) <= 4)
-
-// Sun (or moon) through the window. The only big shadow caster; its shadow
-// frustum is fitted to the room so the window frame and mullions land on the
-// desk and floor as a crisp-but-soft light patch.
-function Sun({ sky }) {
+// Sun (or moon) through the window — the main shadow caster. Its frustum is
+// fitted to the room so the window frame lands on the desk and wall.
+function Sun({ sky, mapSize }) {
   const ref = useRef()
   const target = useMemo(() => new THREE.Object3D(), [])
   const lampOn = useRoom(s => s.lampOn)
   useEffect(() => {
     target.position.set(0, 0.6, -0.3)
     ref.current.target = target
+    ref.current.shadow.camera.layers.enable(1)
   }, [target])
   useFrame(() => {
     const l = ref.current
     l.position.copy(target.position).addScaledVector(sky.dir, -7)
     l.color.copy(sky.sunColor)
-    // a lit lamp makes the eye adapt — the window reads a touch dimmer
     l.intensity = sky.sun * (lampOn && sky.night ? 0.85 : 1)
   })
   return (
@@ -42,8 +39,8 @@ function Sun({ sky }) {
       <primitive object={target} />
       <directionalLight
         ref={ref}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
+        castShadow={!off.has('shadow')}
+        shadow-mapSize={[mapSize, mapSize]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.025}
         shadow-radius={4}
@@ -58,13 +55,13 @@ function Sun({ sky }) {
   )
 }
 
-// Image-based light built from emissive cards: a big window panel in the sky
-// colour plus a faint warm ceiling bounce. Rendered once per lighting state.
+// Image-based light from emissive cards (window panel in the sky colour,
+// soft ceiling/wall bounce). Re-rendered only when time or lamp changes.
 function Env({ sky, lampOn }) {
   const winZ = (WIN.z0 + WIN.z1) / 2
   const key = `${sky.hour.toFixed(1)}-${lampOn}`
   return (
-    <Environment key={key} resolution={128} frames={1} environmentIntensity={0.9}>
+    <Environment key={key} resolution={64} frames={1} environmentIntensity={0.9}>
       <color attach="background" args={['#0d0b09']} />
       <Lightformer form="rect" intensity={1.2 + sky.amb * 5} color={sky.skyBot} position={[LEFT - 0.2, 1.55, winZ]} rotation={[0, Math.PI / 2, 0]} scale={[1.2, 1.2, 1]} />
       <Lightformer form="rect" intensity={0.25 + sky.amb * 1.5} color="#f1e4d0" position={[0.5, 2.6, 0.8]} rotation={[Math.PI / 2, 0, 0]} scale={[3, 3, 1]} />
@@ -74,50 +71,181 @@ function Env({ sky, lampOn }) {
   )
 }
 
-// Dust motes drifting in the light by the window, daytime only.
 function Dust({ sky }) {
   if (!sky.day || sky.sun < 1) return null
   return <Sparkles count={36} scale={[0.9, 1.0, 1.1]} position={[-1.15, 1.35, -0.15]} size={0.7} speed={0.12} opacity={0.18} color={sky.sunColor} noise={0.5} />
 }
 
-function SceneContent({ tier }) {
+// The scene is mostly still, so it isn't re-rendered blindly 60×/s:
+//  · full rate while anything moves (scroll, pointer, camera easing, focus
+//    transitions — anything that calls wake()),
+//  · otherwise an idle cap that just keeps steam/dust/blink alive.
+// Shadow maps only re-render when something that casts one actually moved.
+function Driver({ idleFps }) {
+  const { gl, invalidate } = useThree()
+  useEffect(() => {
+    gl.shadowMap.autoUpdate = false
+    gl.shadowMap.needsUpdate = true
+    let raf, last = 0
+    const loop = now => {
+      raf = requestAnimationFrame(loop)
+      if (document.hidden) return
+      if (now < live.activeUntil || live.shadowFrames > 0 || now - last >= 1000 / idleFps) {
+        last = now
+        invalidate()
+      }
+    }
+    raf = requestAnimationFrame(loop)
+    const poke = () => wake(900)
+    window.addEventListener('scroll', poke, { passive: true })
+    window.addEventListener('pointermove', poke, { passive: true })
+    window.addEventListener('pointerdown', poke, { passive: true })
+    window.addEventListener('wheel', poke, { passive: true })
+    window.addEventListener('resize', poke)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', poke)
+      window.removeEventListener('pointermove', poke)
+      window.removeEventListener('pointerdown', poke)
+      window.removeEventListener('wheel', poke)
+      window.removeEventListener('resize', poke)
+      gl.shadowMap.autoUpdate = true
+    }
+  }, [gl, invalidate, idleFps])
+
+  useFrame(() => {
+    if (live.shadowFrames > 0) {
+      gl.shadowMap.needsUpdate = true
+      live.shadowFrames--
+    }
+  })
+  return null
+}
+
+// Watches real frame times once the intro has settled; if this device can't
+// hold the tier it was given, step down once and remember it for next visit.
+function TierProbe() {
+  const tier = useRoom(s => s.tier)
+  const samples = useRef([])
+  const done = useRef(false)
+  useEffect(() => { samples.current = []; done.current = false }, [tier])
+  useFrame((_, dt) => {
+    if (done.current || live.intro < 1 || performance.now() > live.activeUntil) return
+    samples.current.push(dt)
+    if (samples.current.length < 90) return
+    done.current = true
+    const s = [...samples.current].sort((a, b) => a - b)
+    const fps = 1 / s[Math.floor(s.length / 2)]
+    const floor = tier === 'high' ? 45 : tier === 'mid' ? 32 : 22
+    if (fps < floor && tier !== 'low') {
+      const next = downgrade(tier)
+      room.set({ tier: next, tierReason: `measured ${Math.round(fps)} fps on ${tier}` })
+      rememberTier(next)
+    } else {
+      rememberTier(tier)
+    }
+  })
+  return null
+}
+
+// Free-orbit inspection: walls between the camera and the desk fade out so
+// you can walk all the way around the setup like a dollhouse.
+function Roam() {
+  const { camera, scene } = useThree()
+  const walls = useRef([])
+  useEffect(() => {
+    camera.position.set(2.6, 2.1, 2.8)
+    const list = []
+    scene.traverse(o => { if (o.userData.wall) list.push(o) })
+    walls.current = list
+    return () => list.forEach(w => w.layers.set(0))
+  }, [camera, scene])
+  const v = useMemo(() => new THREE.Vector3(), [])
+  useFrame(() => {
+    for (const w of walls.current) {
+      const { normal, center } = w.userData.wall
+      v.copy(camera.position).sub(center)
+      // layer 1 = invisible to the camera but still seen by shadow cameras,
+      // so the room keeps its daylight while a wall is cut away
+      w.layers.set(v.dot(normal) > 0 ? 0 : 1)
+    }
+  })
+  return (
+    <OrbitControls
+      makeDefault
+      target={[0.05, 0.85, -0.55]}
+      enableDamping
+      dampingFactor={0.08}
+      minDistance={0.35}
+      maxDistance={6}
+      maxPolarAngle={Math.PI * 0.495}
+      onChange={() => wake(600)}
+    />
+  )
+}
+
+function Post({ cfg }) {
+  if (!cfg.post) return null
+  return cfg.ao ? (
+    <EffectComposer multisampling={0} enableNormalPass={false}>
+      <N8AO aoRadius={0.35} intensity={2.4} distanceFalloff={0.6} color="#1a120c" quality="medium" halfRes />
+      <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.35} />
+      <ToneMapping mode={ToneMappingMode.AGX} />
+      <Vignette offset={0.3} darkness={0.45} />
+      <SMAA />
+    </EffectComposer>
+  ) : (
+    <EffectComposer multisampling={0} enableNormalPass={false}>
+      <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.3} />
+      <ToneMapping mode={ToneMappingMode.AGX} />
+      <Vignette offset={0.3} darkness={0.45} />
+      <SMAA />
+    </EffectComposer>
+  )
+}
+
+// With no composer, tone-map in the renderer itself so the look stays close.
+function RendererTone({ post }) {
+  const { gl } = useThree()
+  useEffect(() => {
+    gl.toneMapping = post ? THREE.NoToneMapping : THREE.AgXToneMapping
+    gl.toneMappingExposure = 1
+  }, [gl, post])
+  return null
+}
+
+function SceneContent() {
   const hour = useRoom(s => s.hour)
   const lampOn = useRoom(s => s.lampOn)
+  const tier = useRoom(s => s.tier)
+  const roam = useRoom(s => s.roam)
+  const debug = useRoom(s => s.debug)
+  const cfg = TIERS[tier] || TIERS.low
   const sky = useMemo(() => skyAt(hour), [hour])
 
   return (
     <>
-      <Env sky={sky} lampOn={lampOn} />
-      <Sun sky={sky} />
-      <Room sky={sky} />
+      <RendererTone post={cfg.post && !off.has('post')} />
+      {!off.has('env') && <Env sky={sky} lampOn={lampOn} />}
+      <Sun key={`sun-${cfg.sunMap}`} sky={sky} mapSize={cfg.sunMap} />
+      <Room sky={sky} sway={cfg.sway} />
       <Desk />
-      <Props />
+      <Props tier={tier} />
       <Corkboard />
-      <Dust sky={sky} />
-      <CameraRig />
-      {tier === 'low' ? (
-        <EffectComposer multisampling={0} enableNormalPass={false}>
-          <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.35} />
-          <ToneMapping mode={ToneMappingMode.AGX} />
-          <Vignette offset={0.3} darkness={0.45} />
-          <SMAA />
-        </EffectComposer>
-      ) : (
-        <EffectComposer multisampling={0} enableNormalPass={false}>
-          <N8AO aoRadius={0.35} intensity={2.4} distanceFalloff={0.6} color="#1a120c" quality={tier === 'high' ? 'medium' : 'performance'} halfRes />
-          <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.35} />
-          <ToneMapping mode={ToneMappingMode.AGX} />
-          <Vignette offset={0.3} darkness={0.45} />
-          <SMAA />
-        </EffectComposer>
-      )}
+      {cfg.dust && <Dust sky={sky} />}
+      {roam ? <Roam /> : <CameraRig />}
+      <Driver idleFps={cfg.idleFps} />
+      {!roam && <TierProbe />}
+      {(debug || roam) && <PerfProbe />}
+      {!off.has('post') && <Post key={tier} cfg={cfg} />}
     </>
   )
 }
 
 export default function RoomScene() {
-  const [tier, setTier] = useState(() => (lowTier() ? 'low' : 'high'))
-  const [dpr] = useState(() => (lowTier() ? 1 : Math.min(1.5, window.devicePixelRatio || 1)))
+  const tier = useRoom(s => s.tier)
+  const cfg = TIERS[tier] || TIERS.low
+  const dpr = Math.min(cfg.dpr, window.devicePixelRatio || 1)
 
   useEffect(() => {
     const onMove = e => {
@@ -133,19 +261,17 @@ export default function RoomScene() {
 
   return (
     <Canvas
+      key={tier}
       shadows
       flat
+      frameloop="demand"
       dpr={dpr}
-      gl={{ antialias: false, powerPreference: 'high-performance', stencil: false }}
+      gl={{ antialias: !cfg.post, powerPreference: 'high-performance', stencil: false }}
       camera={{ position: [1, 1.25, 0.9], fov: 36, near: 0.01, far: 40 }}
-      style={{ position: 'fixed', inset: 0, zIndex: 0 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 0, touchAction: room.get().roam ? 'none' : 'auto' }}
       onPointerMissed={() => { if (room.get().focus) room.set({ folder: -1, card: -1 }) }}
     >
-      <PerformanceMonitor
-        flipflops={3}
-        onDecline={() => { if (!document.hidden) setTier(t => (t === 'high' ? 'mid' : t)) }}
-      />
-      <SceneContent tier={tier} />
+      <SceneContent />
     </Canvas>
   )
 }

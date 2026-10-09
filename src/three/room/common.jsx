@@ -61,7 +61,7 @@ export function Hotspot({ id, label, onClick, children, enabled = true, ...props
   }
 
   return (
-    <group {...props} onPointerOver={enter} onPointerOut={leave} onClick={click}>
+    <group name={id} {...props} onPointerOver={enter} onPointerOut={leave} onClick={click}>
       {children}
     </group>
   )
