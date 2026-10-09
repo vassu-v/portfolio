@@ -1,7 +1,24 @@
 import * as THREE from 'three'
 import { AGE } from '../../utils/meta'
+import { PROJECTS } from '../../data/projects'
 
 const W = 1600, H = 1000
+
+// The idle terminal types this session on loop (~7 chars/s), one command
+// at a time, then clears and starts over.
+const SESSION = [
+  ['$ whoami', 'cmd'],
+  [`shoryavardhaan · ${AGE} · kolkata · builder`, 'out'],
+  ['$ ls ~/projects', 'cmd'],
+  [PROJECTS.map(p => p.slug).join('  '), 'out'],
+  ['$ cat now.md', 'cmd'],
+  ['· kolkata fork lead @ bits&bytes', 'out'],
+  ['· youth partner + consultant @ 4mq.org', 'out'],
+  ['· freelance: ui & landing pages', 'out'],
+  ['$ explore --click-anything', 'cmd'],
+]
+const SESSION_LEN = SESSION.reduce((n, [l]) => n + l.length + 6, 0)
+const TYPE_RATE = 7
 const COPPER = '#C57B2B', GOLD = '#D4983A'
 
 // Draws the laptop screen. `dissolve` 0 → name card, 1 → desktop. The name
@@ -18,7 +35,7 @@ export function createScreen() {
   texture.anisotropy = 8
 
   let particles = null
-  let last = { d: -1, blink: -1, min: -1 }
+  let last = { d: -1, blink: -1, min: -1, typed: -1 }
 
   const nameLayer = document.createElement('canvas')
   nameLayer.width = W
@@ -102,19 +119,22 @@ export function createScreen() {
       ctx.fillStyle = c
       ctx.beginPath(); ctx.arc(x + 30 + i * 30, y + 24, 9, 0, 7); ctx.fill()
     })
-    ctx.font = '500 30px "JetBrains Mono", monospace'
-    const lines = [
-      ['$ whoami', '#8a6a48'],
-      [`shoryavardhaan · ${AGE} · kolkata`, GOLD],
-      ['', ''],
-      ['$ ls ~/desk', '#8a6a48'],
-      ['drawer/   diary/   corkboard/', GOLD],
-      ['phone     lamp     window', GOLD],
-      ['', ''],
-      ['$ explore --click-anything', '#8a6a48'],
-    ]
-    lines.forEach(([l, c], i) => { ctx.fillStyle = c; ctx.fillText(l, x + 36, y + 110 + i * 52) })
-    if (Math.floor(t * 2) % 2) { ctx.fillStyle = GOLD; ctx.fillRect(x + 36, y + 110 + 8 * 52 - 26, 16, 30) }
+    ctx.font = '500 28px "JetBrains Mono", monospace'
+    // typed session: commands type out, outputs appear whole once reached
+    let budget = Math.floor(t * TYPE_RATE) % (SESSION_LEN + 30)
+    let row = 0, cx = x + 36, cy = y + 104
+    for (const [line, kind] of SESSION) {
+      if (budget <= 0) break
+      const shown = kind === 'cmd' ? line.slice(0, budget) : line
+      ctx.fillStyle = kind === 'cmd' ? '#8a6a48' : GOLD
+      const out = shown.length > 52 ? shown.slice(0, 51) + '…' : shown
+      ctx.fillText(out, x + 36, y + 104 + row * 46)
+      cx = x + 36 + ctx.measureText(out).width
+      cy = y + 104 + row * 46
+      budget -= line.length + 6
+      row++
+    }
+    if (Math.floor(t * 2) % 2) { ctx.fillStyle = GOLD; ctx.fillRect(cx + 8, cy - 24, 15, 28) }
     // sticky widget
     ctx.fillStyle = COPPER
     ctx.globalAlpha = 0.9
@@ -130,8 +150,9 @@ export function createScreen() {
     const d = THREE.MathUtils.clamp(dissolve, 0, 1)
     const blink = Math.floor(t * 2) % 2
     const min = new Date().getMinutes()
-    if (Math.abs(d - last.d) < 0.0005 && (d < 0.999 || (blink === last.blink && min === last.min))) return false
-    last = { d, blink, min }
+    const typed = Math.floor(t * TYPE_RATE)
+    if (Math.abs(d - last.d) < 0.0005 && (d < 0.999 || (blink === last.blink && min === last.min && typed === last.typed))) return false
+    last = { d, blink, min, typed }
 
     if (d > 0.02) desktop(t)
     else { ctx.fillStyle = '#0b0907'; ctx.fillRect(0, 0, W, H) }

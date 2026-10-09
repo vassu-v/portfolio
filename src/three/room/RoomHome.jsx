@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { PROJECTS } from '../../data/projects'
 import { POSTS } from '../../data/blog'
 import { ITEMS } from './corkData'
+import { PHOTOS } from './DeskPhotos'
+import LaptopTerminal from './LaptopTerminal'
 import { useRoute } from '../../router'
 import { useMobile } from '../../hooks/useMobile'
 import { room, live, useRoom, focusOn } from './store'
@@ -133,7 +135,7 @@ function FocusPanel({ focus }) {
     </>
   } else if (focus === 'laptop') {
     title = 'Terminal'
-    body = <><p>Prefer text? There's a full CLI version of this site.</p><a style={link} href="/terminal/index.html">open cli mode →</a></>
+    body = <><p>It's live — click the screen and type. Try <code>help</code>, <code>ls</code>, <code>cat about.md</code>.</p><a style={link} href="/terminal/index.html">open full screen →</a></>
   }
   return (
     <motion.aside
@@ -210,6 +212,7 @@ export default function RoomHome() {
   const debug = useRoom(s => s.debug)
   const lampOn = useRoom(s => s.lampOn)
   const roam = useRoom(s => s.roam)
+  const photo = useRoom(s => s.photo)
   const tier = useRoom(s => s.tier)
   const capture = new URLSearchParams(window.location.search).has('capture')
   const mobile = useMobile(768)
@@ -295,6 +298,15 @@ export default function RoomHome() {
       </AnimatePresence>
 
       <AnimatePresence mode="wait">{focus && <FocusPanel key={focus} focus={focus} />}</AnimatePresence>
+      <AnimatePresence>
+        {photo >= 0 && (
+          <motion.div key={'photo' + photo} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', left: 0, right: 0, bottom: mobile ? 90 : 34, zIndex: 55, textAlign: 'center', pointerEvents: 'none' }}>
+            <span style={{ ...serif, fontSize: '1.6rem', color: '#f6efe4', textShadow: '0 2px 18px rgba(0,0,0,0.7)' }}>{PHOTOS[photo].caption}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <LaptopTerminal />
       <HoverLabel />
       </>}
     </>

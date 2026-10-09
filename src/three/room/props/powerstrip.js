@@ -155,7 +155,7 @@ export function createPowerStrip() {
   const plugCableEnds = [];
   for (const sx of [SOCKETS[0], SOCKETS[2]]) {
     const PH = 0.034;
-    const bodyG = block(0.03, 0.026, PH, 0.006, 0.003);
+    const bodyG = block(0.028, 0.024, PH, 0.006, 0.003);
     // slight taper toward the top
     const p = bodyG.attributes.position;
     for (let i = 0; i < p.count; i++) {
@@ -169,18 +169,18 @@ export function createPowerStrip() {
     dark.push(bodyG);
     // grip ribs
     for (const s of [-1, 1]) {
-      for (let k = 0; k < 3; k++) {
-        const rib = new THREE.BoxGeometry(0.0012, 0.016, 0.014);
-        rib.translate(sx + s * (0.0138 - 0.0007 * k * 0) * (1 - 0.12 * 0.45), H + 0.015, -0.004 + k * 0.004);
+      for (let k = 0; k < 4; k++) {
+        const rib = new THREE.BoxGeometry(0.0012, 0.014, 0.0014);
+        rib.translate(sx + s * 0.0133, H + 0.014, -0.0054 + k * 0.0036);
         dark.push(rib);
       }
     }
     const by = H + PH * 0.68;
     const boot = new THREE.CylinderGeometry(0.0032, 0.0052, 0.016, 14, 1);
     boot.rotateX(-Math.PI / 2); // axis along Z, narrow end -> -Z
-    boot.translate(sx, by, -0.0105 - 0.008 + 0.002);
+    boot.translate(sx, by, -0.0085 - 0.008);
     dark.push(boot);
-    plugCableEnds.push(new THREE.Vector3(sx, by, -0.0105 - 0.016 + 0.002 - 0.0005));
+    plugCableEnds.push(new THREE.Vector3(sx, by, -0.0085 - 0.016));
   }
   group.add(shadowed(new THREE.Mesh(mergeGeometries(dark.map(prep)), darkMat)));
 

@@ -12,6 +12,7 @@ import Corkboard from './Corkboard'
 import Diary from './Diary'
 import Dossier from './Dossier'
 import Phone from './Phone'
+import DeskPhotos from './DeskPhotos'
 import CameraRig from './CameraRig'
 import PerfProbe from './PerfProbe'
 import { sky as skyAt } from './timeOfDay'
@@ -240,6 +241,7 @@ function SceneContent() {
       <Diary />
       <Dossier />
       <Phone />
+      <DeskPhotos />
       {cfg.dust && <Dust sky={sky} />}
       {roam ? <Roam /> : <CameraRig />}
       <Driver idleFps={cfg.idleFps} />
@@ -283,7 +285,10 @@ export default function RoomScene() {
       gl={{ antialias: !cfg.post, powerPreference: 'high-performance', stencil: false }}
       camera={{ position: [1, 1.25, 0.9], fov: 36, near: 0.01, far: 40 }}
       style={{ position: 'fixed', inset: 0, zIndex: 0, touchAction: room.get().roam ? 'none' : 'auto' }}
-      onPointerMissed={() => { if (room.get().focus) room.set({ folder: -1, pin: null }) }}
+      onPointerMissed={() => {
+        if (room.get().photo >= 0) room.set({ photo: -1 })
+        else if (room.get().focus) room.set({ folder: -1, pin: null })
+      }}
     >
       <SceneContent />
     </Canvas>

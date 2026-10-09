@@ -51,9 +51,21 @@ function Laptop() {
     model.userData.display(() => {})
   }, [model, screen])
 
-  useFrame(({ clock }) => {
+  const corners = useMemo(() => [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], [])
+  useFrame(({ clock, camera, size }) => {
     const d = THREE.MathUtils.smoothstep(live.scroll, 0.06, 0.42)
     screen.draw(d, clock.elapsedTime)
+    // while focused, publish the screen's on-page quad so the DOM terminal
+    // (RoomHome › LaptopTerminal) can be warped exactly onto it
+    if (room.get().focus === 'laptop') {
+      const mesh = model.userData.parts.screen
+      const { width: gw, height: gh } = mesh.geometry.parameters
+      const q = [[-gw / 2, gh / 2], [gw / 2, gh / 2], [gw / 2, -gh / 2], [-gw / 2, -gh / 2]]
+      live.screenQuad = corners.map((v, i) => {
+        v.set(q[i][0], q[i][1], 0).applyMatrix4(mesh.matrixWorld).project(camera)
+        return [(v.x + 1) / 2 * size.width, (1 - v.y) / 2 * size.height]
+      })
+    } else live.screenQuad = null
   })
 
   // library laptop is 4.4 units wide → ~0.31 m
