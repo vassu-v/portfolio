@@ -19,6 +19,7 @@ let state = {
   spread: 0,         // diary spread currently open
   page: 0,           // dossier page on top
   photo: -1,         // desk print picked up
+  toast: null,       // { text, at } short one-liner (paper-ball shots, etc.)
   struggling: false, // low tier still under ~20 fps after the intro
   explore: false,    // scroll intro finished, objects are clickable
   roam: params.has('roam'), // free-orbit inspection mode, no scroll story

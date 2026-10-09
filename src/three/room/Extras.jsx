@@ -58,7 +58,6 @@ export default function Extras() {
   const createBreadboard = get('breadboard', 'createBreadboard')
   const createPenCup = get('pencup', 'createPenCup')
   const createWasteBin = get('bin', 'createWasteBin')
-  const createPaperBall = get('bin', 'createPaperBall')
   const createPowerStrip = get('powerstrip', 'createPowerStrip')
   const createPhotoFrame = get('frame', 'createPhotoFrame')
   const createTrophy = get('trophy', 'createTrophy')
@@ -67,7 +66,6 @@ export default function Extras() {
   const board = useMemo(() => createBreadboard && prepModel(createBreadboard()), [createBreadboard])
   const cup = useMemo(() => createPenCup && prepModel(createPenCup()), [createPenCup])
   const bin = useMemo(() => createWasteBin && prepModel(createWasteBin()), [createWasteBin])
-  const balls = useMemo(() => (createPaperBall ? [1, 2, 3].map(seed => prepModel(createPaperBall({ seed }))) : []), [createPaperBall])
   const strip = useMemo(() => createPowerStrip && prepModel(createPowerStrip()), [createPowerStrip])
   const frame = useMemo(() => createPhotoFrame && prepModel(createPhotoFrame({ texture: portraitTexture(), w: 0.12, h: 0.16 })), [createPhotoFrame])
   const trophy = useMemo(() => createTrophy && prepModel(createTrophy()), [createTrophy])
@@ -115,9 +113,6 @@ export default function Extras() {
       )}
       {cup && <primitive object={cup} position={[0.12, Y, -0.88]} rotation={[0, 0.6, 0]} />}
       {bin && <primitive object={bin} position={[0.98, 0, -0.74]} />}
-      {balls[0] && <primitive object={balls[0]} position={[0.97, 0.12, -0.75]} />}
-      {balls[1] && <primitive object={balls[1]} position={[1.01, 0.1, -0.72]} />}
-      {balls[2] && <primitive object={balls[2]} position={[0.86, 0.028, -0.42]} />}
       {frame && <primitive object={frame} position={[-0.43, 1.634, BACK + 0.12]} rotation={[0, 0.12, 0]} />}
       {trophy && <primitive object={trophy} position={[-0.25, 1.634, BACK + 0.11]} rotation={[0, -0.3, 0]} />}
       {strip && <primitive object={strip} position={STRIP_POS} />}

@@ -248,6 +248,26 @@ function DeviceChoice({ onContinue, reason, still }) {
   )
 }
 
+// One-liners from the room itself (paper-ball shots…), gone after ~2 s.
+function RoomToast() {
+  const toast = useRoom(s => s.toast)
+  useEffect(() => {
+    if (!toast) return
+    const id = setTimeout(() => room.get().toast === toast && room.set({ toast: null }), 2200)
+    return () => clearTimeout(id)
+  }, [toast])
+  return (
+    <AnimatePresence>
+      {toast && (
+        <motion.div key={toast.at} initial={{ opacity: 0, y: 10, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }}
+          style={{ position: 'fixed', top: '18%', left: 0, right: 0, zIndex: 56, textAlign: 'center', pointerEvents: 'none' }}>
+          <span style={{ ...serif, fontSize: '2.4rem', color: '#f6efe4', textShadow: '0 2px 24px rgba(0,0,0,0.75)' }}>{toast.text}</span>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 function SlowToast() {
   const [hidden, setHidden] = useState(false)
   if (hidden) return null
@@ -377,6 +397,7 @@ export default function RoomHome() {
           </motion.div>
         )}
       </AnimatePresence>
+      <RoomToast />
       <LaptopTerminal />
       <HoverLabel />
       </>}
