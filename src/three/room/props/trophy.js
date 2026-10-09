@@ -142,25 +142,19 @@ export function createTrophy() {
   for (const s of [-1, 1]) {
     const yTop = Y0 + 0.118, yBot = Y0 + 0.08;
     const pts = [
-      [rAt(yTop) - 0.002, yTop],
+      [rAt(yTop) - 0.0006, yTop],
       [rAt(yTop) + 0.012, yTop + 0.004],
       [0.0565, yTop - 0.006],
       [0.0575, Y0 + 0.098],
       [0.049, Y0 + 0.086],
       [rAt(yBot) + 0.006, yBot - 0.001],
-      [rAt(yBot) - 0.002, yBot],
+      [rAt(yBot) - 0.0006, yBot],
     ].map(([x, y]) => new THREE.Vector3(s * x, y, 0));
     const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
     const tube = new THREE.TubeGeometry(curve, 28, 0.0026, 8, false);
     // squash to a flatter ribbon-like ear (thinner in Z)
     tube.scale(1, 1, 0.75);
     parts.push(tube);
-    // small ball caps closing the tube ends (buried in the bowl, but tidy)
-    for (const p of [pts[0], pts[pts.length - 1]]) {
-      const cap = new THREE.SphereGeometry(0.0028, 10, 6);
-      cap.translate(p.x, p.y, p.z);
-      parts.push(cap);
-    }
   }
   group.add(shadowed(new THREE.Mesh(merge(parts), gold)));
 

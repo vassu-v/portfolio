@@ -263,23 +263,6 @@ function Pen(props) {
   )
 }
 
-// Cable from a point on the desk, over the back edge, down to the socket.
-function Cable({ from, to, sag = 0.12 }) {
-  const geo = useMemo(() => {
-    const a = new THREE.Vector3(...from), b = new THREE.Vector3(...to)
-    const edge = new THREE.Vector3(a.x + (b.x - a.x) * 0.3, Y + 0.005, BACK + 0.04)
-    const drop = new THREE.Vector3(edge.x, Y - 0.25, BACK + 0.03)
-    const low = new THREE.Vector3((edge.x + b.x) / 2, b.y - sag, BACK + 0.05)
-    const curve = new THREE.CatmullRomCurve3([a, new THREE.Vector3(a.x, Y + 0.004, (a.z + edge.z) / 2), edge, drop, low, b])
-    return new THREE.TubeGeometry(curve, 80, 0.0028, 6)
-  }, [from, to, sag])
-  return (
-    <mesh geometry={geo} castShadow receiveShadow>
-      <meshStandardMaterial color="#141414" roughness={0.6} />
-    </mesh>
-  )
-}
-
 function Built() {
   const Chair = prop('chair', 'createChair')
   const Mouse = prop('mouse', 'createMouse')
@@ -337,8 +320,6 @@ export default function Props({ tier = 'high' }) {
       <Sticky lines={['ship it.']} color="#bfe3c0" position={[-0.4, 1.35, BACK + 0.004]} rotation={[0, 0, 0.03]} curl={0.12} />
       <Sticky lines={['curl', 'shoryavardhaan', '.vercel.app']} color="#f7e27a" size={0.07} position={[0.07, Y + 0.0012, -0.58]} rotation={[-Math.PI / 2, 0, -0.25]} curl={0.02} />
 
-      <Cable from={[-0.17, Y + 0.004, -0.86]} to={[-0.2, 0.32, BACK + 0.01]} />
-      <Cable from={[0.6, Y + 0.004, -0.9]} to={[-0.17, 0.3, BACK + 0.01]} sag={0.2} />
     </group>
   )
 }

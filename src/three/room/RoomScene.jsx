@@ -13,6 +13,7 @@ import Diary from './Diary'
 import Dossier from './Dossier'
 import Phone from './Phone'
 import DeskPhotos from './DeskPhotos'
+import Extras from './Extras'
 import CameraRig from './CameraRig'
 import PerfProbe from './PerfProbe'
 import { sky as skyAt } from './timeOfDay'
@@ -242,6 +243,7 @@ function SceneContent() {
       <Dossier />
       <Phone />
       <DeskPhotos />
+      <Extras />
       {cfg.dust && <Dust sky={sky} />}
       {roam ? <Roam /> : <CameraRig />}
       <Driver idleFps={cfg.idleFps} />

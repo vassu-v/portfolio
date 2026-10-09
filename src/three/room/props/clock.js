@@ -4,6 +4,7 @@
 //   group.userData.setTime(date)   rotates hour / minute / second hands
 //   group.userData.hands = { hour, minute, second }
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const R = 0.13, DEPTH = 0.04, FACE_Z = 0.027, FACE_R = 0.1215;
 
@@ -60,10 +61,10 @@ function handGeo(len, wBase, wTip, tail, thick, round = 0) {
 }
 
 function hand(parts, mat, z) {
-  const grp = new THREE.Group();
-  for (const g of parts) grp.add(shadowed(new THREE.Mesh(g, mat)));
-  grp.position.z = z;
-  return grp;
+  const geo = mergeGeometries(parts.map((g) => (g.index ? g.toNonIndexed() : g)));
+  const m = shadowed(new THREE.Mesh(geo, mat));
+  m.position.z = z;
+  return m;
 }
 
 export function createWallClock() {
