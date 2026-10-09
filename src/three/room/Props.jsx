@@ -150,6 +150,9 @@ function Headphones() {
     const m = prepModel(createHeadphones())
     m.position.set(0, 0, 0)
     // pivot the band's top onto the hook
+    // scale first, so the hook offset is measured in metres, not model units
+    m.scale.setScalar(0.055)
+    m.rotation.y = Math.PI / 2
     const box = new THREE.Box3().setFromObject(m)
     m.position.y = -box.max.y
     return bakeStatic(m)
@@ -176,7 +179,7 @@ function Headphones() {
       </mesh>
       <Hotspot id="headphones" label="Headphones" onClick={() => { swing.current.v += 2.2 }}>
         <group ref={ref} position={[-0.025, 0.006, 0]}>
-          <primitive object={model} scale={0.055} rotation={[0, Math.PI / 2, 0]} />
+          <primitive object={model} />
         </group>
       </Hotspot>
     </group>

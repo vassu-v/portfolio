@@ -6,6 +6,7 @@ import { useRoute } from '../../router'
 import { useMobile } from '../../hooks/useMobile'
 import { room, live, useRoom, focusOn } from './store'
 import { isNight } from './hour'
+import { forgetTier } from './tier'
 
 const RoomScene = lazy(() => import('./RoomScene'))
 
@@ -132,13 +133,52 @@ function FocusPanel({ focus }) {
 const link = { color: 'var(--go)', textDecoration: 'none', borderBottom: '1px solid rgba(212,152,58,0.4)' }
 const linkBtn = { ...link, ...mono, background: 'none', border: 'none', borderBottom: '1px solid rgba(212,152,58,0.4)', padding: 0, fontSize: '0.78rem', justifySelf: 'start' }
 
-function Debug() {
+// Inspection panel for ?roam / ?debug: live cost, quality tier, time, lamp.
+function Inspector({ full }) {
   const hour = useRoom(s => s.hour)
+  const tier = useRoom(s => s.tier)
+  const reason = useRoom(s => s.tierReason)
+  const lampOn = useRoom(s => s.lampOn)
+  const [perf, setPerf] = useState(null)
+  const [open, setOpen] = useState(true)
+  useEffect(() => {
+    const id = setInterval(() => setPerf(live.perf && { ...live.perf }), 500)
+    return () => clearInterval(id)
+  }, [])
+  const setTier = t => { forgetTier(); room.set({ tier: t, tierReason: 'picked in inspector' }) }
+  const row = { display: 'flex', justifyContent: 'space-between', gap: 12 }
   return (
-    <div style={{ position: 'fixed', right: 16, bottom: 16, zIndex: 70, ...mono, fontSize: 11, color: '#fff', background: 'rgba(0,0,0,0.6)', padding: 10, borderRadius: 6 }}>
-      hour {hour.toFixed(1)}
-      <input type="range" min="0" max="23.9" step="0.1" value={hour} onChange={e => room.set({ hour: +e.target.value })} style={{ display: 'block', width: 220 }} />
+    <div style={{ position: 'fixed', right: 12, top: full ? 12 : 'auto', bottom: full ? 'auto' : 12, zIndex: 70, ...mono, fontSize: 11, lineHeight: 1.6, color: '#efe6d8', background: 'rgba(12,10,8,0.78)', border: '1px solid rgba(212,152,58,0.3)', backdropFilter: 'blur(8px)', padding: '10px 12px', borderRadius: 8, width: open ? 248 : 'auto' }}>
+      <button onClick={() => setOpen(o => !o)} style={{ ...mono, fontSize: 11, color: 'var(--go)', background: 'none', border: 'none', padding: 0 }}>{open ? '▾' : '▸'} inspector</button>
+      {open && (
+        <div style={{ marginTop: 6, display: 'grid', gap: 2 }}>
+          <div style={row}><span>fps</span><span>{perf?.fps ?? '–'}</span></div>
+          <div style={row}><span>draw calls</span><span>{perf?.calls ?? '–'}</span></div>
+          <div style={row}><span>triangles</span><span>{perf ? Math.round(perf.tris / 1000) + 'k' : '–'}</span></div>
+          <div style={row}><span>render px</span><span>{perf?.px ?? '–'} @{perf?.dpr ?? ''}</span></div>
+          <div style={row}><span>js heap</span><span>{perf?.heapMB ?? '–'} MB</span></div>
+          <div style={{ marginTop: 8, color: 'rgba(239,230,216,0.6)' }}>tier · {reason}</div>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {['high', 'mid', 'low', 'poster'].map(t => (
+              <button key={t} onClick={() => setTier(t)} style={{ ...mono, fontSize: 11, padding: '3px 8px', borderRadius: 999, border: '1px solid rgba(212,152,58,0.4)', background: tier === t ? 'var(--go)' : 'transparent', color: tier === t ? '#120d08' : '#efe6d8' }}>{t}</button>
+            ))}
+          </div>
+          <div style={{ marginTop: 8 }}>time {String(Math.floor(hour)).padStart(2, '0')}:{String(Math.round((hour % 1) * 60)).padStart(2, '0')}</div>
+          <input type="range" min="0" max="23.9" step="0.1" value={hour} onChange={e => room.set({ hour: +e.target.value })} style={{ width: '100%' }} />
+          <button onClick={() => room.set({ lampOn: !lampOn })} style={{ ...mono, fontSize: 11, marginTop: 4, padding: '3px 8px', borderRadius: 999, border: '1px solid rgba(212,152,58,0.4)', background: 'transparent', color: '#efe6d8', justifySelf: 'start' }}>lamp {lampOn ? 'off' : 'on'}</button>
+          {full && <div style={{ marginTop: 8, color: 'rgba(239,230,216,0.6)' }}>drag to orbit · scroll/pinch to zoom · right-drag to pan · click objects</div>}
+        </div>
+      )}
     </div>
+  )
+}
+
+// Devices that can't run the 3D get a still of the same room and the same
+// chips, so every section is still one tap away.
+function Poster() {
+  const mobile = useMobile(768)
+  return (
+    <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, background: `#0b0907 url(${mobile ? '/room-poster-portrait.jpg' : '/room-poster.jpg'}) center / cover no-repeat` }} />
   )
 }
 
@@ -149,7 +189,11 @@ export default function RoomHome() {
   const hour = useRoom(s => s.hour)
   const debug = useRoom(s => s.debug)
   const lampOn = useRoom(s => s.lampOn)
+  const roam = useRoom(s => s.roam)
+  const tier = useRoom(s => s.tier)
+  const capture = new URLSearchParams(window.location.search).has('capture')
   const mobile = useMobile(768)
+  const poster = tier === 'poster'
 
   useEffect(() => {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
@@ -164,6 +208,8 @@ export default function RoomHome() {
       }
       raf = requestAnimationFrame(run)
     }, 900)
+    if (room.get().roam || room.get().tier === 'poster') { live.intro = 1; room.set({ explore: true }) }
+    if (new URLSearchParams(window.location.search).has('capture')) { live.intro = 1; live.scroll = 1 }
     const onKey = e => { if (e.key === 'Escape') room.set({ focus: null, folder: -1, card: -1 }) }
     window.addEventListener('keydown', onKey)
     return () => { clearTimeout(delay); cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey) }
@@ -174,19 +220,22 @@ export default function RoomHome() {
 
   return (
     <>
-      <Suspense fallback={null}><RoomScene /></Suspense>
+      {poster ? <Poster /> : <Suspense fallback={null}><RoomScene /></Suspense>}
+      {roam && <Inspector full />}
+      {!roam && debug && <Inspector />}
+      {capture ? null : <>
       {/* scroll runway that drives the camera */}
-      <div style={{ height: '420vh', position: 'relative', zIndex: 0, pointerEvents: 'none' }} />
+      {!roam && !poster && <div style={{ height: '420vh', position: 'relative', zIndex: 0, pointerEvents: 'none' }} />}
 
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px var(--pad)', pointerEvents: 'none' }}>
         <span style={{ ...mono, color: 'var(--cu)', fontSize: '0.9rem', letterSpacing: '0.12em' }}>SG</span>
         <span style={{ ...mono, color: 'rgba(240,230,216,0.6)', fontSize: '0.62rem', letterSpacing: '0.1em' }}>
-          {timeWord} light · {lampOn ? 'lamp on' : 'lamp off'} · <a href="/?classic" style={{ color: 'inherit', pointerEvents: 'auto' }}>classic view</a>
+          {roam ? <a href="/" style={{ color: 'inherit', pointerEvents: 'auto' }}>← back to the site</a> : <>{timeWord} light · {lampOn ? 'lamp on' : 'lamp off'} · <a href="/?classic" style={{ color: 'inherit', pointerEvents: 'auto' }}>classic view</a></>}
         </span>
       </header>
 
       {/* scroll copy */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
+      {!roam && !poster && <div style={{ position: 'fixed', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
         <motion.div animate={{ opacity: focus ? 0 : copyOp(-1, 0, 0.04, 0.1) }} style={{ position: 'absolute', bottom: 36, left: 0, right: 0, textAlign: 'center', ...mono, fontSize: '0.62rem', letterSpacing: '0.24em', color: 'rgba(240,230,216,0.7)' }}>
           SCROLL
         </motion.div>
@@ -196,11 +245,11 @@ export default function RoomHome() {
           </p>
           <p style={{ ...mono, marginTop: 16, fontSize: '0.75rem', color: 'rgba(240,230,216,0.75)', letterSpacing: '0.04em' }}>from a desk in Kolkata.</p>
         </motion.div>
-      </div>
+      </div>}
 
       {/* explore chips — also the accessible way to reach every object */}
       <AnimatePresence>
-        {(explore || focus) && (
+        {!roam && (explore || focus) && (
           <motion.nav
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -218,7 +267,7 @@ export default function RoomHome() {
 
       <AnimatePresence mode="wait">{focus && <FocusPanel key={focus} focus={focus} />}</AnimatePresence>
       <HoverLabel />
-      {debug && <Debug />}
+      </>}
     </>
   )
 }

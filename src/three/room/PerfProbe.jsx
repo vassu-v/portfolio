@@ -7,8 +7,8 @@ import { live, off } from './store'
 // With ?off=gpu the frame is closed with gl.finish(), so `frameMs` is the
 // true CPU+GPU cost of one frame regardless of vsync or frame-rate caps.
 export default function PerfProbe({ selfRender = false }) {
-  const { gl, scene, camera } = useThree()
-  useEffect(() => { window.__scene = scene; window.__gl = gl }, [scene, gl])
+  const { gl, scene, camera, controls, invalidate } = useThree()
+  useEffect(() => { Object.assign(window, { __scene: scene, __gl: gl, __camera: camera, __controls: controls, __invalidate: invalidate }) }, [scene, gl, camera, controls, invalidate])
   const acc = useRef({ frames: 0, t0: 0, calls: 0, tris: 0, worst: 0, last: 0, start: 0, ms: [] })
   const timing = off.has('gpu')
 

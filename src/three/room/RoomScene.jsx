@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Environment, Lightformer, Sparkles, OrbitControls } from '@react-three/drei'
 import { EffectComposer, N8AO, Bloom, ToneMapping, SMAA, Vignette } from '@react-three/postprocessing'
@@ -13,7 +13,7 @@ import CameraRig from './CameraRig'
 import PerfProbe from './PerfProbe'
 import { sky as skyAt } from './timeOfDay'
 import { room, live, useRoom, wake, off } from './store'
-import { TIERS, downgrade, rememberTier } from './tier'
+import { TIERS, downgrade, rememberTier, dprFor } from './tier'
 
 RectAreaLightUniformsLib.init()
 
@@ -151,7 +151,7 @@ function TierProbe() {
 // Free-orbit inspection: walls between the camera and the desk fade out so
 // you can walk all the way around the setup like a dollhouse.
 function Roam() {
-  const { camera, scene } = useThree()
+  const { camera, scene, size } = useThree()
   const walls = useRef([])
   useEffect(() => {
     camera.position.set(2.6, 2.1, 2.8)
@@ -162,6 +162,8 @@ function Roam() {
   }, [camera, scene])
   const v = useMemo(() => new THREE.Vector3(), [])
   useFrame(() => {
+    const fov = size.width / size.height < 0.8 ? 62 : 42
+    if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix() }
     for (const w of walls.current) {
       const { normal, center } = w.userData.wall
       v.copy(camera.position).sub(center)
@@ -245,7 +247,13 @@ function SceneContent() {
 export default function RoomScene() {
   const tier = useRoom(s => s.tier)
   const cfg = TIERS[tier] || TIERS.low
-  const dpr = Math.min(cfg.dpr, window.devicePixelRatio || 1)
+  const [dpr, setDpr] = useState(() => dprFor(cfg))
+  useEffect(() => {
+    const on = () => setDpr(dprFor(cfg))
+    on()
+    window.addEventListener('resize', on)
+    return () => window.removeEventListener('resize', on)
+  }, [cfg])
 
   useEffect(() => {
     const onMove = e => {

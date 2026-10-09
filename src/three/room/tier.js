@@ -10,10 +10,20 @@
 //
 // The guess is refined by a short FPS probe after load and remembered per device.
 
+// mp = pixel budget in megapixels. Cost is fill-rate bound (measured: frame
+// time scales ~linearly with pixel count), so resolution is set from the
+// budget rather than a fixed DPR: a retina phone stays sharp-ish, a 4K
+// monitor on an iGPU doesn't melt. maxDpr caps it on dense screens.
 export const TIERS = {
-  high:   { dpr: 1.5,  post: true,  ao: true,  smaa: true,  sunMap: 2048, lampShadow: true,  dust: true,  idleFps: 30, sway: true },
-  mid:    { dpr: 1.0,  post: true,  ao: false, smaa: true,  sunMap: 1024, lampShadow: true,  dust: true,  idleFps: 30, sway: true },
-  low:    { dpr: 1.0,  post: false, ao: false, smaa: false, sunMap: 1024, lampShadow: false, dust: false, idleFps: 24, sway: false },
+  high:   { mp: 3.6, maxDpr: 2,    post: true,  ao: true,  sunMap: 2048, lampShadow: true,  dust: true,  idleFps: 30, sway: true },
+  mid:    { mp: 1.6, maxDpr: 1.5,  post: true,  ao: false, sunMap: 1024, lampShadow: true,  dust: true,  idleFps: 30, sway: true },
+  low:    { mp: 0.9, maxDpr: 2,    post: false, ao: false, sunMap: 1024, lampShadow: false, dust: false, idleFps: 24, sway: false },
+}
+
+export function dprFor(cfg, w = window.innerWidth, h = window.innerHeight) {
+  const device = window.devicePixelRatio || 1
+  const fit = Math.sqrt((cfg.mp * 1e6) / Math.max(1, w * h))
+  return +Math.max(0.6, Math.min(device, cfg.maxDpr, fit)).toFixed(2)
 }
 export const ORDER = ['high', 'mid', 'low', 'poster']
 
