@@ -8,7 +8,7 @@ import { room, useRoom, focusOn } from './store'
 import { BACK } from './Room'
 import { ITEMS, HEADERS, CHRONO } from './corkData'
 
-export const BOARD = { x: 0.44, y: 1.4, z: BACK + 0.012, w: 1.1, h: 0.7 }
+export const BOARD = { x: 0.44, y: 1.42, z: BACK + 0.012, w: 1.1, h: 0.8 }
 
 const SIZE = {
   expcard: [0.165, 0.11], polaroid: [0.1, 0.12], note: [0.085, 0.085], receipt: [0.07, 0.13],
@@ -227,6 +227,45 @@ function Yarn() {
   )
 }
 
+// Brass picture light over the board. Without it the board sits in the
+// lamp's falloff and every card (and anything pulled forward) reads near-black.
+// Always mounted so toggling never recompiles shaders — only intensity moves.
+function PictureLight() {
+  const focus = useRoom(s => s.focus)
+  const lampOn = useRoom(s => s.lampOn)
+  const spot = useRef()
+  const front = useRef()
+  const target = useMemo(() => new THREE.Object3D(), [])
+  const brass = useMemo(() => new THREE.MeshStandardMaterial({ color: '#b8894a', metalness: 0.9, roughness: 0.3 }), [])
+  useFrame((_, dt) => {
+    const want = focus === 'corkboard' ? 1 : lampOn ? 0.55 : 0.35
+    const k = spot.current.userData.k = damp(spot.current.userData.k ?? want, want, 4, dt)
+    spot.current.intensity = 1.5 * k
+    // fill for cards pulled off the board towards the camera
+    front.current.intensity = room.get().pin ? 0.35 : 0
+  })
+  const top = BOARD.h / 2 + 0.03
+  return (
+    <>
+      <primitive object={target} position={[0, -0.05, 0]} />
+      <group position={[0, top, 0.02]}>
+        <mesh material={brass} position={[0, 0.03, 0.05]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.018, 0.022, 0.42, 20]} />
+        </mesh>
+        <mesh material={brass} position={[0, 0.02, 0.022]} rotation={[0.9, 0, 0]}>
+          <cylinderGeometry args={[0.005, 0.005, 0.07, 8]} />
+        </mesh>
+        <mesh position={[0, 0.016, 0.055]}>
+          <boxGeometry args={[0.38, 0.004, 0.02]} />
+          <meshStandardMaterial color="#fff2dc" emissive="#ffe2b8" emissiveIntensity={0.8} />
+        </mesh>
+      </group>
+      <spotLight ref={spot} target={target} position={[0, top + 0.02, 0.32]} color="#ffe6c4" angle={1.05} penumbra={0.85} decay={2} distance={3} />
+      <pointLight ref={front} position={[0, 0.05, 0.75]} color="#fff1de" distance={1.6} decay={2} intensity={0} />
+    </>
+  )
+}
+
 function Header({ text, pos }) {
   const tex = useMemo(() => {
     const c = document.createElement('canvas')
@@ -275,6 +314,7 @@ export default function Corkboard() {
         {[[0, h / 2 + f / 2, w + f * 2, f], [0, -h / 2 - f / 2, w + f * 2, f], [-w / 2 - f / 2, 0, f, h], [w / 2 + f / 2, 0, f, h]].map(([x, y, bw, bh], i) => (
           <RoundedBox key={i} args={[bw, bh, 0.028]} radius={0.004} position={[x, y, 0.004]} material={frame} castShadow receiveShadow />
         ))}
+        <PictureLight />
         <group position={[0, 0, 0.006]}>
           {HEADERS.map(hd => <Header key={hd.text} {...hd} />)}
           <Yarn />

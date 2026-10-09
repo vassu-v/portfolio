@@ -111,7 +111,7 @@ function FocusPanel({ focus }) {
           {it.panel.cta && <a style={link} href={it.panel.cta.href} target="_blank" rel="noreferrer">{it.panel.cta.label} →</a>}
           {it.support.length > 0 && <p style={{ opacity: 0.6 }}>supporting material pulled up beside it — tap a link card to open it</p>}
         </>
-      : <p>Roles on the left, string runs oldest → newest. Wins and receipts on the right. Tap anything pinned.</p>
+      : <p>Roles across the top, the string runs oldest → newest. Wins and receipts below. Tap anything pinned.</p>
   } else if (focus === 'diary') {
     const post = spread > 0 && spread <= POSTS.length ? POSTS[spread - 1] : null
     const next = spread < POSTS.length ? POSTS[spread] : null
