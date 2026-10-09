@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { live } from './store'
 import { PHOTO } from './CameraRig'
-import { TOUR } from './tourData'
+import { tourU } from './tourData'
 
 // The tour's opening shot. A spotlight on the framed photo; the cut-out of
 // the same photo standing proud of the frame; the name set *behind* the
@@ -89,7 +89,7 @@ function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66
   }, [L])
 
   useFrame(() => {
-    const u = live.scroll * (TOUR.length - 1)
+    const u = tourU(live.scroll)
     const d = THREE.MathUtils.smoothstep(u, range[0], range[1])
     const g = group.current
     g.visible = d < 0.999
@@ -107,7 +107,7 @@ function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66
       const pos = geo.attributes.position.array, colr = geo.attributes.color.array, s = ud.seed
       for (let i = 0, n = pos.length / 3; i < n; i++) {
         const j = i * 4
-        const t = THREE.MathUtils.clamp((d - s[j]) / 0.45, 0, 1)
+        const t = THREE.MathUtils.clamp((d - s[j]) / 0.5, 0, 1)
         const e = t * t
         pos[i * 3] = ud.base[i * 3] + s[j + 1] * e * 1.4 + Math.sin(i + t * 6) * 0.004 * t
         pos[i * 3 + 1] = ud.base[i * 3 + 1] + s[j + 2] * e
@@ -149,8 +149,8 @@ export default function IntroPhoto() {
   const quat = useMemo(() => new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), PHOTO.normal), [])
 
   useFrame(() => {
-    const u = live.scroll * (TOUR.length - 1)
-    const lift = THREE.MathUtils.smoothstep(u, 0.42, 0.78)
+    const u = tourU(live.scroll)
+    const lift = THREE.MathUtils.smoothstep(u, 0.6, 0.86)
     const p = plane.current
     p.visible = lift < 0.999
     p.position.copy(PHOTO.center).addScaledVector(PHOTO.normal, 0.05 * (1 - lift) + 0.012)
@@ -166,8 +166,8 @@ export default function IntroPhoto() {
       <spotLight ref={spot} target={target} position={PHOTO.center.clone().add(new THREE.Vector3(0.05, 0.45, 0.42))}
         color="#fff0dc" angle={0.38} penumbra={0.75} decay={2} distance={2} />
       {/* name up at the turban, behind the cut-out; the hint below the photo */}
-      <Lettering draw={drawName} height={420} width={0.47} offsetY={0.064} seed={1} range={[0.006, 0.5]} />
-      <Lettering draw={drawHint} height={140} width={0.3} offsetY={-0.098} seed={9001} range={[0.006, 0.42]} tallScale={1.05} />
+      <Lettering draw={drawName} height={420} width={0.47} offsetY={0.084} seed={1} range={[0.004, 0.62]} />
+      <Lettering draw={drawHint} height={140} width={0.3} offsetY={-0.098} seed={9001} range={[0.004, 0.5]} tallScale={1.05} />
       <mesh ref={plane} quaternion={quat} renderOrder={2}>
         <planeGeometry args={[SIZE, SIZE]} />
         <meshStandardMaterial color="#000" map={tex} transparent alphaTest={0.02} roughness={0.9} emissive="#ffffff" emissiveMap={tex} emissiveIntensity={1.1} depthWrite={false} />

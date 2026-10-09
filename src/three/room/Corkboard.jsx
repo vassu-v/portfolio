@@ -9,12 +9,14 @@ import { goToStop } from './tourData'
 import { BACK } from './Room'
 import { ITEMS, HEADERS, CHRONO } from './corkData'
 
-export const BOARD = { x: 0.44, y: 1.42, z: BACK + 0.012, w: 1.1, h: 0.8 }
+// sized for the future: room to the right for roles and wins still to come
+export const BOARD = { x: 0.64, y: 1.47, z: BACK + 0.012, w: 1.5, h: 0.95 }
 
 const SIZE = {
   expcard: [0.165, 0.11], polaroid: [0.1, 0.12], note: [0.085, 0.085], receipt: [0.07, 0.13],
   stat: [0.12, 0.08], link: [0.13, 0.06], card: [0.13, 0.08],
 }
+const sizeOf = it => (it.big ? [0.115, 0.115] : SIZE[it.kind])
 const PIN_COLORS = ['#c0392b', '#F07A1A', '#2f6f8f', '#d4a017', '#4f7d4a', '#e9e4da']
 const PRESENT = new THREE.Vector3(0, 0.02, 0.24)
 const SUPPORT_SLOTS = [[-0.24, 0.05], [0.24, 0.05], [-0.22, -0.14], [0.22, -0.14], [0, -0.19]]
@@ -49,7 +51,7 @@ const PAINTERS = {
     ctx.fillStyle = '#1d1712'; ctx.font = 'italic 64px "Instrument Serif", serif'; ctx.fillText(e.org, 30, 76)
     ctx.font = '600 44px Caveat, cursive'; ctx.fillStyle = '#2a3550'; ctx.fillText(e.primaryRole, 30, 158)
     ctx.fillStyle = '#7a4a1c'; ctx.font = '500 26px "JetBrains Mono", monospace'; ctx.fillText(e.period.toUpperCase(), 30, 246)
-    ctx.fillStyle = '#5c5048'; ctx.font = '400 24px "JetBrains Mono", monospace'; ctx.fillText(e.type, 30, 290)
+    ctx.fillStyle = '#3e342c'; ctx.font = '400 24px "JetBrains Mono", monospace'; ctx.fillText(e.type, 30, 290)
     if (e.live) { ctx.fillStyle = '#F07A1A'; ctx.font = '600 40px Caveat, cursive'; ctx.fillText('● now', w - 130, h - 60) }
   },
   polaroid(ctx, w, h, it, redraw) {
@@ -71,13 +73,13 @@ const PAINTERS = {
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
     let y = 64
     if (it.title) { ctx.fillStyle = '#7a3b14'; ctx.font = '700 40px Caveat, cursive'; ctx.fillText(it.title, 24, y); y += 52 }
-    ctx.fillStyle = '#2a2018'; ctx.font = '600 34px Caveat, cursive'
-    for (const l of it.lines || []) { ctx.fillText(l, 24, y); y += 42 }
+    ctx.fillStyle = '#1d140c'; ctx.font = '700 35px Caveat, cursive'
+    for (const l of it.lines || []) { ctx.fillText(l, 24, y); y += 43 }
   },
   receipt(ctx, w, h, it) {
     ctx.fillStyle = '#fbfaf6'; ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = '#2a2622'; ctx.font = '500 22px "JetBrains Mono", monospace'
-    ;(it.lines || []).forEach((l, i) => ctx.fillText(l, 22, 70 + i * 44))
+    ctx.fillStyle = '#1d1712'; ctx.font = '600 27px "JetBrains Mono", monospace'
+    ;(it.lines || []).forEach((l, i) => ctx.fillText(l, 22, 74 + i * 50))
     ctx.fillStyle = '#F07A1A'; ctx.font = '600 40px Caveat, cursive'; ctx.fillText('first one ✓', 22, h - 80)
     ctx.fillStyle = '#fbfaf6'
     for (let x = 0; x < w; x += 20) { ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x + 10, h - 12); ctx.lineTo(x + 20, h); ctx.fill() }
@@ -86,27 +88,27 @@ const PAINTERS = {
     ctx.fillStyle = '#fbf7ee'; ctx.fillRect(0, 0, w, h)
     ctx.fillStyle = '#F07A1A'; ctx.fillRect(0, 0, 10, h)
     ctx.fillStyle = '#1d1712'; ctx.font = 'italic 120px "Instrument Serif", serif'; ctx.fillText(it.big, 40, 140)
-    ctx.fillStyle = '#5c5048'; ctx.font = '500 28px "JetBrains Mono", monospace'
+    ctx.fillStyle = '#3a3029'; ctx.font = '500 30px "JetBrains Mono", monospace'
     wrap(ctx, it.small, w - 70).slice(0, 2).forEach((l, i) => ctx.fillText(l, 42, 200 + i * 36))
     if (it.sub) { ctx.fillStyle = '#7a4a1c'; ctx.font = '600 36px Caveat, cursive'; ctx.fillText(it.sub, 42, h - 34) }
   },
   link(ctx, w, h, it) {
     ctx.fillStyle = '#1d1712'; ctx.fillRect(0, 0, w, h)
     ctx.fillStyle = '#84D0E8'; ctx.font = 'italic 70px "Instrument Serif", serif'; ctx.fillText(it.title, 36, 100)
-    ctx.fillStyle = 'rgba(240,230,216,0.7)'; ctx.font = '500 26px "JetBrains Mono", monospace'; ctx.fillText(it.sub || '', 38, 150)
+    ctx.fillStyle = 'rgba(244,236,224,0.95)'; ctx.font = '500 28px "JetBrains Mono", monospace'; ctx.fillText(it.sub || '', 38, 150)
   },
   card(ctx, w, h, it) {
     ctx.fillStyle = '#fbf7ee'; ctx.fillRect(0, 0, w, h)
     ctx.fillStyle = '#1d1712'; ctx.font = 'italic 60px "Instrument Serif", serif'; ctx.fillText(it.title, 30, 90)
     ctx.fillStyle = '#7a4a1c'; ctx.font = '500 26px "JetBrains Mono", monospace'; ctx.fillText(String(it.sub || '').toUpperCase(), 32, 160)
-    if (it.foot) { ctx.fillStyle = '#5c5048'; ctx.font = '400 24px "JetBrains Mono", monospace'; ctx.fillText(it.foot, 32, 205) }
+    if (it.foot) { ctx.fillStyle = '#3e342c'; ctx.font = '400 24px "JetBrains Mono", monospace'; ctx.fillText(it.foot, 32, 205) }
   },
 }
 
 const texCache = new Map()
 function textureFor(it, key) {
   if (texCache.has(key)) return texCache.get(key)
-  const [sw, sh] = SIZE[it.kind]
+  const [sw, sh] = sizeOf(it)
   const c = document.createElement('canvas')
   c.width = 600; c.height = Math.round(600 * sh / sw)
   const ctx = c.getContext('2d')
@@ -138,7 +140,7 @@ function Pin({ color, position }) {
 
 function Paper({ it, texKey, pinColor }) {
   const tex = useMemo(() => textureFor(it, texKey), [it, texKey])
-  const [w, h] = SIZE[it.kind]
+  const [w, h] = sizeOf(it)
   return (
     <>
       <mesh castShadow receiveShadow>
@@ -155,7 +157,7 @@ function Item({ it, index }) {
   const hover = useRef(false)
   const focus = useRoom(inHand)
   const sel = useRoom(s => s.pin === it.id)
-  const h = SIZE[it.kind][1]
+  const h = sizeOf(it)[1]
   // presented at ~half the screen height, so even the receipt is readable
   const big = Math.min(2.4, Math.max(1.4, 0.26 / h))
 
@@ -248,7 +250,7 @@ function PictureLight() {
   useFrame((_, dt) => {
     const want = focus === 'corkboard' ? 1 : lampOn ? 0.55 : 0.35
     const k = spot.current.userData.k = damp(spot.current.userData.k ?? want, want, 4, dt)
-    spot.current.intensity = 1.5 * k
+    spot.current.intensity = 1.9 * k
     // fill for cards pulled off the board towards the camera
     front.current.intensity = room.get().pin ? 0.35 : 0
   })
@@ -258,17 +260,17 @@ function PictureLight() {
       <primitive object={target} position={[0, -0.05, 0]} />
       <group position={[0, top, 0.02]}>
         <mesh material={brass} position={[0, 0.03, 0.05]} rotation={[0, 0, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.018, 0.022, 0.42, 20]} />
+          <cylinderGeometry args={[0.018, 0.022, 0.62, 20]} />
         </mesh>
         <mesh material={brass} position={[0, 0.02, 0.022]} rotation={[0.9, 0, 0]}>
           <cylinderGeometry args={[0.005, 0.005, 0.07, 8]} />
         </mesh>
         <mesh position={[0, 0.016, 0.055]}>
-          <boxGeometry args={[0.38, 0.004, 0.02]} />
+          <boxGeometry args={[0.58, 0.004, 0.02]} />
           <meshStandardMaterial color="#fff2dc" emissive="#ffe2b8" emissiveIntensity={0.8} />
         </mesh>
       </group>
-      <spotLight ref={spot} target={target} position={[0, top + 0.02, 0.32]} color="#ffe6c4" angle={1.05} penumbra={0.85} decay={2} distance={3} />
+      <spotLight ref={spot} target={target} position={[0, top + 0.02, 0.42]} color="#ffe6c4" angle={1.15} penumbra={0.85} decay={2} distance={3} />
       <pointLight ref={front} position={[0, 0.05, 0.75]} color="#fff1de" distance={1.6} decay={2} intensity={0} />
     </>
   )

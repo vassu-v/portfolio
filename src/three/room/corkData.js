@@ -1,10 +1,12 @@
 import { EXP } from '../../components/Experience'
 
 // Everything pinned to the corkboard. Positions are board-local metres
-// (board centre = 0,0; x ∈ ±0.55, y ∈ ±0.4), r = tilt in radians.
+// (board centre = 0,0; x ∈ ±0.75, y ∈ ±0.475), r = tilt in radians.
 // Top half: roles as a left → right timeline on one string. Bottom half:
 // wins & receipts in two loose rows.
 // `support` = the material that pulls up beside an item when it's clicked.
+
+export const CAL = 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true'
 
 const expById = Object.fromEntries(EXP.map(e => [e.org, e]))
 const skillsNote = e => ({ kind: 'note', color: '#f7e27a', title: 'skills', lines: e.skills })
@@ -25,15 +27,18 @@ const EXP_SUPPORT = {
     { kind: 'stat', big: '+20%', small: 'inquiry submissions', sub: 'after the custom designs' },
   ],
   Freelance: [
-    { kind: 'link', title: 'book a call', sub: 'cal.com/shoryavardhaan', href: 'https://cal.com/shoryavardhaan/30min?overlayCalendar=true' },
+    { kind: 'link', title: 'book a call', sub: 'cal.com/shoryavardhaan', href: CAL },
   ],
 }
 
 export const CHRONO = ['Utsavy', 'Beyond Rote', 'Freelance', '4MQ.org', 'Bits&Bytes']
 const TILT = [-0.03, 0.025, -0.015, 0.03, -0.02]
-const EXP_POS = Object.fromEntries(CHRONO.map((o, i) => [o, [-0.43 + i * 0.215, 0.17 + (i % 2 ? -0.012 : 0.008), TILT[i]]]))
-const WIN_ROWS = [-0.1, -0.285]
-const winPos = (i, r) => [-0.44 + (i % 5) * 0.22 + (Math.floor(i / 5) ? 0.03 : 0), WIN_ROWS[Math.floor(i / 5)] + (i % 2 ? 0.01 : -0.006), r]
+// generous spacing, and the right-hand columns left free: the board is
+// sized for the roles and wins still to come
+const EXP_POS = Object.fromEntries(CHRONO.map((o, i) => [o, [-0.6 + i * 0.235, 0.215 + (i % 2 ? -0.014 : 0.008), TILT[i]]]))
+const WIN_ROWS = [-0.08, -0.3]
+const winPos = (i, r) => [-0.6 + (i % 5) * 0.225 + (Math.floor(i / 5) ? 0.04 : 0), WIN_ROWS[Math.floor(i / 5)] + (i % 2 ? 0.012 : -0.008), r]
+const hireNote = { kind: 'note', color: '#f4a261', title: 'hire me →', lines: ['UI & landing pages', 'built fast, built right', 'book a 30-min call'], href: CAL, big: true }
 
 const exp = EXP.map(e => ({
   id: 'exp-' + e.org,
@@ -42,7 +47,8 @@ const exp = EXP.map(e => ({
   pos: EXP_POS[e.org] || [0, 0, 0],
   label: `${e.org} — ${e.primaryRole}`,
   panel: { title: e.org, sub: `${e.primaryRole} · ${e.period}`, text: e.desc, cta: e.cta },
-  support: [...(EXP_SUPPORT[e.org] || []), skillsNote(e)],
+  // freelance gets a "hire me" in place of the skills list
+  support: [...(EXP_SUPPORT[e.org] || []), e.org === 'Freelance' ? hireNote : skillsNote(e)],
 }))
 
 const wins = [
@@ -123,9 +129,16 @@ const bits = [
   },
 ]
 
+// at the end of the string: the next role is an open slot
+const next = [{
+  id: 'note-next', kind: 'note', color: '#f4a261', title: "what's next?", lines: ['this spot is open.', 'hire me / collab →'], pos: [0.6, 0.2, 0.05],
+  label: 'hire me — book a collaboration', panel: { title: 'Hire me', sub: 'freelance · collaborations', text: 'UI and landing pages, prototypes, hardware + software builds. Tell me what you are making.', cta: { label: 'book a 30-min call', href: CAL } },
+  support: [hireNote],
+}]
+
 export const HEADERS = [
-  { text: 'the work so far', pos: [-0.36, 0.325, 0.01] },
-  { text: 'wins & receipts', pos: [-0.36, 0.03, -0.008] },
+  { text: 'the work so far', pos: [-0.54, 0.4, 0.01] },
+  { text: 'wins & receipts', pos: [-0.54, 0.07, -0.008] },
 ]
 
-export const ITEMS = [...exp, ...wins, ...bits]
+export const ITEMS = [...exp, ...next, ...wins, ...bits]

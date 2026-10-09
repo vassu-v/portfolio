@@ -294,15 +294,21 @@ export default function Diary() {
     }
   })
 
+  const indexEntry = uv => {
+    if (!uv) return -1
+    const y = (1 - uv.y) * PX_H
+    const i = Math.round((y - INDEX_TOP) / INDEX_STEP)
+    return i >= 0 && i < POSTS.length && Math.abs(y - (INDEX_TOP + i * INDEX_STEP)) < INDEX_STEP / 2 ? i : -1
+  }
   const go = s => room.set({ spread: Math.max(0, Math.min(SPREADS - 1, s)) })
   const onLeft = e => {
     if (!open) return
     e.stopPropagation()
     const s = room.get().spread
-    if (s === 0 && e.uv) {
-      const y = (1 - e.uv.y) * PX_H
-      const i = Math.round((y - INDEX_TOP) / INDEX_STEP)
-      if (i >= 0 && i < POSTS.length && Math.abs(y - (INDEX_TOP + i * INDEX_STEP)) < 50) return go(i)
+    if (s === 0) {
+      // the contents page: an entry's title opens that article
+      const i = indexEntry(e.uv)
+      if (i >= 0) window.dispatchEvent(new CustomEvent('room-open-post', { detail: POSTS[i].slug }))
       return
     }
     if (e.uv && e.uv.y < 0.14) return window.dispatchEvent(new CustomEvent('room-open-post', { detail: POSTS[s - 1]?.slug }))
@@ -351,7 +357,13 @@ export default function Diary() {
         </mesh>
         {/* left page: on the block face that ends up on top once flipped */}
         <mesh position={[W / 2, -0.0003, 0]} rotation={[Math.PI / 2, 0, Math.PI]} onClick={onLeft}
-          onPointerOver={e => { if (open) { e.stopPropagation(); room.set({ hover: { id: 'page', label: room.get().spread === 0 ? 'pick an entry' : '← previous · ↳ read' } }) } }}
+          onPointerMove={e => {
+            if (!open) return
+            e.stopPropagation()
+            const i = room.get().spread === 0 ? indexEntry(e.uv) : -2
+            const label = i >= 0 ? 'read: ' + POSTS[i].title : i === -1 ? 'pick an entry' : '← previous · ↳ read'
+            if (room.get().hover?.label !== label) room.set({ hover: { id: 'page', label } })
+          }}
           onPointerOut={() => open && room.set({ hover: null })}>
           <planeGeometry args={[W - 0.006, D - 0.008]} />
           <meshStandardMaterial map={pages.L.t} roughness={0.9} />

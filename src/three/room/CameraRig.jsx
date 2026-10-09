@@ -5,7 +5,7 @@ import { room, live, useRoom, inHand } from './store'
 import { anchors } from './Props'
 import { BOARD } from './Corkboard'
 import { BACK } from './Room'
-import { TOUR as TOUR_STOPS } from './tourData'
+import { TOUR as TOUR_STOPS, tourU } from './tourData'
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z)
 
@@ -20,9 +20,9 @@ const OVERVIEW_TALL = { pos: V(0.85, 1.38, 1.05), look: V(0.12, 0.88, -0.62) }
 // The scroll tour (order in tourData.js). The camera holds at each stop for
 // the first part of its scroll segment, then travels to the next.
 const SHOTS = {
-  intro: { pos: PHOTO.center.clone().addScaledVector(PHOTO.normal, 0.5), look: PHOTO.center.clone().add(V(0, -0.012, 0)) },
-  experience: { pos: V(BOARD.x - 0.04, BOARD.y + 0.11, BACK + 1.12), look: V(BOARD.x, BOARD.y + 0.15, BACK) },
-  wins: { pos: V(BOARD.x + 0.05, BOARD.y - 0.1, BACK + 1.2), look: V(BOARD.x, BOARD.y - 0.18, BACK) },
+  intro: { pos: PHOTO.center.clone().addScaledVector(PHOTO.normal, 0.5), look: PHOTO.center.clone().add(V(0, 0.006, 0)) },
+  experience: { pos: V(BOARD.x - 0.06, BOARD.y + 0.15, BACK + 1.45), look: V(BOARD.x - 0.05, BOARD.y + 0.19, BACK) },
+  wins: { pos: V(BOARD.x - 0.08, BOARD.y - 0.12, BACK + 1.2), look: V(BOARD.x - 0.12, BOARD.y - 0.19, BACK) },
   projects: { pos: V(0.66, 1.2, 0.36), look: V(0.55, 0.62, -0.28) },
   diary: { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
   ping: { pos: V(0.3, 1.22, 0.42), look: V(0.26, 0.8, -0.56) },
@@ -34,7 +34,7 @@ const TOUR = TOUR_STOPS.map(({ id }) => ({ id, ...SHOTS[id] }))
 const FOCUS = {
   drawer:    { pos: V(0.66, 1.2, 0.36),  look: V(0.55, 0.62, -0.28) },
   diary:     { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
-  corkboard: { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 1.55), look: V(BOARD.x, BOARD.y, BACK) },
+  corkboard: { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 1.85), look: V(BOARD.x, BOARD.y, BACK) },
   phone:     { pos: V(0.39, 0.9, -0.32), look: V(0.5, 0.83, -0.6) },
   sheet:     { pos: V(0.66, 1.2, 0.5),  look: V(0.56, 0.98, -0.15) },
   sides:     { pos: V(0.78, 1.0, 0.42), look: V(0.55, 0.4, -0.12) },
@@ -47,12 +47,12 @@ const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 
 
 // scroll 0…1 → which stop, and how far towards the next
 export function tourAt(s) {
-  const u = THREE.MathUtils.clamp(s, 0, 1) * (TOUR.length - 1)
+  const u = tourU(s)
   const i = Math.min(TOUR.length - 2, Math.floor(u))
   const f = u - i
   // the opening holds longer (the name dissolve plays out first)
-  const k = easeInOut(THREE.MathUtils.smoothstep(f, i === 0 ? 0.62 : 0.3, 0.97))
-  return { i, f, k, stop: TOUR[f < (i === 0 ? 0.8 : 0.62) ? i : i + 1].id }
+  const k = easeInOut(THREE.MathUtils.smoothstep(f, i === 0 ? 0.72 : 0.3, 0.97))
+  return { i, f, k, stop: TOUR[f < (i === 0 ? 0.86 : 0.62) ? i : i + 1].id }
 }
 
 export default function CameraRig() {

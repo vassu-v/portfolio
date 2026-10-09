@@ -4,7 +4,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-const PLAQUE_TEXT = "QUANTUM QUBIT '25 · 3RD";
+// blank brass plate (the wins live on the corkboard)
+const PLAQUE_TEXT = '';
 
 function shadowed(m) {
   m.castShadow = true;
@@ -71,7 +72,7 @@ function plaqueTexture() {
     x.font = `600 ${size}px "Instrument Serif", Georgia, "Times New Roman", serif`;
     size -= 2;
   } while (x.measureText(PLAQUE_TEXT).width > 900 && size > 20);
-  x.fillText(PLAQUE_TEXT, 512, 124);
+  if (PLAQUE_TEXT) x.fillText(PLAQUE_TEXT, 512, 124);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;

@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { PROJECTS } from '../../data/projects'
 import { SIDE_PROJECTS } from '../../data/sideProjects'
 import { POSTS } from '../../data/blog'
-import { ITEMS } from './corkData'
+import { ITEMS, CAL } from './corkData'
 import { PHOTOS } from './DeskPhotos'
 import LaptopTerminal from './LaptopTerminal'
 import { useRoute } from '../../router'
 import { useMobile } from '../../hooks/useMobile'
 import { room, live, useRoom, focusOn, closeLayer, inHand } from './store'
 import { forgetTier } from './tier'
-import { TOUR, goToStop } from './tourData'
+import { goToStop, tourU, RUNWAY_UNITS } from './tourData'
 
 const RoomScene = lazy(() => import('./RoomScene'))
 
@@ -122,8 +122,8 @@ function TourCopy({ hidden, mobile }) {
     let raf
     const run = () => {
       raf = requestAnimationFrame(run)
-      const u = live.scroll * (TOUR.length - 1)
-      const lift = Math.min(1, Math.max(0, (u - 0.1) / 0.6))
+      const u = tourU(live.scroll)
+      const lift = Math.min(1, Math.max(0, (u - 0.2) / 0.65))
       const [x, y] = live.photoPx || [window.innerWidth * 0.4, window.innerHeight * 0.45]
       if (veil.current) {
         veil.current.style.opacity = String((1 - lift) * (hidden ? 0 : 1))
@@ -507,13 +507,25 @@ export default function RoomHome() {
       {!roam && debug && <Inspector />}
       {capture ? null : <>
       {/* scroll runway that drives the camera */}
-      {!roam && !poster && <div style={{ height: `${100 + (TOUR.length - 1) * 95}vh`, position: 'relative', zIndex: 0, pointerEvents: 'none' }} />}
+      {!roam && !poster && <div style={{ height: `${100 + RUNWAY_UNITS * 95}vh`, position: 'relative', zIndex: 0, pointerEvents: 'none' }} />}
 
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px var(--pad)', pointerEvents: 'none' }}>
         <span style={{ ...mono, color: 'var(--cu)', fontSize: '0.9rem', letterSpacing: '0.12em' }}>SG</span>
         {roam
           ? <a href="/" style={{ ...mono, color: 'rgba(240,230,216,0.6)', fontSize: '0.62rem', letterSpacing: '0.1em', pointerEvents: 'auto' }}>← back to the site</a>
-          : <LampToggle on={lampOn} />}
+          : <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* the one call to action, on hand everywhere past the opening */}
+              <AnimatePresence>
+                {tourStop !== 'intro' && (
+                  <motion.a key="hire" href={CAL} target="_blank" rel="noreferrer"
+                    initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                    style={{ ...mono, pointerEvents: 'auto', fontSize: '0.68rem', letterSpacing: '0.06em', fontWeight: 600, color: '#120d08', background: 'var(--go)', borderRadius: 999, padding: '8px 14px', textDecoration: 'none', boxShadow: '0 4px 18px rgba(240,122,26,0.35)' }}>
+                    {mobile ? 'hire me →' : 'hire me · book a call →'}
+                  </motion.a>
+                )}
+              </AnimatePresence>
+              <LampToggle on={lampOn} />
+            </span>}
       </header>
 
       {!roam && !poster && <TourCopy hidden={!!panelFor} mobile={mobile} />}
