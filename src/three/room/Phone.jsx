@@ -31,7 +31,7 @@ function rr(ctx, x, y, w, h, r) {
 function drawLock(ctx, w, h, ui) {
   const now = new Date()
   const g = ctx.createLinearGradient(0, 0, 0, h)
-  g.addColorStop(0, '#2a1b10'); g.addColorStop(1, '#0b0907')
+  g.addColorStop(0, '#132430'); g.addColorStop(1, '#0b0907')
   ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
   ctx.globalAlpha = 0.35 + 0.65 * ui.wake
   ctx.textAlign = 'center'
@@ -39,7 +39,7 @@ function drawLock(ctx, w, h, ui) {
   ctx.font = '300 250px "Instrument Serif", serif'
   ctx.fillText(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }), w / 2, 520)
   ctx.font = '500 42px "JetBrains Mono", monospace'
-  ctx.fillStyle = '#a58a6c'
+  ctx.fillStyle = '#8fb0be'
   ctx.fillText(now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }), w / 2, 600)
   ctx.textAlign = 'left'
   ctx.globalAlpha = 1
@@ -49,11 +49,11 @@ function drawLock(ctx, w, h, ui) {
     ctx.globalAlpha = ui.notif
     ctx.fillStyle = 'rgba(255,240,220,0.14)'
     rr(ctx, 50, y, w - 100, 260, 54); ctx.fill()
-    ctx.fillStyle = '#C57B2B'
+    ctx.fillStyle = '#F07A1A'
     ctx.beginPath(); ctx.arc(130, y + 90, 46, 0, 7); ctx.fill()
     ctx.fillStyle = '#1d1208'; ctx.font = '600 40px "JetBrains Mono", monospace'; ctx.textAlign = 'center'
     ctx.fillText('SG', 130, y + 104); ctx.textAlign = 'left'
-    ctx.fillStyle = '#D4983A'; ctx.font = '600 36px "JetBrains Mono", monospace'; ctx.fillText('Shorya', 200, y + 80)
+    ctx.fillStyle = '#84D0E8'; ctx.font = '600 36px "JetBrains Mono", monospace'; ctx.fillText('Shorya', 200, y + 80)
     ctx.fillStyle = 'rgba(239,230,216,0.55)'; ctx.font = '400 30px "JetBrains Mono", monospace'; ctx.fillText('now', w - 160, y + 80)
     ctx.fillStyle = '#efe6d8'; ctx.font = '400 40px "JetBrains Mono", monospace'
     ctx.fillText('Want to build something', 200, y + 150)
@@ -64,18 +64,18 @@ function drawLock(ctx, w, h, ui) {
 
 function drawCard(ctx, w, h, ui) {
   ctx.globalAlpha = ui.app
-  ctx.fillStyle = '#120d09'; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#0b1218'; ctx.fillRect(0, 0, w, h)
   const glow = ctx.createRadialGradient(w / 2, 300, 0, w / 2, 300, 600)
-  glow.addColorStop(0, 'rgba(197,123,43,0.35)'); glow.addColorStop(1, 'rgba(197,123,43,0)')
+  glow.addColorStop(0, 'rgba(240,122,26,0.35)'); glow.addColorStop(1, 'rgba(240,122,26,0)')
   ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h)
   ctx.textAlign = 'center'
-  ctx.fillStyle = '#C57B2B'
+  ctx.fillStyle = '#F07A1A'
   ctx.beginPath(); ctx.arc(w / 2, 300, 110, 0, 7); ctx.fill()
   ctx.fillStyle = '#1d1208'; ctx.font = '600 84px "JetBrains Mono", monospace'; ctx.fillText('SG', w / 2, 330)
   ctx.fillStyle = '#f6efe4'; ctx.font = 'italic 300 84px "Instrument Serif", serif'
   ctx.fillText('Want to build', w / 2, 560)
   ctx.fillText('something together?', w / 2, 650)
-  ctx.fillStyle = '#a58a6c'; ctx.font = '400 34px "JetBrains Mono", monospace'
+  ctx.fillStyle = '#8fb0be'; ctx.font = '400 34px "JetBrains Mono", monospace'
   ctx.fillText('Shoryavardhaan · Kolkata', w / 2, 740)
   ctx.textAlign = 'left'
   BUTTONS.forEach((b, i) => {
@@ -83,14 +83,14 @@ function drawCard(ctx, w, h, ui) {
     const slide = Math.min(1, Math.max(0, ui.app * 1.6 - 0.25 - i * 0.12))
     const x = 70 + (1 - slide) * 120
     ctx.globalAlpha = ui.app * slide
-    ctx.fillStyle = hot ? '#D4983A' : 'rgba(255,240,220,0.08)'
+    ctx.fillStyle = hot ? '#84D0E8' : 'rgba(255,240,220,0.08)'
     rr(ctx, x, b.y, w - 140, BTN_H - 20, 40); ctx.fill()
-    ctx.strokeStyle = 'rgba(212,152,58,0.45)'; ctx.lineWidth = 3; rr(ctx, x, b.y, w - 140, BTN_H - 20, 40); ctx.stroke()
+    ctx.strokeStyle = 'rgba(132,208,232,0.45)'; ctx.lineWidth = 3; rr(ctx, x, b.y, w - 140, BTN_H - 20, 40); ctx.stroke()
     ctx.fillStyle = hot ? '#120d08' : '#f3e9da'; ctx.font = '600 44px "JetBrains Mono", monospace'
     ctx.fillText(b.label, x + 50, b.y + 60)
     ctx.fillStyle = hot ? '#3a2410' : 'rgba(239,230,216,0.55)'; ctx.font = '400 30px "JetBrains Mono", monospace'
     ctx.fillText(b.sub, x + 50, b.y + 104)
-    ctx.fillStyle = hot ? '#120d08' : '#D4983A'; ctx.font = '600 52px "JetBrains Mono", monospace'
+    ctx.fillStyle = hot ? '#120d08' : '#84D0E8'; ctx.font = '600 52px "JetBrains Mono", monospace'
     ctx.fillText('→', w - 150 - (1 - slide) * 0, b.y + 82)
   })
   ctx.globalAlpha = ui.app

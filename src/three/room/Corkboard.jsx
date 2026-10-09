@@ -14,7 +14,7 @@ const SIZE = {
   expcard: [0.165, 0.11], polaroid: [0.1, 0.12], note: [0.085, 0.085], receipt: [0.07, 0.13],
   stat: [0.12, 0.08], link: [0.13, 0.06], card: [0.13, 0.08],
 }
-const PIN_COLORS = ['#c0392b', '#C57B2B', '#2f6f8f', '#d4a017', '#4f7d4a', '#e9e4da']
+const PIN_COLORS = ['#c0392b', '#F07A1A', '#2f6f8f', '#d4a017', '#4f7d4a', '#e9e4da']
 const PRESENT = new THREE.Vector3(0, 0.02, 0.24)
 const SUPPORT_SLOTS = [[-0.24, 0.05], [0.24, 0.05], [-0.22, -0.14], [0.22, -0.14], [0, -0.19]]
 
@@ -49,7 +49,7 @@ const PAINTERS = {
     ctx.font = '600 44px Caveat, cursive'; ctx.fillStyle = '#2a3550'; ctx.fillText(e.primaryRole, 30, 158)
     ctx.fillStyle = '#7a4a1c'; ctx.font = '500 26px "JetBrains Mono", monospace'; ctx.fillText(e.period.toUpperCase(), 30, 246)
     ctx.fillStyle = '#5c5048'; ctx.font = '400 24px "JetBrains Mono", monospace'; ctx.fillText(e.type, 30, 290)
-    if (e.live) { ctx.fillStyle = '#C57B2B'; ctx.font = '600 40px Caveat, cursive'; ctx.fillText('● now', w - 130, h - 60) }
+    if (e.live) { ctx.fillStyle = '#F07A1A'; ctx.font = '600 40px Caveat, cursive'; ctx.fillText('● now', w - 130, h - 60) }
   },
   polaroid(ctx, w, h, it, redraw) {
     ctx.fillStyle = '#f3f1ea'; ctx.fillRect(0, 0, w, h)
@@ -77,13 +77,13 @@ const PAINTERS = {
     ctx.fillStyle = '#fbfaf6'; ctx.fillRect(0, 0, w, h)
     ctx.fillStyle = '#2a2622'; ctx.font = '500 22px "JetBrains Mono", monospace'
     ;(it.lines || []).forEach((l, i) => ctx.fillText(l, 22, 70 + i * 44))
-    ctx.fillStyle = '#C57B2B'; ctx.font = '600 40px Caveat, cursive'; ctx.fillText('first one ✓', 22, h - 80)
+    ctx.fillStyle = '#F07A1A'; ctx.font = '600 40px Caveat, cursive'; ctx.fillText('first one ✓', 22, h - 80)
     ctx.fillStyle = '#fbfaf6'
     for (let x = 0; x < w; x += 20) { ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x + 10, h - 12); ctx.lineTo(x + 20, h); ctx.fill() }
   },
   stat(ctx, w, h, it) {
     ctx.fillStyle = '#fbf7ee'; ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = '#C57B2B'; ctx.fillRect(0, 0, 10, h)
+    ctx.fillStyle = '#F07A1A'; ctx.fillRect(0, 0, 10, h)
     ctx.fillStyle = '#1d1712'; ctx.font = 'italic 120px "Instrument Serif", serif'; ctx.fillText(it.big, 40, 140)
     ctx.fillStyle = '#5c5048'; ctx.font = '500 28px "JetBrains Mono", monospace'
     wrap(ctx, it.small, w - 70).slice(0, 2).forEach((l, i) => ctx.fillText(l, 42, 200 + i * 36))
@@ -91,7 +91,7 @@ const PAINTERS = {
   },
   link(ctx, w, h, it) {
     ctx.fillStyle = '#1d1712'; ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = '#D4983A'; ctx.font = 'italic 70px "Instrument Serif", serif'; ctx.fillText(it.title, 36, 100)
+    ctx.fillStyle = '#84D0E8'; ctx.font = 'italic 70px "Instrument Serif", serif'; ctx.fillText(it.title, 36, 100)
     ctx.fillStyle = 'rgba(240,230,216,0.7)'; ctx.font = '500 26px "JetBrains Mono", monospace'; ctx.fillText(it.sub || '', 38, 150)
   },
   card(ctx, w, h, it) {
@@ -237,7 +237,7 @@ function Header({ text, pos }) {
     const draw = () => {
       ctx.clearRect(0, 0, 640, 160)
       ctx.fillStyle = '#1d1712'; ctx.font = 'italic 92px "Instrument Serif", serif'; ctx.fillText(text, 14, 104)
-      ctx.strokeStyle = '#C57B2B'; ctx.lineWidth = 6
+      ctx.strokeStyle = '#F07A1A'; ctx.lineWidth = 6
       ctx.beginPath(); ctx.moveTo(18, 130); ctx.quadraticCurveTo(300, 118, 590, 134); ctx.stroke()
       t.needsUpdate = true
     }

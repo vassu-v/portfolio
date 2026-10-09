@@ -43,7 +43,7 @@ function tabTexture(label, color) {
   return t
 }
 
-const TAB_COLORS = ['#C57B2B', '#5B8FAF', '#7a8f5a', '#a8483a', '#D4983A', '#6d5a8a']
+const TAB_COLORS = ['#F07A1A', '#5B8FAF', '#7a8f5a', '#a8483a', '#84D0E8', '#6d5a8a']
 
 function Folder({ project, index, z, selected, onPick }) {
   const ref = useRef()

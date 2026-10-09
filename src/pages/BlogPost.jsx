@@ -50,7 +50,7 @@ function PullQuote({ text }) {
         margin: '52px 0 52px -28px',
         paddingLeft: '28px',
         borderLeft: '2px solid var(--cu)',
-        background: 'rgba(197,123,43,0.04)',
+        background: 'rgba(132,208,232,0.04)',
         borderRadius: '0 8px 8px 0',
         padding: '24px 28px',
       }}
@@ -163,7 +163,7 @@ function ContinueReading({ url, platform }) {
       padding: '28px 32px',
       border: '1px solid var(--cu-b)',
       borderRadius: '6px',
-      background: 'rgba(197,123,43,0.04)',
+      background: 'rgba(132,208,232,0.04)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px',
     }}>
       <div>

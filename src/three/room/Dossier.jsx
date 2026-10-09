@@ -44,7 +44,7 @@ function cover(ctx, im, x, y, w, h) {
 function header(ctx, p, i, n, label) {
   ctx.fillStyle = '#f5efe2'
   ctx.fillRect(0, 0, PX, PY)
-  ctx.fillStyle = '#C57B2B'
+  ctx.fillStyle = '#F07A1A'
   ctx.fillRect(0, 0, PX, 12)
   ctx.fillStyle = '#8a6a48'
   ctx.font = '500 22px "JetBrains Mono", monospace'
@@ -61,7 +61,7 @@ function sectionTitle(ctx, t, y) {
   ctx.fillStyle = '#1d1712'
   ctx.font = 'italic 64px "Instrument Serif", serif'
   ctx.fillText(t, 56, y)
-  ctx.strokeStyle = '#C57B2B'; ctx.lineWidth = 4
+  ctx.strokeStyle = '#F07A1A'; ctx.lineWidth = 4
   ctx.beginPath(); ctx.moveTo(58, y + 18); ctx.lineTo(58 + ctx.measureText(t).width, y + 14); ctx.stroke()
 }
 
@@ -100,7 +100,7 @@ const PAINT = [
     for (const tag of (p.tags || []).slice(0, 6)) {
       const w = ctx.measureText(tag).width + 28
       if (x + w > PX - 56) { x = 56; y += 50 }
-      ctx.strokeStyle = '#C57B2B'; ctx.lineWidth = 2; ctx.strokeRect(x, y - 30, w, 42)
+      ctx.strokeStyle = '#F07A1A'; ctx.lineWidth = 2; ctx.strokeRect(x, y - 30, w, 42)
       ctx.fillStyle = '#7a4a1c'; ctx.fillText(tag, x + 14, y)
       x += w + 12
     }
@@ -121,7 +121,7 @@ const PAINT = [
     let y = 260
     for (const h of (p.how || []).slice(0, 5)) {
       if (y > PY - 160) break
-      ctx.fillStyle = '#C57B2B'
+      ctx.fillStyle = '#F07A1A'
       ctx.font = '600 26px "JetBrains Mono", monospace'
       ctx.fillText('▸ ' + (h.label || ''), 56, y)
       y = body(ctx, h.text, y + 42, PY - 90, 24) + 18

@@ -26,9 +26,9 @@ import { projectJsonLdNode } from './utils/projectSeo'
 // Section → cursor RGB color map
 const SECTION_COLORS = {
   about:      { r: 91,  g: 143, b: 175 }, // slate
-  highlights: { r: 212, g: 152, b: 58  }, // gold
+  highlights: { r: 240, g: 122, b: 26  }, // orange
 }
-const COPPER = { r: 197, g: 123, b: 43 }
+const COPPER = { r: 132, g: 208, b: 232 }
 
 function ZoneDivider() {
   return (
@@ -318,7 +318,7 @@ export default function App() {
     console.log(
       '%cpsst, curl this site: %ccurl shoryavardhaan.vercel.app',
       'color:#8a8a8a;font-family:monospace',
-      'color:#c57b2b;font-family:monospace;font-weight:bold'
+      'color:#84D0E8;font-family:monospace;font-weight:bold'
     )
   }, [])
 

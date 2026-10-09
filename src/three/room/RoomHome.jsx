@@ -61,7 +61,7 @@ function HoverLabel() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            style={{ ...mono, fontSize: '0.68rem', letterSpacing: '0.06em', color: '#f3e9da', background: 'rgba(14,11,8,0.78)', border: '1px solid rgba(197,123,43,0.45)', padding: '6px 10px', borderRadius: 4, whiteSpace: 'nowrap', backdropFilter: 'blur(6px)' }}
+            style={{ ...mono, fontSize: '0.68rem', letterSpacing: '0.06em', color: '#f3e9da', background: 'rgba(14,11,8,0.78)', border: '1px solid rgba(240,122,26,0.45)', padding: '6px 10px', borderRadius: 4, whiteSpace: 'nowrap', backdropFilter: 'blur(6px)' }}
           >
             {hover.label}
           </motion.div>
@@ -77,8 +77,8 @@ function Chip({ children, onClick, active }) {
       onClick={onClick}
       style={{
         ...mono, fontSize: '0.66rem', letterSpacing: '0.08em', textTransform: 'lowercase',
-        color: active ? '#120d08' : '#f0e6d8', background: active ? 'var(--go)' : 'rgba(14,11,8,0.55)',
-        border: '1px solid rgba(212,152,58,0.35)', borderRadius: 999, padding: '8px 14px', backdropFilter: 'blur(8px)',
+        color: active ? '#120d08' : '#f0e6d8', background: active ? 'var(--cu)' : 'rgba(14,11,8,0.55)',
+        border: '1px solid rgba(132,208,232,0.35)', borderRadius: 999, padding: '8px 14px', backdropFilter: 'blur(8px)',
       }}
     >
       {children}
@@ -105,7 +105,7 @@ function FocusPanel({ focus }) {
     title = it ? it.panel.title : 'The work so far'
     body = it
       ? <>
-          {it.panel.sub && <p style={{ color: 'var(--go)' }}>{it.panel.sub}</p>}
+          {it.panel.sub && <p style={{ color: 'var(--cu)' }}>{it.panel.sub}</p>}
           <p>{it.panel.text}</p>
           {it.panel.project && <button style={linkBtn} onClick={() => navigate(`/project/${it.panel.project}`)}>see the project →</button>}
           {it.panel.cta && <a style={link} href={it.panel.cta.href} target="_blank" rel="noreferrer">{it.panel.cta.label} →</a>}
@@ -152,8 +152,8 @@ function FocusPanel({ focus }) {
   )
 }
 
-const link = { color: 'var(--go)', textDecoration: 'none', borderBottom: '1px solid rgba(212,152,58,0.4)' }
-const linkBtn = { ...link, ...mono, background: 'none', border: 'none', borderBottom: '1px solid rgba(212,152,58,0.4)', padding: 0, fontSize: '0.78rem', justifySelf: 'start' }
+const link = { color: 'var(--cu)', textDecoration: 'none', borderBottom: '1px solid rgba(132,208,232,0.4)' }
+const linkBtn = { ...link, ...mono, background: 'none', border: 'none', borderBottom: '1px solid rgba(132,208,232,0.4)', padding: 0, fontSize: '0.78rem', justifySelf: 'start' }
 
 // Inspection panel for ?roam / ?debug: live cost, quality tier, time, lamp.
 function Inspector({ full }) {
@@ -170,8 +170,8 @@ function Inspector({ full }) {
   const setTier = t => { forgetTier(); room.set({ tier: t, tierReason: 'picked in inspector' }) }
   const row = { display: 'flex', justifyContent: 'space-between', gap: 12 }
   return (
-    <div style={{ position: 'fixed', right: 12, top: full ? 12 : 'auto', bottom: full ? 'auto' : 12, zIndex: 70, ...mono, fontSize: 11, lineHeight: 1.6, color: '#efe6d8', background: 'rgba(12,10,8,0.78)', border: '1px solid rgba(212,152,58,0.3)', backdropFilter: 'blur(8px)', padding: '10px 12px', borderRadius: 8, width: open ? 248 : 'auto' }}>
-      <button onClick={() => setOpen(o => !o)} style={{ ...mono, fontSize: 11, color: 'var(--go)', background: 'none', border: 'none', padding: 0 }}>{open ? '▾' : '▸'} inspector</button>
+    <div style={{ position: 'fixed', right: 12, top: full ? 12 : 'auto', bottom: full ? 'auto' : 12, zIndex: 70, ...mono, fontSize: 11, lineHeight: 1.6, color: '#efe6d8', background: 'rgba(12,10,8,0.78)', border: '1px solid rgba(132,208,232,0.3)', backdropFilter: 'blur(8px)', padding: '10px 12px', borderRadius: 8, width: open ? 248 : 'auto' }}>
+      <button onClick={() => setOpen(o => !o)} style={{ ...mono, fontSize: 11, color: 'var(--cu)', background: 'none', border: 'none', padding: 0 }}>{open ? '▾' : '▸'} inspector</button>
       {open && (
         <div style={{ marginTop: 6, display: 'grid', gap: 2 }}>
           <div style={row}><span>fps</span><span>{perf?.fps ?? '–'}</span></div>
@@ -182,12 +182,12 @@ function Inspector({ full }) {
           <div style={{ marginTop: 8, color: 'rgba(239,230,216,0.6)' }}>tier · {reason}</div>
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {['high', 'mid', 'low', 'poster'].map(t => (
-              <button key={t} onClick={() => setTier(t)} style={{ ...mono, fontSize: 11, padding: '3px 8px', borderRadius: 999, border: '1px solid rgba(212,152,58,0.4)', background: tier === t ? 'var(--go)' : 'transparent', color: tier === t ? '#120d08' : '#efe6d8' }}>{t}</button>
+              <button key={t} onClick={() => setTier(t)} style={{ ...mono, fontSize: 11, padding: '3px 8px', borderRadius: 999, border: '1px solid rgba(132,208,232,0.4)', background: tier === t ? 'var(--cu)' : 'transparent', color: tier === t ? '#120d08' : '#efe6d8' }}>{t}</button>
             ))}
           </div>
           <div style={{ marginTop: 8 }}>time {String(Math.floor(hour)).padStart(2, '0')}:{String(Math.round((hour % 1) * 60)).padStart(2, '0')}</div>
           <input type="range" min="0" max="23.9" step="0.1" value={hour} onChange={e => room.set({ hour: +e.target.value })} style={{ width: '100%' }} />
-          <button onClick={() => room.set({ lampOn: !lampOn })} style={{ ...mono, fontSize: 11, marginTop: 4, padding: '3px 8px', borderRadius: 999, border: '1px solid rgba(212,152,58,0.4)', background: 'transparent', color: '#efe6d8', justifySelf: 'start' }}>lamp {lampOn ? 'off' : 'on'}</button>
+          <button onClick={() => room.set({ lampOn: !lampOn })} style={{ ...mono, fontSize: 11, marginTop: 4, padding: '3px 8px', borderRadius: 999, border: '1px solid rgba(132,208,232,0.4)', background: 'transparent', color: '#efe6d8', justifySelf: 'start' }}>lamp {lampOn ? 'off' : 'on'}</button>
           {full && <div style={{ marginTop: 8, color: 'rgba(239,230,216,0.6)' }}>drag to orbit · scroll/pinch to zoom · right-drag to pan · click objects</div>}
         </div>
       )}
@@ -217,7 +217,7 @@ function DeviceChoice({ onContinue, reason, still }) {
   return (
     <motion.div role="dialog" aria-modal="true" aria-labelledby="dc-title"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'grid', placeItems: 'center', padding: 16, background: 'radial-gradient(900px 600px at 50% 0%, rgba(197,123,43,0.12), transparent 60%), #0b0907' }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'grid', placeItems: 'center', padding: 16, background: 'radial-gradient(900px 600px at 50% 0%, rgba(240,122,26,0.12), transparent 60%), #0b0907' }}>
       <div style={{ width: 'min(520px, 100%)', ...mono, color: '#efe6d8', border: '1px solid rgba(255,240,220,0.1)', borderRadius: 14, padding: mobile ? '26px 20px' : '34px 34px 28px', background: 'rgba(255,240,220,0.02)' }}>
         <p style={{ fontSize: '0.66rem', letterSpacing: '0.18em', color: 'var(--cu)', marginBottom: 14 }}>BEFORE WE LOAD THE ROOM</p>
         <h2 id="dc-title" style={{ ...serif, fontSize: mobile ? '2.1rem' : '2.6rem', lineHeight: 1.05, marginBottom: 12, color: '#f6efe4' }}>This device might find the 3D room heavy.</h2>
@@ -225,10 +225,10 @@ function DeviceChoice({ onContinue, reason, still }) {
           The CLI version has everything (projects, work, writing, contact) and opens instantly. Or load the 3D room anyway; you can switch any time.
         </p>
         <div style={{ display: 'grid', gap: 10 }}>
-          <a href="/terminal/" onClick={() => rememberMode('cli')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '14px 18px', borderRadius: 10, background: 'var(--go)', color: '#120d08', fontWeight: 500, fontSize: '0.85rem' }}>
+          <a href="/terminal/" onClick={() => rememberMode('cli')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '14px 18px', borderRadius: 10, background: 'var(--cu)', color: '#120d08', fontWeight: 500, fontSize: '0.85rem' }}>
             open CLI mode — fast, text-first
           </a>
-          <button onClick={() => { rememberMode('3d'); onContinue() }} style={{ ...mono, padding: '13px 18px', borderRadius: 10, background: 'transparent', color: '#efe6d8', border: '1px solid rgba(212,152,58,0.4)', fontSize: '0.85rem' }}>
+          <button onClick={() => { rememberMode('3d'); onContinue() }} style={{ ...mono, padding: '13px 18px', borderRadius: 10, background: 'transparent', color: '#efe6d8', border: '1px solid rgba(132,208,232,0.4)', fontSize: '0.85rem' }}>
             {still ? 'continue to the site' : 'continue to the 3D room'}
           </button>
         </div>
@@ -243,9 +243,9 @@ function SlowToast() {
   if (hidden) return null
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      style={{ position: 'fixed', top: 64, left: '50%', transform: 'translateX(-50%)', zIndex: 60, ...mono, fontSize: '0.72rem', color: '#efe6d8', background: 'rgba(12,10,8,0.85)', border: '1px solid rgba(212,152,58,0.35)', borderRadius: 999, padding: '8px 10px 8px 16px', display: 'flex', gap: 10, alignItems: 'center', backdropFilter: 'blur(8px)' }}>
+      style={{ position: 'fixed', top: 64, left: '50%', transform: 'translateX(-50%)', zIndex: 60, ...mono, fontSize: '0.72rem', color: '#efe6d8', background: 'rgba(12,10,8,0.85)', border: '1px solid rgba(132,208,232,0.35)', borderRadius: 999, padding: '8px 10px 8px 16px', display: 'flex', gap: 10, alignItems: 'center', backdropFilter: 'blur(8px)' }}>
       running slow?
-      <a href="/terminal/" onClick={() => rememberMode('cli')} style={{ color: 'var(--go)' }}>try CLI mode →</a>
+      <a href="/terminal/" onClick={() => rememberMode('cli')} style={{ color: 'var(--cu)' }}>try CLI mode →</a>
       <button aria-label="dismiss" onClick={() => setHidden(true)} style={{ ...mono, background: 'none', border: 0, color: 'rgba(239,230,216,0.5)', fontSize: '0.8rem' }}>✕</button>
     </motion.div>
   )

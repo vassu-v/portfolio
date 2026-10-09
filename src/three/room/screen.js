@@ -19,7 +19,7 @@ const SESSION = [
 ]
 const SESSION_LEN = SESSION.reduce((n, [l]) => n + l.length + 6, 0)
 const TYPE_RATE = 7
-const COPPER = '#C57B2B', GOLD = '#D4983A'
+const COPPER = '#F07A1A', GOLD = '#84D0E8'
 
 // Draws the laptop screen. `dissolve` 0 → name card, 1 → desktop. The name
 // is sampled into particles once (after fonts load) and those particles
@@ -44,13 +44,13 @@ export function createScreen() {
   function drawName(c) {
     c.clearRect(0, 0, W, H)
     c.textAlign = 'center'
-    c.fillStyle = '#8a6a48'
+    c.fillStyle = '#6f8fa0'
     c.font = '500 30px "JetBrains Mono", monospace'
     c.fillText('— HELLO, I\'M —', W / 2, 330)
     c.fillStyle = GOLD
     c.font = 'italic 400 196px "Instrument Serif", serif'
     c.fillText('Shoryavardhaan', W / 2, 540)
-    c.fillStyle = '#a58a6c'
+    c.fillStyle = '#8fb0be'
     c.font = '400 34px "JetBrains Mono", monospace'
     c.fillText(`builder · ${AGE} · kolkata`, W / 2, 650)
     c.textAlign = 'left'
@@ -90,19 +90,19 @@ export function createScreen() {
 
   function desktop(t) {
     const g = ctx.createLinearGradient(0, 0, W, H)
-    g.addColorStop(0, '#1a1410')
-    g.addColorStop(1, '#2b1d10')
+    g.addColorStop(0, '#0f161c')
+    g.addColorStop(1, '#1d1a14')
     ctx.fillStyle = g
     ctx.fillRect(0, 0, W, H)
     const glow = ctx.createRadialGradient(W * 0.78, H * 0.28, 0, W * 0.78, H * 0.28, 520)
-    glow.addColorStop(0, 'rgba(212,152,58,0.25)')
-    glow.addColorStop(1, 'rgba(212,152,58,0)')
+    glow.addColorStop(0, 'rgba(132,208,232,0.25)')
+    glow.addColorStop(1, 'rgba(132,208,232,0)')
     ctx.fillStyle = glow
     ctx.fillRect(0, 0, W, H)
     // menu bar with the visitor's real local time
     ctx.fillStyle = 'rgba(0,0,0,0.45)'
     ctx.fillRect(0, 0, W, 44)
-    ctx.fillStyle = '#d9cbb5'
+    ctx.fillStyle = '#cfe0e8'
     ctx.font = '500 22px "JetBrains Mono", monospace'
     ctx.fillText('SG  ·  ~/shorya', 24, 30)
     const now = new Date()
@@ -126,7 +126,7 @@ export function createScreen() {
     for (const [line, kind] of SESSION) {
       if (budget <= 0) break
       const shown = kind === 'cmd' ? line.slice(0, budget) : line
-      ctx.fillStyle = kind === 'cmd' ? '#8a6a48' : GOLD
+      ctx.fillStyle = kind === 'cmd' ? '#6f8fa0' : GOLD
       const out = shown.length > 52 ? shown.slice(0, 51) + '…' : shown
       ctx.fillText(out, x + 36, y + 104 + row * 46)
       cx = x + 36 + ctx.measureText(out).width

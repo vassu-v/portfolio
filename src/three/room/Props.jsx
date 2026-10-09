@@ -126,7 +126,7 @@ function Lamp({ tier }) {
         <primitive object={model} scale={0.1} />
         <mesh ref={btn} position={[0.045, 0.024, 0.045]} castShadow>
           <cylinderGeometry args={[0.012, 0.012, 0.012, 20]} />
-          <meshStandardMaterial color="#C57B2B" metalness={0.6} roughness={0.35} emissive="#C57B2B" emissiveIntensity={lampOn ? 0.6 : 0} />
+          <meshStandardMaterial color="#F07A1A" metalness={0.6} roughness={0.35} emissive="#F07A1A" emissiveIntensity={lampOn ? 0.6 : 0} />
         </mesh>
       </Hotspot>
       <primitive object={target} />
@@ -257,7 +257,7 @@ function Pen(props) {
       </mesh>
       <mesh position={[0.075, 0, 0]} rotation={[0, 0, -Math.PI / 2]} castShadow>
         <coneGeometry args={[0.0045, 0.012, 12]} />
-        <meshStandardMaterial color="#C57B2B" roughness={0.3} metalness={0.8} />
+        <meshStandardMaterial color="#F07A1A" roughness={0.3} metalness={0.8} />
       </mesh>
     </group>
   )

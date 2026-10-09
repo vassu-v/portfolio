@@ -119,7 +119,7 @@ function Screen({ ctl, stages, mobile }) {
       if (isSG) {
         const t = Math.min(1, s.reveal / 2)
         ctx.globalAlpha = t
-        ctx.fillStyle = '#D4983A'
+        ctx.fillStyle = '#F07A1A'
         ctx.font = 'italic 300 188px "Instrument Serif", serif'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
@@ -130,7 +130,7 @@ function Screen({ ctl, stages, mobile }) {
       } else if (isContact) {
         const t = Math.min(1, s.reveal / 40)
         ctx.globalAlpha = t
-        ctx.fillStyle = '#D4983A'
+        ctx.fillStyle = '#F07A1A'
         ctx.font = 'italic 300 104px "Instrument Serif", serif'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
@@ -151,7 +151,7 @@ function Screen({ ctl, stages, mobile }) {
         for (const line of lines) {
           const take = Math.max(0, Math.min(line.length, remaining))
           const shown = line.slice(0, take)
-          ctx.fillStyle = line.startsWith('$') ? '#8a6220' : '#D4983A'
+          ctx.fillStyle = line.startsWith('$') ? '#8a6220' : '#F07A1A'
           ctx.fillText(shown, 28, y)
           lastX = 28 + ctx.measureText(shown).width
           lastY = y
@@ -160,7 +160,7 @@ function Screen({ ctl, stages, mobile }) {
           if (remaining < 0) break
         }
         if (s.blinkOn) {
-          ctx.fillStyle = '#D4983A'
+          ctx.fillStyle = '#F07A1A'
           ctx.fillRect(lastX + 6, lastY + 2, 12, 22)
         }
       }
@@ -210,7 +210,7 @@ function Laptop({ lidRef, glowRef, ctl, stages, mobile }) {
         <Screen ctl={ctl} stages={stages} mobile={mobile} />
       </group>
       {/* Screen light spilling onto the desk */}
-      <pointLight ref={glowRef} position={[0, 0.5, 0.7]} color="#D4983A" intensity={0} distance={2.4} decay={2} />
+      <pointLight ref={glowRef} position={[0, 0.5, 0.7]} color="#F07A1A" intensity={0} distance={2.4} decay={2} />
     </group>
   )
 }
@@ -301,7 +301,7 @@ function Props() {
         </mesh>
         <mesh position={[-0.1, 0.035, 0.04]}>
           <boxGeometry args={[0.06, 0.014, 0.06]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.5} emissive="#C57B2B" emissiveIntensity={0.25} />
+          <meshStandardMaterial color="#0a0a0a" roughness={0.5} emissive="#84D0E8" emissiveIntensity={0.25} />
         </mesh>
         <mesh position={[0.08, 0.033, -0.05]}>
           <boxGeometry args={[0.1, 0.01, 0.04]} />

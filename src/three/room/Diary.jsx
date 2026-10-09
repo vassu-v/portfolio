@@ -12,7 +12,7 @@ import { room, useRoom, focusOn } from './store'
 const W = 0.148, D = 0.21, COVER = 0.003, BLOCK = 0.009
 const HINGE_Y = COVER + BLOCK
 const PX_W = 768, PX_H = 1086
-const TAB_COLORS = ['#C57B2B', '#5B8FAF', '#7a8f5a', '#a8483a', '#D4983A', '#6d5a8a', '#3d6b6b']
+const TAB_COLORS = ['#F07A1A', '#5B8FAF', '#7a8f5a', '#a8483a', '#84D0E8', '#6d5a8a', '#3d6b6b']
 export const SPREADS = POSTS.length + 1
 
 const images = new Map()
@@ -178,10 +178,10 @@ function leatherTexture() {
     ctx.fillRect(Math.random() * 512, Math.random() * 720, 2, 2)
   }
   // debossed title
-  ctx.strokeStyle = 'rgba(197,123,43,0.55)'
+  ctx.strokeStyle = 'rgba(240,122,26,0.55)'
   ctx.lineWidth = 3
   ctx.strokeRect(46, 46, 420, 628)
-  ctx.fillStyle = 'rgba(197,123,43,0.7)'
+  ctx.fillStyle = 'rgba(240,122,26,0.7)'
   ctx.font = 'italic 96px "Instrument Serif", serif'
   ctx.textAlign = 'center'
   ctx.fillText('log', 256, 380)

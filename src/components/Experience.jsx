@@ -146,7 +146,7 @@ function Panel({ exp }) {
                 textDecoration: 'none',
                 transition: 'background 0.2s, border-color 0.2s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(197,123,43,0.18)'; e.currentTarget.style.borderColor = 'var(--cu)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(132,208,232,0.18)'; e.currentTarget.style.borderColor = 'var(--cu)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--cu-d)'; e.currentTarget.style.borderColor = 'var(--cu-b)' }}
             >
               ✦ Looking to hire?
@@ -248,7 +248,7 @@ function Panel({ exp }) {
               border: '1px solid transparent',
               transition: 'background 0.2s, box-shadow 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--go)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(197,123,43,0.28)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--go)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(132,208,232,0.28)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--cu)'; e.currentTarget.style.boxShadow = 'none' }}
           >
             <i className="fa-solid fa-calendar-days" />
