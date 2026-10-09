@@ -98,8 +98,10 @@ function Lamp({ tier }) {
     target.position.set(0.12, Y, -0.55)
     const flicker = 1 + Math.sin(clock.elapsedTime * 23) * 0.01 + Math.sin(clock.elapsedTime * 7.3) * 0.015
     spot.current.intensity = 9 * k * flicker
-    fill.current.position.copy(anchors.lampBulb)
-    fill.current.intensity = 0.6 * k
+    if (fill.current) {
+      fill.current.position.copy(anchors.lampBulb)
+      fill.current.intensity = 0.6 * k
+    }
     if (btn.current) btn.current.position.y = damp(btn.current.position.y, lampOn ? 0.024 : 0.019, 18, dt)
   })
 
@@ -130,13 +132,13 @@ function Lamp({ tier }) {
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.02}
-        shadow-radius={6}
+        shadow-radius={off.has('r1') ? 1 : off.has('r2') ? 2 : 6}
         shadow-camera-near={0.02}
         shadow-camera-far={4}
         castShadow={(TIERS[tier]?.lampShadow ?? false) && !off.has('shadow')}
         onUpdate={l => l.shadow.camera.layers.enable(1)}
       />
-      <pointLight ref={fill} color="#ffcf94" distance={4} decay={2} />
+      {!off.has('fill') && <pointLight ref={fill} color="#ffcf94" distance={4} decay={2} />}
     </>
   )
 }

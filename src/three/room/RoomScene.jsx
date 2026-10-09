@@ -43,7 +43,7 @@ function Sun({ sky, mapSize }) {
         shadow-mapSize={[mapSize, mapSize]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.025}
-        shadow-radius={4}
+        shadow-radius={off.has('r1') ? 1 : off.has('r2') ? 2 : 4}
         shadow-camera-left={-3}
         shadow-camera-right={3}
         shadow-camera-top={3}
@@ -235,8 +235,8 @@ function SceneContent() {
       {cfg.dust && <Dust sky={sky} />}
       {roam ? <Roam /> : <CameraRig />}
       <Driver idleFps={cfg.idleFps} />
-      {!roam && <TierProbe />}
-      {(debug || roam) && <PerfProbe />}
+      {!roam && !/[?&]tier=/.test(window.location.search) && <TierProbe />}
+      {(debug || roam) && <PerfProbe selfRender={!(cfg.post && !off.has('post'))} />}
       {!off.has('post') && <Post key={tier} cfg={cfg} />}
     </>
   )
@@ -262,7 +262,7 @@ export default function RoomScene() {
   return (
     <Canvas
       key={tier}
-      shadows
+      shadows={off.has('vsm') ? 'variance' : off.has('basic') ? 'basic' : true}
       flat
       frameloop="demand"
       dpr={dpr}

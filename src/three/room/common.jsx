@@ -19,6 +19,15 @@ export function prepModel(root, { keepLights = false, shadows = true } = {}) {
       if (!m) continue
       if (m.flatShading) { m.flatShading = false; m.needsUpdate = true }
       if (m.emissive && m.emissiveIntensity < 0.3 && !m.map) m.emissiveIntensity = 0
+      // transmission forces a full extra scene render every frame (and, with
+      // renderer tone mapping, a shader rebuild per frame) — for a few pixels
+      // of lens glass. Plain transparency reads the same at this size.
+      if (m.transmission > 0) {
+        m.opacity = Math.min(m.opacity, 1 - m.transmission * 0.6)
+        m.transparent = true
+        m.transmission = 0
+        m.needsUpdate = true
+      }
     }
   })
   if (!keepLights) lights.forEach(l => { l.intensity = 0; l.visible = false })
