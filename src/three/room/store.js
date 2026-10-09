@@ -14,6 +14,8 @@ let state = {
   debug: params.has('debug'),
   folder: -1,        // project folder pulled out of the drawer
   card: -1,          // corkboard card brought forward
+  spread: 0,         // diary spread currently open
+  page: 0,           // dossier page on top
   explore: false,    // scroll intro finished, objects are clickable
   roam: params.has('roam'), // free-orbit inspection mode, no scroll story
   ...(typeof window !== 'undefined' ? (({ tier, reason }) => ({ tier, tierReason: reason }))(detectTier()) : { tier: 'low', tierReason: 'ssr' }),
@@ -57,7 +59,7 @@ export function useRoom(selector) {
 }
 
 export function focusOn(id) {
-  room.set({ focus: id, folder: -1, card: -1, hover: null })
+  room.set({ focus: id, folder: -1, card: -1, hover: null, spread: 0 })
 }
 
 if (typeof window !== 'undefined' && params.has('debug')) window.__room = room, window.__live = live

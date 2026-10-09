@@ -7,8 +7,6 @@ import { createModel as createHeadphones } from './lib/headphones'
 import { createModel as createLamp } from './lib/desk-lamp'
 import { createModel as createPhone } from './lib/iphone'
 import { createModel as createMug } from './lib/coffee-mug'
-import { createModel as createBook } from './lib/book'
-import { POSTS } from '../../data/blog'
 import { AGE } from '../../utils/meta'
 import { prepModel, Hotspot, damp } from './common'
 import { bakeStatic } from './bake'
@@ -113,7 +111,7 @@ function Lamp({ tier }) {
 
   return (
     <>
-      <Hotspot id="lamp" label="Lamp — switch the light" onClick={toggle} position={[0.6, Y, -0.86]} rotation={[0, Math.PI - 0.35, 0]}>
+      <Hotspot id="lamp" always label="Lamp — click to switch" onClick={toggle} position={[0.6, Y, -0.86]} rotation={[0, Math.PI - 0.35, 0]}>
         <primitive object={model} scale={0.1} />
         <mesh ref={btn} position={[0.045, 0.024, 0.045]} castShadow>
           <cylinderGeometry args={[0.012, 0.012, 0.012, 20]} />
@@ -177,7 +175,7 @@ function Headphones() {
         <cylinderGeometry args={[0.006, 0.006, 0.06, 10]} />
         <meshStandardMaterial color="#1b1b1d" metalness={0.6} roughness={0.4} />
       </mesh>
-      <Hotspot id="headphones" label="Headphones" onClick={() => { swing.current.v += 2.2 }}>
+      <Hotspot id="headphones" always label="Headphones" onClick={() => { swing.current.v += 2.2 }}>
         <group ref={ref} position={[-0.025, 0.006, 0]}>
           <primitive object={model} />
         </group>
@@ -262,40 +260,6 @@ function Phone() {
   )
 }
 
-function Diary() {
-  const focus = useRoom(s => s.focus)
-  const model = useMemo(() => {
-    const m = prepModel(createBook())
-    m.position.set(0, 0, 0)
-    m.userData.setOpen(false)
-    m.userData.update(0, 1)
-    const titles = POSTS.slice(0, 5).map(p => {
-      const t = p.title.length > 19 ? p.title.slice(0, 18).trim() + '…' : p.title
-      return '· ' + t
-    })
-    m.userData.write('the log\n\n' + titles.join('\n'), (POSTS[0]?.date || '') + '\n\n' + wrap(POSTS[0]?.subtitle || '', 17).slice(0, 7).join('\n'))
-    return m
-  }, [])
-
-  useEffect(() => { model.userData.setOpen(focus === 'diary') }, [model, focus])
-  useFrame(({ clock }, dt) => model.userData.update(clock.elapsedTime, dt))
-
-  return (
-    <Hotspot id="diary" label="Diary — the blog" onClick={() => focusOn('diary')} position={[-0.5, Y + 0.004, -0.5]} rotation={[0, 0.32, 0]}>
-      <primitive object={model} scale={0.1} />
-    </Hotspot>
-  )
-}
-
-function wrap(text, n) {
-  const out = []
-  let line = ''
-  for (const w of text.split(' ')) {
-    if ((line + ' ' + w).trim().length > n) { out.push(line); line = w } else line = (line + ' ' + w).trim()
-  }
-  if (line) out.push(line)
-  return out
-}
 
 function noteTexture(lines, bg) {
   const c = document.createElement('canvas')
@@ -401,12 +365,12 @@ function Built() {
   return (
     <>
       {chair && (
-        <Hotspot id="chair" label="Chair — give it a spin" onClick={() => { spin.current.v += 5 }} position={[-0.42, 0, 0.32]} rotation={[0, Math.PI - 0.75, 0]}>
+        <Hotspot id="chair" always label="Chair — give it a spin" onClick={() => { spin.current.v += 5 }} position={[-0.42, 0, 0.32]} rotation={[0, Math.PI - 0.75, 0]}>
           <primitive object={chair} />
         </Hotspot>
       )}
       {pad && <primitive object={pad} position={[0.27, Y, -0.48]} rotation={[0, -0.04, 0]} />}
-      {mouse && <primitive object={mouse} position={[0.29, Y + (pad ? 0.003 : 0), -0.46]} rotation={[0, -0.18, 0]} />}
+      {mouse && <primitive object={mouse} position={[0.29, Y + (pad ? 0.003 : 0), -0.46]} rotation={[0, Math.PI - 0.18, 0]} />}
       {plant && <primitive object={plant} position={[-0.66, Y, -0.86]} />}
     </>
   )
@@ -421,7 +385,6 @@ export default function Props({ tier = 'high' }) {
       <Headphones />
       <Mug />
       <Phone />
-      <Diary />
       <Built />
       <Pen position={[-0.36, Y + 0.0045, -0.38]} rotation={[0, 0.9, 0]} />
 

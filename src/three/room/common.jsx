@@ -43,10 +43,11 @@ export function fitToHeight(obj, size, axis = 'x') {
 
 // Wraps any object so it reacts to hover/click once the visitor is in
 // explore mode (scroll intro finished) or already focused on it.
-export function Hotspot({ id, label, onClick, children, enabled = true, ...props }) {
+// `always`: toys (lamp, chair, headphones) respond even before explore mode.
+export function Hotspot({ id, label, onClick, children, enabled = true, always = false, ...props }) {
   const explore = useRoom(s => s.explore)
   const focus = useRoom(s => s.focus)
-  const active = enabled && (explore || focus === id)
+  const active = enabled && (always || explore || focus === id)
   const over = useRef(false)
 
   const enter = e => {

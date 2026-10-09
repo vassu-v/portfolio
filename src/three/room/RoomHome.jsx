@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PROJECTS } from '../../data/projects'
+import { POSTS } from '../../data/blog'
 import { EXP } from '../../components/Experience'
 import { useRoute } from '../../router'
 import { useMobile } from '../../hooks/useMobile'
@@ -87,13 +88,15 @@ function FocusPanel({ focus }) {
   const mobile = useMobile(768)
   const folder = useRoom(s => s.folder)
   const card = useRoom(s => s.card)
+  const spread = useRoom(s => s.spread)
+  const page = useRoom(s => s.page)
   const { navigate } = useRoute()
   let title = '', body = null
   if (focus === 'drawer') {
     const p = PROJECTS[folder]
     title = p ? p.name : 'Projects'
     body = p
-      ? <><p>{p.tagline}</p><button style={linkBtn} onClick={() => navigate(`/project/${p.slug}`)}>open case study →</button></>
+      ? <><p>{p.tagline}</p><p style={{ opacity: 0.6 }}>page {page + 1} / 4 · click the page to turn it · click away to file it</p><button style={linkBtn} onClick={() => navigate(`/project/${p.slug}`)}>open case study →</button></>
       : <p>Every folder is a project. Pick one out.</p>
   } else if (focus === 'corkboard') {
     const e = EXP[card]
@@ -102,8 +105,19 @@ function FocusPanel({ focus }) {
       ? <><p style={{ color: 'var(--go)' }}>{e.primaryRole} · {e.period}</p><p>{e.desc}</p></>
       : <p>Roles pinned in order, string runs oldest → newest. Tap a card.</p>
   } else if (focus === 'diary') {
-    title = 'The log'
-    body = <><p>Essays on building, tech and thinking clearly.</p><button style={linkBtn} onClick={() => navigate('/blog')}>read the log →</button></>
+    const post = spread > 0 && spread <= POSTS.length ? POSTS[spread - 1] : null
+    const next = spread < POSTS.length ? POSTS[spread] : null
+    title = spread === 0 ? 'The log' : post.title
+    body = <>
+      <p>{spread === 0 ? 'Essays on building, tech and thinking clearly. Tap an entry or a coloured tab; tap a page to turn it.' : post.subtitle}</p>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+        <button style={linkBtn} onClick={() => room.set({ spread: Math.max(0, spread - 1) })} disabled={spread === 0}>← prev</button>
+        <button style={linkBtn} onClick={() => room.set({ spread: Math.min(POSTS.length, spread + 1) })} disabled={spread >= POSTS.length}>next →</button>
+        {post && <button style={linkBtn} onClick={() => navigate(`/blog/${post.slug}`)}>read this entry →</button>}
+        <button style={linkBtn} onClick={() => navigate('/blog')}>all entries</button>
+      </div>
+      {spread === 0 && next && <p style={{ opacity: 0.6 }}>open on the right: {next.title}</p>}
+    </>
   } else if (focus === 'phone') {
     title = 'Say hi'
     body = <>
@@ -117,7 +131,7 @@ function FocusPanel({ focus }) {
   }
   return (
     <motion.aside
-      key={focus + folder + card}
+      key={focus + folder + card + (focus === 'diary' ? spread : '') + (focus === 'drawer' ? page : '')}
       initial={{ opacity: 0, x: -14 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -8 }}
@@ -194,6 +208,13 @@ export default function RoomHome() {
   const capture = new URLSearchParams(window.location.search).has('capture')
   const mobile = useMobile(768)
   const poster = tier === 'poster'
+  const { navigate } = useRoute()
+
+  useEffect(() => {
+    const open = e => e.detail && navigate(`/blog/${e.detail}`)
+    window.addEventListener('room-open-post', open)
+    return () => window.removeEventListener('room-open-post', open)
+  }, [navigate])
 
   useEffect(() => {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual'

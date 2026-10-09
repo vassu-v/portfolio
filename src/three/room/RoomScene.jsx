@@ -9,6 +9,8 @@ import Room, { LEFT, WIN } from './Room'
 import Desk from './Desk'
 import Props from './Props'
 import Corkboard from './Corkboard'
+import Diary from './Diary'
+import Dossier from './Dossier'
 import CameraRig from './CameraRig'
 import PerfProbe from './PerfProbe'
 import { sky as skyAt } from './timeOfDay'
@@ -230,10 +232,12 @@ function SceneContent() {
       <RendererTone post={cfg.post && !off.has('post')} />
       {!off.has('env') && <Env sky={sky} lampOn={lampOn} />}
       <Sun key={`sun-${cfg.sunMap}`} sky={sky} mapSize={cfg.sunMap} />
-      <Room sky={sky} sway={cfg.sway} />
+      <Room sky={sky} sway={false} />
       <Desk />
       <Props tier={tier} />
       <Corkboard />
+      <Diary />
+      <Dossier />
       {cfg.dust && <Dust sky={sky} />}
       {roam ? <Roam /> : <CameraRig />}
       <Driver idleFps={cfg.idleFps} />

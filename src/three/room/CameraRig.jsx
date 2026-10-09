@@ -16,10 +16,10 @@ const OVERVIEW = { pos: V(1.25, 1.62, 1.55), look: V(-0.15, 0.95, -0.6) }
 const OVERVIEW_TALL = { pos: V(0.85, 1.38, 1.05), look: V(0.12, 0.88, -0.62) }
 const FOCUS = {
   drawer:    { pos: V(0.66, 1.2, 0.36),  look: V(0.55, 0.62, -0.28) },
-  diary:     { pos: V(-0.38, 1.13, -0.1), look: V(-0.53, 0.75, -0.52) },
+  diary:     { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
   corkboard: { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 0.98), look: V(BOARD.x, BOARD.y, BACK) },
   phone:     { pos: V(0.66, 1.02, -0.08), look: V(0.56, 0.85, -0.44) },
-  sheet:     { pos: V(0.62, 1.16, 0.3),  look: V(0.55, 0.96, -0.17) },
+  sheet:     { pos: V(0.66, 1.2, 0.5),  look: V(0.56, 0.98, -0.15) },
   card:      { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 0.75), look: V(BOARD.x, BOARD.y, BACK) },
 }
 
@@ -57,6 +57,8 @@ export default function CameraRig() {
     } else if (f) {
       target.copy(f.pos)
       at.copy(f.look)
+      // narrow screens see less sideways — back off along the view line
+      if (aspect < 1) target.sub(at).multiplyScalar(1 + (1 - aspect) * 1.1).add(at)
     } else {
       // load-in: drift from a soft wide view into the screen
       const intro = ease(live.intro)

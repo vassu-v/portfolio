@@ -128,7 +128,7 @@ function Skyline({ sky, depth, seed, height, x }) {
 function Curtain({ z, flip, sway: animate }) {
   const ref = useRef()
   const geo = useMemo(() => {
-    const g = new THREE.PlaneGeometry(0.42, 1.55, 36, 1)
+    const g = new THREE.PlaneGeometry(0.42, 1.62, 48, 1)
     g.userData.base = g.attributes.position.array.slice()
     return g
   }, [])
@@ -140,15 +140,18 @@ function Curtain({ z, flip, sway: animate }) {
     const t = animate ? clock.elapsedTime : 0
     for (let i = 0; i < pos.count; i++) {
       const x = b[i * 3], y = b[i * 3 + 1]
-      const sway = Math.sin(t * 0.6 + y * 2.0) * 0.004 * (0.775 - y)
-      pos.setZ(i, Math.sin(x * 46) * 0.022 + sway)
+      const sway = Math.sin(t * 0.6 + y * 2.0) * 0.003 * (0.81 - y)
+      // soft folds, a touch deeper at the hem like real cloth
+      pos.setZ(i, Math.sin(x * 46) * (0.02 + (0.81 - y) * 0.004) + sway)
     }
     pos.needsUpdate = true
     geo.computeVertexNormals()
   })
   return (
-    <mesh ref={ref} geometry={geo} position={[LEFT + 0.09, WIN.y0 + 0.62, z]} rotation={[0, flip ? -Math.PI / 2 : Math.PI / 2, 0]} castShadow receiveShadow>
-      <meshStandardMaterial color="#efe9df" roughness={0.95} transparent opacity={0.82} side={THREE.DoubleSide} />
+    // hangs in front of the sill (which sticks out 0.13 m), opaque: a
+    // transparent double-sided cloth sorted against the glass and flickered
+    <mesh ref={ref} geometry={geo} position={[LEFT + 0.17, WIN.y1 + 0.13 - 0.81, z]} rotation={[0, flip ? -Math.PI / 2 : Math.PI / 2, 0]} castShadow receiveShadow>
+      <meshStandardMaterial color="#e8e0d2" roughness={0.97} side={THREE.DoubleSide} />
     </mesh>
   )
 }
@@ -226,7 +229,7 @@ export default function Room({ sky, sway = true }) {
         </mesh>
       </group>
       <Box args={[0.2, 0.035, winW + 0.16]} position={[LEFT + 0.03, WIN.y0 - 0.0175, winZ]} material={trim} />
-      <mesh position={[LEFT + 0.09, WIN.y1 + 0.12, winZ]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+      <mesh position={[LEFT + 0.17, WIN.y1 + 0.13, winZ]} rotation={[Math.PI / 2, 0, 0]} castShadow>
         <cylinderGeometry args={[0.012, 0.012, winW + 0.7, 12]} />
         <meshStandardMaterial color="#1c1a18" metalness={0.7} roughness={0.35} />
       </mesh>

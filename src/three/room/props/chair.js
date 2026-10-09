@@ -4,7 +4,7 @@
 //   group.userData.seat        Object3D above the gas lift (rotate .rotation.y to swivel)
 //   group.userData.spin(dt, speed = 0.6)   convenience: swivels the seat by dt*speed rad
 import * as THREE from 'three';
-import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeVertices, mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // ---------------------------------------------------------------- helpers
 
@@ -272,19 +272,6 @@ export function createChair() {
   cushion.position.set(0, 0.4475, 0.005); // bottom 0.415, top ~0.48 (seat height ~0.47 under load)
   seat.add(cushion);
 
-  // spine (connects mechanism to backrest)
-  const spineCurve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0.385, -0.08),
-    new THREE.Vector3(0, 0.39, -0.2),
-    new THREE.Vector3(0, 0.43, -0.265),
-    new THREE.Vector3(0, 0.53, -0.29),
-    new THREE.Vector3(0, 0.64, -0.29),
-  ]);
-  const spineGeo = new THREE.TubeGeometry(spineCurve, 20, 0.022, 10, false);
-  spineGeo.scale(1.6, 1, 1); // flatten into a wide blade
-  const spine = shadowed(new THREE.Mesh(spineGeo, plasticSatin));
-  seat.add(spine);
-
   // backrest — mesh panel, curved horizontally, lumbar bulge, framed
   const BW = 0.44, BH = 0.54, BD = 0.032;
   function backGeo(w, h, d, r, inset, band) {
@@ -315,6 +302,92 @@ export function createChair() {
 
   const frame = shadowed(new THREE.Mesh(backGeo(BW + 0.03, BH + 0.03, 0.022, 0.011, -0.014, 2), plasticSatin));
   back.add(frame);
+
+  // spine — one continuous L-shaped blade: buried in the tilt mechanism, runs
+  // back under the seat, bends up behind the cushion and follows the frame's
+  // back surface (sampled through the backrest transform) so it sits flush.
+  {
+    const SPW = 0.072, SPD = 0.026, SPR = 0.009, EMBED = 0.003;
+    back.updateMatrix();
+    const backSurfZ = (y) => -0.025 + 0.022 * Math.exp(-(((y + 0.12) / 0.09) ** 2));
+    const onBack = (y) => new THREE.Vector3(0, y, backSurfZ(y) - SPD / 2 + EMBED).applyMatrix4(back.matrix);
+    const curve = new THREE.CatmullRomCurve3(
+      [
+        new THREE.Vector3(0, 0.372, -0.03),
+        new THREE.Vector3(0, 0.372, -0.14),
+        new THREE.Vector3(0, 0.377, -0.205),
+        new THREE.Vector3(0, 0.398, -0.242),
+        new THREE.Vector3(0, 0.432, -0.2525),
+        onBack(-0.33),
+        onBack(-0.26),
+        onBack(-0.18),
+        onBack(-0.1),
+        onBack(-0.03),
+      ],
+      false,
+      'centripetal'
+    );
+
+    // rounded-rectangle profile (x = across, n = toward seat/backrest)
+    const prof = [];
+    const corners = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
+    corners.forEach(([sx, sn], ci) => {
+      const a0 = (ci * Math.PI) / 2;
+      for (let k = 0; k < 4; k++) {
+        const a = a0 + (k / 3) * (Math.PI / 2);
+        prof.push([sx * (SPW / 2 - SPR) + Math.cos(a) * SPR, sn * (SPD / 2 - SPR) + Math.sin(a) * SPR]);
+      }
+    });
+    const NP = prof.length, NS = 26;
+    const pos = [], idx = [];
+    const X = new THREE.Vector3(1, 0, 0), T = new THREE.Vector3(), N = new THREE.Vector3(), C = new THREE.Vector3();
+    const centers = [], normals = [];
+    for (let i = 0; i <= NS; i++) {
+      const u = i / NS;
+      curve.getPointAt(u, C);
+      curve.getTangentAt(u, T);
+      N.crossVectors(X, T).normalize();
+      centers.push(C.clone());
+      normals.push(N.clone());
+      for (const [px, pn] of prof) pos.push(C.x + px, C.y + N.y * pn, C.z + N.z * pn);
+    }
+    for (let i = 0; i < NS; i++) {
+      for (let j = 0; j < NP; j++) {
+        const a = i * NP + j, b = i * NP + ((j + 1) % NP), c = (i + 1) * NP + j, d = (i + 1) * NP + ((j + 1) % NP);
+        idx.push(a, c, b, b, c, d);
+      }
+    }
+    // end caps (separate verts → flat cap normals)
+    for (const [ring, flip] of [[0, true], [NS, false]]) {
+      const base0 = pos.length / 3;
+      const cc = centers[ring];
+      pos.push(cc.x, cc.y, cc.z);
+      for (let j = 0; j < NP; j++) pos.push(pos[(ring * NP + j) * 3], pos[(ring * NP + j) * 3 + 1], pos[(ring * NP + j) * 3 + 2]);
+      for (let j = 0; j < NP; j++) {
+        const a = base0 + 1 + j, b = base0 + 1 + ((j + 1) % NP);
+        if (flip) idx.push(base0, a, b);
+        else idx.push(base0, b, a);
+      }
+    }
+    const spineGeo = new THREE.BufferGeometry();
+    spineGeo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    spineGeo.setIndex(idx);
+    spineGeo.computeVertexNormals();
+    seat.add(shadowed(new THREE.Mesh(spineGeo, plasticSatin)));
+
+    // four bolt heads on the back face where the blade meets the frame
+    const bolts = [];
+    for (const by of [-0.25, -0.08]) {
+      for (const bx of [-0.019, 0.019]) {
+        const b = new THREE.CylinderGeometry(0.0055, 0.006, 0.004, 10, 1);
+        b.rotateX(Math.PI / 2);
+        b.translate(bx, by, backSurfZ(by) - SPD + EMBED - 0.0012);
+        b.applyMatrix4(back.matrix);
+        bolts.push(b);
+      }
+    }
+    seat.add(shadowed(new THREE.Mesh(mergeGeometries(bolts), chrome)));
+  }
 
   // armrests
   const armPadGeo = roundedSlab(0.075, 0.026, 0.25, 0.012, 0.08, 2);

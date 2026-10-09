@@ -12,76 +12,17 @@ import Baked from './Baked'
 export const DESK = { x0: -0.78, x1: 0.78, z0: BACK + 0.02, z1: -0.28, top: 0.75, th: 0.035 }
 const PED = { x0: 0.36, x1: 0.74, z0: DESK.z0 + 0.02, z1: DESK.z1 - 0.015 }
 const DRAWER_TRAVEL = 0.36
+const DRAWER_W = PED.x1 - PED.x0 - 0.02, DRAWER_D = PED.z1 - PED.z0 - 0.08
+const SLOTS = 9
+const slotZ = i => DRAWER_D / 2 - 0.04 - i * ((DRAWER_D - 0.06) / SLOTS)
 
-function wrapLines(ctx, text, maxW) {
-  const out = []
-  let line = ''
-  for (const w of text.split(' ')) {
-    const t = line ? line + ' ' + w : w
-    if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w } else line = t
-  }
-  if (line) out.push(line)
-  return out
-}
-
-function projectSheet(p, i) {
-  const c = document.createElement('canvas')
-  c.width = 840; c.height = 1120
-  const ctx = c.getContext('2d')
-  const tex = new THREE.CanvasTexture(c)
-  tex.colorSpace = THREE.SRGBColorSpace
-  tex.anisotropy = 8
-  const draw = img => {
-    ctx.fillStyle = '#f4eee1'
-    ctx.fillRect(0, 0, c.width, c.height)
-    ctx.fillStyle = '#C57B2B'
-    ctx.fillRect(0, 0, c.width, 10)
-    ctx.fillStyle = '#8a6a48'
-    ctx.font = '500 22px "JetBrains Mono", monospace'
-    ctx.fillText(`PROJECT ${String(i + 1).padStart(2, '0')} / ${String(PROJECTS.length).padStart(2, '0')}`, 56, 74)
-    ctx.textAlign = 'right'
-    ctx.fillText((p.period || '').toUpperCase(), c.width - 56, 74)
-    ctx.textAlign = 'left'
-    ctx.fillStyle = '#1d1712'
-    ctx.font = 'italic 84px "Instrument Serif", serif'
-    let y = 170
-    for (const l of wrapLines(ctx, p.name, c.width - 112)) { ctx.fillText(l, 56, y); y += 84 }
-    ctx.font = '400 30px "JetBrains Mono", monospace'
-    ctx.fillStyle = '#3d3229'
-    y += 6
-    for (const l of wrapLines(ctx, p.tagline, c.width - 112)) { ctx.fillText(l, 56, y); y += 42 }
-    y += 24
-    if (img) {
-      const w = c.width - 112, h = 380
-      const s = Math.max(w / img.width, h / img.height)
-      ctx.save()
-      ctx.beginPath(); ctx.rect(56, y, w, h); ctx.clip()
-      ctx.drawImage(img, 56 + (w - img.width * s) / 2, y + (h - img.height * s) / 2, img.width * s, img.height * s)
-      ctx.restore()
-      y += h + 40
-    }
-    ctx.fillStyle = '#8a6a48'
-    ctx.font = '500 24px "JetBrains Mono", monospace'
-    for (const l of wrapLines(ctx, p.stat || '', c.width - 112)) { ctx.fillText(l, 56, y); y += 34 }
-    y += 20
-    ctx.font = '400 22px "JetBrains Mono", monospace'
-    let x = 56
-    for (const tag of (p.tags || []).slice(0, 5)) {
-      const w = ctx.measureText(tag).width + 28
-      if (x + w > c.width - 56) { x = 56; y += 50 }
-      ctx.strokeStyle = '#C57B2B'; ctx.lineWidth = 2
-      ctx.strokeRect(x, y - 28, w, 40)
-      ctx.fillStyle = '#7a4a1c'
-      ctx.fillText(tag, x + 14, y)
-      x += w + 12
-    }
-    tex.needsUpdate = true
-  }
-  draw(null)
-  document.fonts?.ready.then(() => draw(null))
-  const src = p.images?.[0]?.src
-  if (src) { const img = new Image(); img.onload = () => draw(img); img.src = src }
-  return tex
+// World position of a project's folder in the open drawer (dossier start pose).
+export function folderWorld(projectIndex, out = new THREE.Vector3()) {
+  return out.set(
+    (PED.x0 + PED.x1) / 2,
+    DESK.top - DESK.th - 0.095 + 0.045 + 0.12 - 0.06,
+    (PED.z0 + PED.z1) / 2 + DRAWER_TRAVEL + slotZ(projectIndex * 2),
+  )
 }
 
 function tabTexture(label, color) {
@@ -149,34 +90,18 @@ function Folder({ project, index, z, selected, onPick }) {
 
 function Drawer() {
   const ref = useRef()
-  const sheetRef = useRef()
-  const sheetMat = useRef()
   const focus = useRoom(s => s.focus)
   const folder = useRoom(s => s.folder)
   const open = focus === 'drawer'
-  const sheets = useMemo(() => PROJECTS.map(projectSheet), [])
   const carcass = useMemo(() => new THREE.MeshStandardMaterial({ color: '#d9cdb8', roughness: 0.8 }), [])
   const front = useMemo(() => new THREE.MeshStandardMaterial({ map: walnutTexture(), roughness: 0.5 }), [])
 
-  const W = PED.x1 - PED.x0 - 0.02, D = PED.z1 - PED.z0 - 0.08, H = 0.12
-  const slots = 9
-  const folders = Array.from({ length: slots }, (_, i) => (i % 2 === 0 ? PROJECTS[i / 2] : null) ?? null)
+  const W = DRAWER_W, D = DRAWER_D, H = 0.12
+  const folders = Array.from({ length: SLOTS }, (_, i) => (i % 2 === 0 ? PROJECTS[i / 2] : null) ?? null)
 
   useFrame((state, dt) => {
     if (!ref.current) return
     ref.current.position.z = damp(ref.current.position.z, open ? DRAWER_TRAVEL : 0, 6, dt)
-    const s = sheetRef.current
-    if (s) {
-      const show = open && folder >= 0
-      if (show && sheetMat.current.map !== sheets[folder]) { sheetMat.current.map = sheets[folder]; sheetMat.current.needsUpdate = true }
-      const k = show ? 1 : 0
-      s.userData.k = damp(s.userData.k ?? 0, k, 5, dt)
-      const t = s.userData.k
-      // rises out of the drawer, then tilts up to face the camera
-      s.position.set(0, 0.05 + t * 0.32, -0.05 + t * 0.16)
-      s.rotation.x = -Math.PI / 2 + t * (Math.PI / 2 - 0.42)
-      s.visible = t > 0.01
-    }
   })
 
   return (
@@ -202,17 +127,11 @@ function Drawer() {
               key={i}
               index={p ? PROJECTS.indexOf(p) : i}
               project={p}
-              z={D / 2 - 0.04 - i * ((D - 0.06) / slots)}
+              z={slotZ(i)}
               selected={p && folder === PROJECTS.indexOf(p)}
-              onPick={idx => room.set({ folder: room.get().folder === idx ? -1 : idx })}
+              onPick={idx => room.set({ folder: room.get().folder === idx ? -1 : idx, page: 0 })}
             />
           ))}
-        </group>
-        <group ref={sheetRef} visible={false}>
-          <mesh castShadow onClick={e => { e.stopPropagation(); room.set({ folder: -1 }) }}>
-            <planeGeometry args={[0.21, 0.28]} />
-            <meshStandardMaterial ref={sheetMat} roughness={0.85} side={THREE.DoubleSide} />
-          </mesh>
         </group>
       </group>
     </group>
