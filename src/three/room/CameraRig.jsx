@@ -1,19 +1,35 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { live, useRoom } from './store'
+import { room, live, useRoom } from './store'
 import { anchors } from './Props'
 import { BOARD } from './Corkboard'
 import { BACK } from './Room'
+import { TOUR as TOUR_STOPS } from './tourData'
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z)
 
-// Fixed shots. Scroll path: screen close-up → pull back over the keyboard →
-// rise and swing out to the establishing shot of the whole corner.
-const OVERVIEW = { pos: V(1.25, 1.62, 1.55), look: V(-0.15, 0.95, -0.6) }
+// The framed photo on the shelf (world centre + facing) — the tour opens on it.
+export const PHOTO = { center: V(-0.432, 1.712, -0.895), normal: V(Math.sin(0.12), 0.08, Math.cos(0.12)).normalize() }
+
+const OVERVIEW = { pos: V(1.3, 1.6, 1.62), look: V(-0.05, 0.85, -0.6) }
 // Portrait screens: closer, lower, aimed at the desk centre so the lamp and
 // drawer stay in frame instead of a third of the screen being bare wall.
 const OVERVIEW_TALL = { pos: V(0.85, 1.38, 1.05), look: V(0.12, 0.88, -0.62) }
+
+// The scroll tour (order in tourData.js). The camera holds at each stop for
+// the first part of its scroll segment, then travels to the next.
+const SHOTS = {
+  intro: { pos: PHOTO.center.clone().addScaledVector(PHOTO.normal, 0.5), look: PHOTO.center.clone().add(V(0.06, -0.01, 0)) },
+  experience: { pos: V(BOARD.x - 0.04, BOARD.y + 0.11, BACK + 1.12), look: V(BOARD.x, BOARD.y + 0.15, BACK) },
+  wins: { pos: V(BOARD.x + 0.05, BOARD.y - 0.1, BACK + 1.2), look: V(BOARD.x, BOARD.y - 0.18, BACK) },
+  projects: { pos: V(0.66, 1.2, 0.36), look: V(0.55, 0.62, -0.28) },
+  diary: { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
+  finale: { pos: V(0.17, 1.22, 0.3), look: V(0.17, 0.84, -0.7) },
+  free: { pos: OVERVIEW.pos, look: OVERVIEW.look },
+}
+const TOUR = TOUR_STOPS.map(({ id }) => ({ id, ...SHOTS[id] }))
+
 const FOCUS = {
   drawer:    { pos: V(0.66, 1.2, 0.36),  look: V(0.55, 0.62, -0.28) },
   diary:     { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
@@ -28,62 +44,63 @@ const FOCUS = {
 const ease = t => 1 - Math.pow(1 - t, 3)
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
+// scroll 0…1 → which stop, and how far towards the next
+export function tourAt(s) {
+  const u = THREE.MathUtils.clamp(s, 0, 1) * (TOUR.length - 1)
+  const i = Math.min(TOUR.length - 2, Math.floor(u))
+  const f = u - i
+  return { i, f, k: easeInOut(THREE.MathUtils.smoothstep(f, 0.3, 0.95)), stop: TOUR[f < 0.62 ? i : i + 1].id }
+}
+
 export default function CameraRig() {
   const { camera, size } = useThree()
   const focus = useRoom(s => s.focus)
   const folder = useRoom(s => s.folder)
   const pin = useRoom(s => s.pin)
   const side = useRoom(s => s.side)
-  const pos = useRef(V(1.0, 1.25, 0.9))
-  const look = useRef(V(-0.17, 0.86, -0.8))
-  const tmp = useMemo(() => ({ sp: V(0, 0, 0), sn: V(0, 0, 1), close: V(0, 0, 0), mid: V(0, 0, 0), a: V(0, 0, 0), b: V(0, 0, 0) }), [])
+  const pos = useRef(TOUR[0].pos.clone().addScaledVector(PHOTO.normal, 0.35))
+  const look = useRef(TOUR[0].look.clone())
+  const tmp = useMemo(() => ({ sp: V(0, 0, 0), sn: V(0, 0, 1), a: V(0, 0, 0), b: V(0, 0, 0), c: V(0, 0, 0), q: new THREE.Quaternion() }), [])
 
   useFrame((_, dt) => {
     const aspect = size.width / size.height
     const fov = aspect < 0.8 ? 62 : aspect < 1.2 ? 50 : 36
     if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix() }
-
-    // screen anchor in world space
-    anchors.screen.getWorldPosition(tmp.sp)
-    tmp.sn.set(0, 0, 1).applyQuaternion(anchors.screen.getWorldQuaternion(new THREE.Quaternion()))
-    const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(fov / 2)) * aspect)
-    const fitW = 0.29 / 0.86 / 2 / Math.tan(hfov / 2)
-    const fitH = 0.185 / 0.8 / 2 / Math.tan(THREE.MathUtils.degToRad(fov / 2))
-    const dist = Math.max(fitW, fitH)
-    tmp.close.copy(tmp.sp).addScaledVector(tmp.sn, dist)
+    const tall = aspect < 1
+    // narrow screens see less sideways — back off along the view line
+    const backOff = (t, a, m = 1.1) => { if (tall) t.sub(a).multiplyScalar(1 + (1 - aspect) * m).add(a) }
 
     const target = tmp.a, at = tmp.b
     const f = focus === 'drawer' && folder >= 0 ? FOCUS.sheet : focus === 'corkboard' && pin ? FOCUS.card : focus === 'sides' && side >= 0 ? FOCUS.sidecard : FOCUS[focus]
     if (focus === 'laptop') {
-      target.copy(tmp.sp).addScaledVector(tmp.sn, dist * 1.35)
+      anchors.screen.getWorldPosition(tmp.sp)
+      tmp.sn.set(0, 0, 1).applyQuaternion(anchors.screen.getWorldQuaternion(tmp.q))
+      const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(fov / 2)) * aspect)
+      const fitW = 0.29 / 0.86 / 2 / Math.tan(hfov / 2)
+      const fitH = 0.185 / 0.8 / 2 / Math.tan(THREE.MathUtils.degToRad(fov / 2))
+      target.copy(tmp.sp).addScaledVector(tmp.sn, Math.max(fitW, fitH) * 1.35)
       at.copy(tmp.sp)
     } else if (f) {
       target.copy(f.pos)
       at.copy(f.look)
-      // narrow screens see less sideways — back off along the view line
-      if (aspect < 1) target.sub(at).multiplyScalar(1 + (1 - aspect) * 1.1).add(at)
+      backOff(target, at)
     } else {
-      // load-in: drift from a soft wide view into the screen
+      const { i, k, stop } = tourAt(live.scroll)
+      const a = TOUR[i], b = TOUR[i + 1]
+      const ov = tall ? OVERVIEW_TALL : OVERVIEW
+      target.copy(a.id === 'free' ? ov.pos : a.pos).lerp(b.id === 'free' ? ov.pos : b.pos, k)
+      at.copy(a.id === 'free' ? ov.look : a.look).lerp(b.id === 'free' ? ov.look : b.look, k)
+      // photo sits left of the name on wide screens, centred above it on tall
+      if (tall && i === 0) at.x -= 0.06 * (1 - k)
+      if (b.id !== 'free' || k < 1) backOff(target, at, i === 0 && k < 0.5 ? 0.5 : 1.1)
+      // load-in: settle forward onto the photo
       const intro = ease(live.intro)
-      const s = live.scroll
-      tmp.mid.set(tmp.sp.x + 0.25, tmp.sp.y + 0.22, tmp.sp.z + 0.75)
-      if (s < 0.45) {
-        const k = easeInOut(THREE.MathUtils.smoothstep(s, 0.1, 0.45))
-        target.copy(tmp.close).lerp(tmp.mid, k)
-        at.copy(tmp.sp).lerp(V(tmp.sp.x, tmp.sp.y - 0.08, tmp.sp.z), k)
-      } else {
-        const k = easeInOut(THREE.MathUtils.smoothstep(s, 0.45, 0.95))
-        const ov = aspect < 0.8 ? OVERVIEW_TALL : OVERVIEW
-        target.copy(tmp.mid).lerp(ov.pos, k)
-        at.copy(V(tmp.sp.x, tmp.sp.y - 0.08, tmp.sp.z)).lerp(ov.look, k)
-      }
-      if (intro < 1) {
-        const start = V(tmp.sp.x + 0.55, tmp.sp.y + 0.35, tmp.sp.z + 1.35)
-        target.lerpVectors(start, target, intro)
-      }
-      const par = THREE.MathUtils.smoothstep(s, 0.5, 1) * 0.08 + 0.006
+      if (intro < 1) target.addScaledVector(PHOTO.normal, 0.35 * (1 - intro))
+      const par = (stop === 'free' ? 0.08 : 0.012) * (1 - (i === 0 ? 1 - k : 0) * 0.6)
       target.x += live.pointer.x * par
       target.y += live.pointer.y * par * 0.6
+      const s = room.get()
+      if (s.tourStop !== stop || s.explore !== (stop !== 'intro')) room.set({ tourStop: stop, explore: stop !== 'intro' })
     }
 
     const k = focus ? 3.2 : 6
@@ -95,6 +112,11 @@ export default function CameraRig() {
     look.current.z = THREE.MathUtils.damp(look.current.z, at.z, k, dt)
     camera.position.copy(pos.current)
     camera.lookAt(look.current)
+
+    // where the photo is on the page — the intro's dark vignette centres on it
+    camera.updateMatrixWorld()
+    tmp.c.copy(PHOTO.center).project(camera)
+    live.photoPx = [(tmp.c.x + 1) / 2 * size.width, (1 - tmp.c.y) / 2 * size.height]
   })
 
   return null

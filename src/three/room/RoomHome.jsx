@@ -11,6 +11,8 @@ import { useMobile } from '../../hooks/useMobile'
 import { room, live, useRoom, focusOn } from './store'
 import { isNight } from './hour'
 import { forgetTier } from './tier'
+import { TOUR } from './tourData'
+import { AGE } from '../../utils/meta'
 
 const RoomScene = lazy(() => import('./RoomScene'))
 
@@ -26,23 +28,86 @@ const SPOTS = [
   { id: 'laptop', label: 'terminal', hint: 'laptop' },
 ]
 
+// Scroll position → live.scroll (read every frame by CameraRig, which also
+// publishes the tour stop and explore state back into the store).
 function useScrollProgress() {
-  const [p, setP] = useState(0)
   useEffect(() => {
     const on = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight
-      const v = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
-      live.scroll = v
-      setP(v)
-      const explore = v > 0.93
-      if (room.get().explore !== explore) room.set({ explore })
+      live.scroll = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
     }
     on()
     window.addEventListener('scroll', on, { passive: true })
     window.addEventListener('resize', on)
     return () => { window.removeEventListener('scroll', on); window.removeEventListener('resize', on) }
   }, [])
-  return p
+}
+
+const STOP_COPY = {
+  experience: { n: '01', label: 'the work so far', title: "Where I've been.", line: 'Five roles, one string, oldest → newest. Tap a card to pull it off the board.' },
+  wins: { n: '02', label: 'wins & receipts', title: 'Proof, pinned.', line: 'A national semi-final, a first international payment, a preprint, a book at fourteen.' },
+  projects: { n: '03', label: 'the drawer', title: "Things I've built.", line: 'Every folder is a project. Pull one out and flip through it.' },
+  diary: { n: '04', label: 'the log', title: 'I write things down.', line: 'Essays on building, tech and thinking clearly. Tap the diary to read.' },
+  finale: { n: '05', label: 'say hi', title: 'Want to build something together?', line: "The phone's already lit up. Tap it, or the laptop." },
+  free: { n: '', label: 'the room is yours', title: 'Look around.', line: 'Click anything — open it, close it, throw paper at the bin.' },
+}
+
+// Tour text. The intro is the name over the lit photo, with the rest of the
+// room held in shadow; it lifts as you scroll. Each later stop gets a short
+// caption while the camera holds there.
+function TourCopy({ focus, mobile }) {
+  const stop = useRoom(s => s.tourStop)
+  const veil = useRef()
+  const name = useRef()
+  useEffect(() => {
+    let raf
+    const run = () => {
+      raf = requestAnimationFrame(run)
+      const u = live.scroll * (TOUR.length - 1)
+      const lift = Math.min(1, Math.max(0, (u - 0.04) / 0.32))
+      const [x, y] = live.photoPx || [window.innerWidth * 0.4, window.innerHeight * 0.45]
+      if (veil.current) {
+        veil.current.style.opacity = String((1 - lift) * (focus ? 0 : 1))
+        veil.current.style.background = `radial-gradient(${mobile ? 260 : 340}px ${mobile ? 300 : 380}px at ${x}px ${y}px, rgba(8,7,6,0) 0%, rgba(8,7,6,0.55) 55%, rgba(8,7,6,0.94) 100%)`
+      }
+      if (name.current) {
+        name.current.style.opacity = String(Math.max(0, 1 - lift * 1.6) * Math.min(1, live.intro * 1.6) * (focus ? 0 : 1))
+        name.current.style.transform = `translateY(${-lift * 40}px)`
+      }
+    }
+    raf = requestAnimationFrame(run)
+    return () => cancelAnimationFrame(raf)
+  }, [focus, mobile])
+  const c = STOP_COPY[stop]
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
+      <div ref={veil} style={{ position: 'absolute', inset: 0 }} />
+      <div ref={name} style={mobile
+        ? { position: 'absolute', left: 16, right: 16, bottom: 92, textAlign: 'center' }
+        : { position: 'absolute', left: '54%', top: '50%', marginTop: -90, maxWidth: 560 }}>
+        <p style={{ ...mono, fontSize: '0.66rem', letterSpacing: '0.26em', color: 'var(--cu)', marginBottom: 14 }}>HELLO, I'M</p>
+        <h1 style={{ ...serif, fontSize: mobile ? 'clamp(2.6rem, 12vw, 3.6rem)' : 'clamp(3rem, 6.2vw, 5.6rem)', lineHeight: 0.95, color: '#f6efe4', textShadow: '0 2px 40px rgba(0,0,0,0.6)' }}>Shoryavardhaan</h1>
+        <p style={{ ...mono, marginTop: 16, fontSize: '0.75rem', color: 'rgba(240,230,216,0.72)', letterSpacing: '0.06em' }}>builder · {AGE} · kolkata</p>
+        <p style={{ ...mono, marginTop: mobile ? 26 : 46, fontSize: '0.6rem', letterSpacing: '0.24em', color: 'rgba(240,230,216,0.5)' }}>SCROLL TO STEP INTO THE ROOM ↓</p>
+      </div>
+      <AnimatePresence mode="wait">
+        {c && !focus && (
+          <motion.div key={stop}
+            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              ...(mobile ? { position: 'absolute', left: 16, right: 16, top: 66 } : { position: 'absolute', left: 'var(--pad)', bottom: 48, maxWidth: 440 }),
+              background: 'rgba(12,10,8,0.55)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: mobile ? '16px 18px' : '20px 24px',
+            }}>
+            <p style={{ ...mono, fontSize: '0.62rem', letterSpacing: '0.2em', color: 'var(--cu)', marginBottom: 10, textTransform: 'uppercase' }}>{c.n && <span style={{ color: 'var(--go)' }}>{c.n} — </span>}{c.label}</p>
+            <p style={{ ...serif, fontSize: mobile ? '2rem' : 'clamp(2.2rem, 3.6vw, 3.2rem)', lineHeight: 1.02, color: '#f6efe4', textShadow: '0 2px 30px rgba(0,0,0,0.6)' }}>{c.title}</p>
+            <p style={{ ...mono, marginTop: 12, fontSize: '0.74rem', lineHeight: 1.6, color: 'rgba(240,230,216,0.78)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>{c.line}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
 
 function HoverLabel() {
@@ -291,9 +356,9 @@ function Poster() {
 }
 
 export default function RoomHome() {
-  const p = useScrollProgress()
+  useScrollProgress()
   const focus = useRoom(s => s.focus)
-  const explore = useRoom(s => s.explore)
+  const tourStop = useRoom(s => s.tourStop)
   const hour = useRoom(s => s.hour)
   const debug = useRoom(s => s.debug)
   const lampOn = useRoom(s => s.lampOn)
@@ -336,7 +401,6 @@ export default function RoomHome() {
     return () => { clearTimeout(delay); cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey) }
   }, [])
 
-  const copyOp = (a, b, c, d) => (p < a || p > d ? 0 : p < b ? (p - a) / (b - a) : p > c ? 1 - (p - c) / (d - c) : 1)
   const timeWord = isNight(hour) ? 'night' : hour < 11 ? 'morning' : hour < 16.5 ? 'afternoon' : 'evening'
 
   return (
@@ -348,7 +412,7 @@ export default function RoomHome() {
       {!roam && debug && <Inspector />}
       {capture ? null : <>
       {/* scroll runway that drives the camera */}
-      {!roam && !poster && <div style={{ height: '420vh', position: 'relative', zIndex: 0, pointerEvents: 'none' }} />}
+      {!roam && !poster && <div style={{ height: `${100 + (TOUR.length - 1) * 95}vh`, position: 'relative', zIndex: 0, pointerEvents: 'none' }} />}
 
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px var(--pad)', pointerEvents: 'none' }}>
         <span style={{ ...mono, color: 'var(--cu)', fontSize: '0.9rem', letterSpacing: '0.12em' }}>SG</span>
@@ -357,22 +421,11 @@ export default function RoomHome() {
         </span>
       </header>
 
-      {/* scroll copy */}
-      {!roam && !poster && <div style={{ position: 'fixed', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
-        <motion.div animate={{ opacity: focus ? 0 : copyOp(-1, 0, 0.04, 0.1) }} style={{ position: 'absolute', bottom: 36, left: 0, right: 0, textAlign: 'center', ...mono, fontSize: '0.62rem', letterSpacing: '0.24em', color: 'rgba(240,230,216,0.7)' }}>
-          SCROLL
-        </motion.div>
-        <motion.div animate={{ opacity: focus ? 0 : copyOp(0.44, 0.52, 0.66, 0.74) }} style={{ position: 'absolute', left: 'var(--pad)', top: '30%', maxWidth: 520 }}>
-          <p style={{ ...serif, fontSize: 'clamp(2.2rem, 4.8vw, 4rem)', lineHeight: 1.02, color: '#f6efe4', textShadow: '0 2px 30px rgba(0,0,0,0.5)' }}>
-            Building something<br />that might matter.
-          </p>
-          <p style={{ ...mono, marginTop: 16, fontSize: '0.75rem', color: 'rgba(240,230,216,0.75)', letterSpacing: '0.04em' }}>from a desk in Kolkata.</p>
-        </motion.div>
-      </div>}
+      {!roam && !poster && <TourCopy focus={focus} mobile={mobile} />}
 
       {/* explore chips — also the accessible way to reach every object */}
       <AnimatePresence>
-        {!roam && (explore || focus) && (
+        {!roam && (tourStop === 'free' || poster || focus) && (
           <motion.nav
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

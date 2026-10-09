@@ -21,10 +21,9 @@ const SESSION_LEN = SESSION.reduce((n, [l]) => n + l.length + 6, 0)
 const TYPE_RATE = 7
 const COPPER = '#F07A1A', GOLD = '#84D0E8'
 
-// Draws the laptop screen. `dissolve` 0 → name card, 1 → desktop. The name
-// is sampled into particles once (after fonts load) and those particles
-// scatter on a per-particle delay as dissolve rises — a sweep from left to
-// right, drifting up and out like vapour, revealing the desktop behind.
+// Draws the laptop screen: a desktop with a terminal typing on loop, the odd
+// notification sliding in (live.ping), and — at the tour's finale — a contact
+// card fading over it all. Redraws only when something visible changed.
 export function createScreen() {
   const canvas = document.createElement('canvas')
   canvas.width = W
@@ -34,59 +33,9 @@ export function createScreen() {
   texture.colorSpace = THREE.SRGBColorSpace
   texture.anisotropy = 8
 
-  let particles = null
-  let last = { d: -1, blink: -1, min: -1, typed: -1 }
-
-  const nameLayer = document.createElement('canvas')
-  nameLayer.width = W
-  nameLayer.height = H
-
-  function drawName(c) {
-    c.clearRect(0, 0, W, H)
-    c.textAlign = 'center'
-    c.fillStyle = '#6f8fa0'
-    c.font = '500 30px "JetBrains Mono", monospace'
-    c.fillText('— HELLO, I\'M —', W / 2, 330)
-    c.fillStyle = GOLD
-    c.font = 'italic 400 196px "Instrument Serif", serif'
-    c.fillText('Shoryavardhaan', W / 2, 540)
-    c.fillStyle = '#8fb0be'
-    c.font = '400 34px "JetBrains Mono", monospace'
-    c.fillText(`builder · ${AGE} · kolkata`, W / 2, 650)
-    c.textAlign = 'left'
-  }
-
-  function sample() {
-    const c = nameLayer.getContext('2d')
-    drawName(c)
-    const data = c.getImageData(0, 0, W, H).data
-    const pts = []
-    const step = 4
-    for (let y = 260; y < 700; y += step) {
-      for (let x = 0; x < W; x += step) {
-        const i = (y * W + x) * 4
-        if (data[i + 3] > 110) {
-          pts.push({
-            x, y,
-            r: data[i], g: data[i + 1], b: data[i + 2],
-            delay: x / W * 0.55 + Math.random() * 0.12,
-            vx: 120 + Math.random() * 380,
-            vy: -(140 + Math.random() * 420),
-            sw: Math.random() * 6.28,
-          })
-        }
-      }
-    }
-    particles = pts
-  }
-
-  const ready = (document.fonts?.load
-    ? Promise.all([
-        document.fonts.load('italic 196px "Instrument Serif"'),
-        document.fonts.load('500 30px "JetBrains Mono"'),
-      ])
-    : Promise.resolve()
-  ).catch(() => {}).then(() => { sample(); last.d = -1 })
+  let last = { key: '' }
+  const ready = document.fonts?.ready ?? Promise.resolve()
+  ready.then(() => { last.key = '' })
 
   function desktop(t) {
     const g = ctx.createLinearGradient(0, 0, W, H)
@@ -146,42 +95,64 @@ export function createScreen() {
     ctx.fillText('things.', 1112, 360)
   }
 
-  function draw(dissolve, t) {
-    const d = THREE.MathUtils.clamp(dissolve, 0, 1)
-    const blink = Math.floor(t * 2) % 2
-    const min = new Date().getMinutes()
-    const typed = Math.floor(t * TYPE_RATE)
-    if (Math.abs(d - last.d) < 0.0005 && (d < 0.999 || (blink === last.blink && min === last.min && typed === last.typed))) return false
-    last = { d, blink, min, typed }
+  function notification(ui) {
+    const k = ui.notif
+    if (k < 0.01) return
+    const w = 520, h = 132, x = W - w - 36, y = 64 - (1 - k) * 60
+    ctx.globalAlpha = k
+    ctx.fillStyle = 'rgba(28,34,40,0.94)'
+    ctx.beginPath(); ctx.roundRect(x, y, w, h, 22); ctx.fill()
+    ctx.strokeStyle = 'rgba(132,208,232,0.5)'; ctx.lineWidth = 2; ctx.stroke()
+    ctx.fillStyle = COPPER
+    ctx.beginPath(); ctx.arc(x + 58, y + 66, 30, 0, 7); ctx.fill()
+    ctx.fillStyle = '#1d1208'; ctx.font = '600 24px "JetBrains Mono", monospace'; ctx.textAlign = 'center'
+    ctx.fillText((ui.msg?.app || '?')[0], x + 58, y + 75); ctx.textAlign = 'left'
+    ctx.fillStyle = GOLD; ctx.font = '600 24px "JetBrains Mono", monospace'; ctx.fillText(ui.msg?.app || '', x + 108, y + 52)
+    ctx.fillStyle = 'rgba(239,230,216,0.5)'; ctx.font = '400 20px "JetBrains Mono", monospace'; ctx.fillText('now', x + w - 64, y + 52)
+    ctx.fillStyle = '#efe6d8'; ctx.font = '400 24px "JetBrains Mono", monospace'
+    const text = ui.msg?.text || ''
+    ctx.fillText(text.length > 34 ? text.slice(0, 33) + '…' : text, x + 108, y + 92)
+    ctx.globalAlpha = 1
+  }
 
-    if (d > 0.02) desktop(t)
-    else { ctx.fillStyle = '#0b0907'; ctx.fillRect(0, 0, W, H) }
+  function contact(ui) {
+    const k = ui.contact
+    if (k < 0.01) return
+    ctx.globalAlpha = k
+    ctx.fillStyle = 'rgba(9,12,15,0.94)'
+    ctx.fillRect(0, 44, W, H - 44)
+    const glow = ctx.createRadialGradient(W * 0.5, H * 0.3, 0, W * 0.5, H * 0.3, 700)
+    glow.addColorStop(0, 'rgba(240,122,26,0.22)'); glow.addColorStop(1, 'rgba(240,122,26,0)')
+    ctx.fillStyle = glow; ctx.fillRect(0, 44, W, H - 44)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#8fb0be'; ctx.font = '500 26px "JetBrains Mono", monospace'
+    ctx.fillText('— SHORYAVARDHAAN · KOLKATA —', W / 2, 200)
+    ctx.fillStyle = '#f6efe4'; ctx.font = 'italic 300 104px "Instrument Serif", serif'
+    ctx.fillText('Want to build', W / 2, 330)
+    ctx.fillText('something together?', W / 2, 440)
+    const rows = [['email', 'shoryavardhaans2@gmail.com'], ['call', 'cal.com/shoryavardhaan'], ['github', 'github.com/vassu-v'], ['linkedin', 'in/shoryavardhaan']]
+    ctx.font = '500 30px "JetBrains Mono", monospace'
+    rows.forEach(([a, b], i) => {
+      const y = 560 + i * 62
+      ctx.textAlign = 'right'; ctx.fillStyle = COPPER; ctx.fillText(a, W / 2 - 24, y)
+      ctx.textAlign = 'left'; ctx.fillStyle = GOLD; ctx.fillText(b, W / 2 + 4, y)
+    })
+    ctx.textAlign = 'center'
+    ctx.fillStyle = 'rgba(239,230,216,0.45)'; ctx.font = '400 24px "JetBrains Mono", monospace'
+    ctx.fillText('tap the phone to reach out · or click here for the terminal', W / 2, H - 70)
+    ctx.textAlign = 'left'
+    ctx.globalAlpha = 1
+  }
 
-    if (d < 0.999) {
-      // dark card behind the name fades with the dissolve
-      ctx.fillStyle = `rgba(11,9,7,${1 - THREE.MathUtils.smoothstep(d, 0.35, 0.95)})`
-      ctx.fillRect(0, 0, W, H)
-      if (!particles || d === 0) {
-        if (d === 0 || !particles) {
-          const c = nameLayer.getContext('2d')
-          if (!particles) drawName(c)
-          ctx.drawImage(nameLayer, 0, 0)
-        }
-      } else {
-        for (const p of particles) {
-          const k = THREE.MathUtils.clamp((d - p.delay) / 0.4, 0, 1)
-          if (k >= 1) continue
-          const e = k * k
-          const a = 1 - k
-          ctx.globalAlpha = a
-          ctx.fillStyle = `rgb(${p.r},${p.g},${p.b})`
-          const s = 4 * (1 - k * 0.5)
-          ctx.fillRect(p.x + p.vx * e + Math.sin(p.sw + k * 6) * 14 * k, p.y + p.vy * e, s, s)
-        }
-        ctx.globalAlpha = 1
-      }
-    }
-    // subtle scanline + vignette so it reads as a real panel up close
+  // ui: { notif 0…1, msg {app, text}, contact 0…1 }
+  function draw(t, ui) {
+    const key = [Math.floor(t * 2) % 2, new Date().getMinutes(), Math.floor(t * TYPE_RATE), ui.notif.toFixed(3), ui.contact.toFixed(3), ui.msg?.text].join('|')
+    if (key === last.key) return false
+    last.key = key
+    desktop(t)
+    notification(ui)
+    contact(ui)
+    // subtle vignette so it reads as a real panel up close
     const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, W * 0.75)
     v.addColorStop(0, 'rgba(0,0,0,0)')
     v.addColorStop(1, 'rgba(0,0,0,0.35)')

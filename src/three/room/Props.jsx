@@ -52,9 +52,21 @@ function Laptop() {
   }, [model, screen])
 
   const corners = useMemo(() => [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], [])
-  useFrame(({ clock, camera, size }) => {
-    const d = THREE.MathUtils.smoothstep(live.scroll, 0.06, 0.42)
-    screen.draw(d, clock.elapsedTime)
+  const ui = useMemo(() => ({ notif: 0, contact: 0, msg: null }), [])
+  useFrame(({ clock, camera, size }, dt) => {
+    const s = room.get()
+    const p = live.ping
+    const notifOn = p?.where === 'laptop' && performance.now() < p.until && s.focus !== 'laptop'
+    if (notifOn) ui.msg = p
+    ui.notif = Math.abs(ui.notif - (notifOn ? 1 : 0)) < 0.002 ? (notifOn ? 1 : 0) : damp(ui.notif, notifOn ? 1 : 0, 6, dt)
+    const contactOn = !s.focus && s.tourStop === 'finale'
+    ui.contact = Math.abs(ui.contact - (contactOn ? 1 : 0)) < 0.002 ? (contactOn ? 1 : 0) : damp(ui.contact, contactOn ? 1 : 0, 3, dt)
+    screen.draw(clock.elapsedTime, ui)
+    // a notification makes the panel flare, lighting the keyboard and desk
+    const flare = Math.max(ui.notif, ui.contact * 0.6)
+    const mesh = model.userData.parts.screen
+    if (mesh.material.emissiveIntensity !== undefined) mesh.material.emissiveIntensity = 1.5 + flare * 0.9
+    if (glow.current) glow.current.intensity = 0.55 + flare * 0.9
     // while focused, publish the screen's on-page quad so the DOM terminal
     // (RoomHome › LaptopTerminal) can be warped exactly onto it
     if (room.get().focus === 'laptop') {
@@ -315,9 +327,16 @@ export default function Props({ tier = 'high' }) {
       <Pen position={[-0.36, Y + 0.0045, -0.38]} rotation={[0, 0.9, 0]} />
 
       {/* sticky notes — on the wall by the shelf, on the laptop bezel, on the desk */}
-      <Sticky lines={['hi, i\'m shorya', `${AGE} · kolkata`]} color="#f7e27a" position={[-0.62, 1.32, BACK + 0.004]} rotation={[0, 0, 0.05]} curl={0.15} />
-      <Sticky lines={['open to', 'collab →']} color="#f4b98a" position={[-0.5, 1.27, BACK + 0.004]} rotation={[0, 0, -0.07]} curl={0.2} />
-      <Sticky lines={['ship it.']} color="#bfe3c0" position={[-0.4, 1.35, BACK + 0.004]} rotation={[0, 0, 0.03]} curl={0.12} />
+      {/* the wall notes double as shortcuts */}
+      <Hotspot id="note-hi" label="back to the start" onClick={() => window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: 0 }))}>
+        <Sticky lines={['hi, i\'m shorya', `${AGE} · kolkata`]} color="#f7e27a" position={[-0.62, 1.32, BACK + 0.004]} rotation={[0, 0, 0.05]} curl={0.15} />
+      </Hotspot>
+      <Hotspot id="note-collab" label="open to collab — say hi" onClick={() => focusOn('phone')}>
+        <Sticky lines={['open to', 'collab →']} color="#f4b98a" position={[-0.5, 1.27, BACK + 0.004]} rotation={[0, 0, -0.07]} curl={0.2} />
+      </Hotspot>
+      <Hotspot id="note-ship" label="ship it — see what I've shipped" onClick={() => focusOn('drawer')}>
+        <Sticky lines={['ship it.']} color="#bfe3c0" position={[-0.4, 1.35, BACK + 0.004]} rotation={[0, 0, 0.03]} curl={0.12} />
+      </Hotspot>
       <Sticky lines={['curl', 'shoryavardhaan', '.vercel.app']} color="#f7e27a" size={0.07} position={[0.07, Y + 0.0012, -0.58]} rotation={[-Math.PI / 2, 0, -0.25]} curl={0.02} />
 
     </group>

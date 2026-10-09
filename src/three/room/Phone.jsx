@@ -4,7 +4,8 @@ import * as THREE from 'three'
 import { createModel as createPhone } from './lib/iphone'
 import { prepModel, Hotspot, damp } from './common'
 import { bakeStatic } from './bake'
-import { room, useRoom, focusOn, wake, dirtyShadows } from './store'
+import { room, live, useRoom, focusOn, wake, dirtyShadows } from './store'
+import { PINGS, ping } from './pings'
 
 const extra = import.meta.glob('./props/stand.js', { eager: true })
 const createPhoneStand = extra['./props/stand.js']?.createPhoneStand
@@ -23,6 +24,17 @@ const BUTTONS = [
   { y: 1520, label: 'GitHub', sub: 'github.com/vassu-v', href: 'https://github.com/vassu-v' },
 ]
 const BTN_H = 150
+
+function wrapLines(ctx, text, maxW) {
+  const out = []
+  let line = ''
+  for (const w of text.split(' ')) {
+    const t = line ? line + ' ' + w : w
+    if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w } else line = t
+  }
+  if (line) out.push(line)
+  return out
+}
 
 function rr(ctx, x, y, w, h, r) {
   ctx.beginPath(); ctx.roundRect(x, y, w, h, r)
@@ -53,11 +65,10 @@ function drawLock(ctx, w, h, ui) {
     ctx.beginPath(); ctx.arc(130, y + 90, 46, 0, 7); ctx.fill()
     ctx.fillStyle = '#1d1208'; ctx.font = '600 40px "JetBrains Mono", monospace'; ctx.textAlign = 'center'
     ctx.fillText('SG', 130, y + 104); ctx.textAlign = 'left'
-    ctx.fillStyle = '#84D0E8'; ctx.font = '600 36px "JetBrains Mono", monospace'; ctx.fillText('Shorya', 200, y + 80)
+    ctx.fillStyle = '#84D0E8'; ctx.font = '600 36px "JetBrains Mono", monospace'; ctx.fillText(ui.msg.app, 200, y + 80)
     ctx.fillStyle = 'rgba(239,230,216,0.55)'; ctx.font = '400 30px "JetBrains Mono", monospace'; ctx.fillText('now', w - 160, y + 80)
-    ctx.fillStyle = '#efe6d8'; ctx.font = '400 40px "JetBrains Mono", monospace'
-    ctx.fillText('Want to build something', 200, y + 150)
-    ctx.fillText('together?', 200, y + 204)
+    ctx.fillStyle = '#efe6d8'; ctx.font = '400 38px "JetBrains Mono", monospace'
+    wrapLines(ctx, ui.msg.text, w - 300).slice(0, 2).forEach((l, i) => ctx.fillText(l, 200, y + 150 + i * 54))
     ctx.globalAlpha = 1
   }
 }
@@ -104,10 +115,14 @@ function drawCard(ctx, w, h, ui) {
 export default function Phone() {
   const focus = useRoom(s => s.focus)
   const explore = useRoom(s => s.explore)
-  const focused = focus === 'phone'
+  const tourStop = useRoom(s => s.tourStop)
+  // the tour's finale stands the phone up with the contact card on screen
+  const finale = !focus && tourStop === 'finale'
+  const focused = focus === 'phone' || finale
   const holder = useRef()
+  const glow = useRef()
   // screen UI state, read by the canvas draw callback outside React's render
-  const ui = useMemo(() => ({ current: { notif: 0, wake: 0, app: 0, hot: -1, dirty: true, buzz: 0, minute: -1, notifUntil: 0 } }), [])
+  const ui = useMemo(() => ({ current: { notif: 0, wake: 0, app: 0, hot: -1, dirty: true, buzz: 0, minute: -1, pingId: 0, msg: PINGS[0] } }), [])
 
   const model = useMemo(() => {
     const m = prepModel(createPhone())
@@ -131,26 +146,34 @@ export default function Phone() {
     return { pos, q }
   }, [stand])
 
-  // a message arrives shortly after the visitor reaches the room, then again
-  // every ~40 s while they're elsewhere — a nudge to pick the phone up
+  // notifications land now and then, alternating phone / laptop — the first
+  // one on the phone shortly after the visitor steps into the room
   useEffect(() => {
     if (!explore) return
-    const ping = () => {
-      if (room.get().focus === 'phone') return
-      ui.current.notifUntil = performance.now() + 6000
-      ui.current.buzz = 1
-      wake(6500)
+    let id
+    const next = first => {
+      id = setTimeout(() => {
+        if (room.get().focus !== 'phone' && room.get().focus !== 'laptop') ping(first ? 'phone' : undefined)
+        next(false)
+      }, first ? 1400 : 16000 + Math.random() * 14000)
     }
-    const first = setTimeout(ping, 1400)
-    const again = setInterval(ping, 40000)
-    return () => { clearTimeout(first); clearInterval(again) }
+    next(true)
+    return () => clearTimeout(id)
   }, [explore])
+
+  // arriving at the finale: the phone lights up with the invitation
+  useEffect(() => {
+    if (finale) live.ping = { ...PINGS[0], until: performance.now() + 4000, id: -1 }
+  }, [finale])
 
   const tmp = useMemo(() => ({ p: new THREE.Vector3(), q: new THREE.Quaternion() }), [])
   useFrame(({ clock }, dt) => {
     const u = ui.current
     const now = performance.now()
-    const notifOn = focused || now < u.notifUntil
+    const p = live.ping
+    if (p && p.where === 'phone' && p.id !== u.pingId) { u.pingId = p.id; u.msg = p; u.buzz = 1; u.dirty = true }
+    const notifOn = focused || (p?.where === 'phone' && now < p.until)
+    if (focused && u.msg !== PINGS[0]) { u.msg = PINGS[0]; u.dirty = true }
     const before = u.notif + u.wake + u.app
     u.notif = damp(u.notif, notifOn ? 1 : 0, 6, dt)
     u.wake = damp(u.wake, notifOn || focused ? 1 : 0, 5, dt)
@@ -164,6 +187,8 @@ export default function Phone() {
       model.rotation.set(0, 0, 0)
     }
 
+    // the screen throws a little light on the desk when it wakes
+    if (glow.current) glow.current.intensity = 0.12 * u.wake + 0.1 * u.notif * (focused ? 0 : 1)
     const h = holder.current
     h.userData.k = damp(h.userData.k ?? 0, focused ? 1 : 0, 3.6, dt)
     const k = h.userData.k
@@ -200,6 +225,7 @@ export default function Phone() {
           if (!focused) return focusOn('phone')
           const i = hitButton(e)
           if (i >= 0) window.open(BUTTONS[i].href, BUTTONS[i].href.startsWith('mailto') ? '_self' : '_blank', 'noopener')
+          else if (focus !== 'phone') focusOn('phone')
         }}>
           <group onPointerMove={e => {
             const i = hitButton(e)
@@ -211,6 +237,7 @@ export default function Phone() {
             }
           }}>
             <primitive object={model} scale={0.053} />
+            <pointLight ref={glow} position={[0, 0.03, 0]} color="#9fdcf0" distance={0.5} decay={2} intensity={0} />
           </group>
         </Hotspot>
       </group>
