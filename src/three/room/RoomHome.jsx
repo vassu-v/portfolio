@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PROJECTS } from '../../data/projects'
 import { POSTS } from '../../data/blog'
-import { EXP } from '../../components/Experience'
+import { ITEMS } from './corkData'
 import { useRoute } from '../../router'
 import { useMobile } from '../../hooks/useMobile'
 import { room, live, useRoom, focusOn } from './store'
@@ -87,7 +87,7 @@ function Chip({ children, onClick, active }) {
 function FocusPanel({ focus }) {
   const mobile = useMobile(768)
   const folder = useRoom(s => s.folder)
-  const card = useRoom(s => s.card)
+  const pin = useRoom(s => s.pin)
   const spread = useRoom(s => s.spread)
   const page = useRoom(s => s.page)
   const { navigate } = useRoute()
@@ -99,11 +99,17 @@ function FocusPanel({ focus }) {
       ? <><p>{p.tagline}</p><p style={{ opacity: 0.6 }}>page {page + 1} / 4 · click the page to turn it · click away to file it</p><button style={linkBtn} onClick={() => navigate(`/project/${p.slug}`)}>open case study →</button></>
       : <p>Every folder is a project. Pick one out.</p>
   } else if (focus === 'corkboard') {
-    const e = EXP[card]
-    title = e ? `${e.org}` : 'The work so far'
-    body = e
-      ? <><p style={{ color: 'var(--go)' }}>{e.primaryRole} · {e.period}</p><p>{e.desc}</p></>
-      : <p>Roles pinned in order, string runs oldest → newest. Tap a card.</p>
+    const it = ITEMS.find(i => i.id === pin)
+    title = it ? it.panel.title : 'The work so far'
+    body = it
+      ? <>
+          {it.panel.sub && <p style={{ color: 'var(--go)' }}>{it.panel.sub}</p>}
+          <p>{it.panel.text}</p>
+          {it.panel.project && <button style={linkBtn} onClick={() => navigate(`/project/${it.panel.project}`)}>see the project →</button>}
+          {it.panel.cta && <a style={link} href={it.panel.cta.href} target="_blank" rel="noreferrer">{it.panel.cta.label} →</a>}
+          {it.support.length > 0 && <p style={{ opacity: 0.6 }}>supporting material pulled up beside it — tap a link card to open it</p>}
+        </>
+      : <p>Roles on the left, string runs oldest → newest. Wins and receipts on the right. Tap anything pinned.</p>
   } else if (focus === 'diary') {
     const post = spread > 0 && spread <= POSTS.length ? POSTS[spread - 1] : null
     const next = spread < POSTS.length ? POSTS[spread] : null
@@ -131,7 +137,7 @@ function FocusPanel({ focus }) {
   }
   return (
     <motion.aside
-      key={focus + folder + card + (focus === 'diary' ? spread : '') + (focus === 'drawer' ? page : '')}
+      key={focus + folder + pin + (focus === 'diary' ? spread : '') + (focus === 'drawer' ? page : '')}
       initial={{ opacity: 0, x: -14 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -8 }}
@@ -212,8 +218,10 @@ export default function RoomHome() {
 
   useEffect(() => {
     const open = e => e.detail && navigate(`/blog/${e.detail}`)
+    const proj = e => e.detail && navigate(`/project/${e.detail}`)
     window.addEventListener('room-open-post', open)
-    return () => window.removeEventListener('room-open-post', open)
+    window.addEventListener('room-open-project', proj)
+    return () => { window.removeEventListener('room-open-post', open); window.removeEventListener('room-open-project', proj) }
   }, [navigate])
 
   useEffect(() => {
@@ -231,7 +239,7 @@ export default function RoomHome() {
     }, 900)
     if (room.get().roam || room.get().tier === 'poster') { live.intro = 1; room.set({ explore: true }) }
     if (new URLSearchParams(window.location.search).has('capture')) { live.intro = 1; live.scroll = 1 }
-    const onKey = e => { if (e.key === 'Escape') room.set({ focus: null, folder: -1, card: -1 }) }
+    const onKey = e => { if (e.key === 'Escape') room.set({ focus: null, folder: -1, pin: null }) }
     window.addEventListener('keydown', onKey)
     return () => { clearTimeout(delay); cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey) }
   }, [])
@@ -277,7 +285,7 @@ export default function RoomHome() {
             exit={{ opacity: 0, y: 10 }}
             style={{ position: 'fixed', right: mobile ? 16 : 'var(--pad)', left: mobile ? 16 : 'auto', bottom: mobile ? 20 : 40, zIndex: 50, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: mobile ? 'center' : 'flex-end', maxWidth: mobile ? 'none' : 520 }}
           >
-            {focus && <Chip onClick={() => room.set({ focus: null, folder: -1, card: -1 })}>← back to the desk</Chip>}
+            {focus && <Chip onClick={() => room.set({ focus: null, folder: -1, pin: null })}>← back to the desk</Chip>}
             {(!focus || !mobile) && SPOTS.map(s => (
               <Chip key={s.id} active={focus === s.id} onClick={() => focusOn(s.id)}>{s.label} · {s.hint}</Chip>
             ))}

@@ -17,10 +17,10 @@ const OVERVIEW_TALL = { pos: V(0.85, 1.38, 1.05), look: V(0.12, 0.88, -0.62) }
 const FOCUS = {
   drawer:    { pos: V(0.66, 1.2, 0.36),  look: V(0.55, 0.62, -0.28) },
   diary:     { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
-  corkboard: { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 0.98), look: V(BOARD.x, BOARD.y, BACK) },
+  corkboard: { pos: V(BOARD.x, BOARD.y - 0.03, BACK + 1.3), look: V(BOARD.x, BOARD.y - 0.01, BACK) },
   phone:     { pos: V(0.66, 1.02, -0.08), look: V(0.56, 0.85, -0.44) },
   sheet:     { pos: V(0.66, 1.2, 0.5),  look: V(0.56, 0.98, -0.15) },
-  card:      { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 0.75), look: V(BOARD.x, BOARD.y, BACK) },
+  card:      { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 1.02), look: V(BOARD.x, BOARD.y - 0.02, BACK) },
 }
 
 const ease = t => 1 - Math.pow(1 - t, 3)
@@ -30,7 +30,7 @@ export default function CameraRig() {
   const { camera, size } = useThree()
   const focus = useRoom(s => s.focus)
   const folder = useRoom(s => s.folder)
-  const card = useRoom(s => s.card)
+  const pin = useRoom(s => s.pin)
   const pos = useRef(V(1.0, 1.25, 0.9))
   const look = useRef(V(-0.17, 0.86, -0.8))
   const tmp = useMemo(() => ({ sp: V(0, 0, 0), sn: V(0, 0, 1), close: V(0, 0, 0), mid: V(0, 0, 0), a: V(0, 0, 0), b: V(0, 0, 0) }), [])
@@ -50,7 +50,7 @@ export default function CameraRig() {
     tmp.close.copy(tmp.sp).addScaledVector(tmp.sn, dist)
 
     const target = tmp.a, at = tmp.b
-    const f = focus === 'drawer' && folder >= 0 ? FOCUS.sheet : focus === 'corkboard' && card >= 0 ? FOCUS.card : FOCUS[focus]
+    const f = focus === 'drawer' && folder >= 0 ? FOCUS.sheet : focus === 'corkboard' && pin ? FOCUS.card : FOCUS[focus]
     if (focus === 'laptop') {
       target.copy(tmp.sp).addScaledVector(tmp.sn, dist * 1.35)
       at.copy(tmp.sp)

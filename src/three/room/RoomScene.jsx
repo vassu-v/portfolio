@@ -281,7 +281,7 @@ export default function RoomScene() {
       gl={{ antialias: !cfg.post, powerPreference: 'high-performance', stencil: false }}
       camera={{ position: [1, 1.25, 0.9], fov: 36, near: 0.01, far: 40 }}
       style={{ position: 'fixed', inset: 0, zIndex: 0, touchAction: room.get().roam ? 'none' : 'auto' }}
-      onPointerMissed={() => { if (room.get().focus) room.set({ folder: -1, card: -1 }) }}
+      onPointerMissed={() => { if (room.get().focus) room.set({ folder: -1, pin: null }) }}
     >
       <SceneContent />
     </Canvas>
