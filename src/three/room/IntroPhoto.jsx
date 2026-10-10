@@ -57,7 +57,7 @@ function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66
     texture.anisotropy = 8
     const geo = new THREE.BufferGeometry()
     const k = width / CW
-    const step = 4
+    const step = 2 // dense: ~4x the particles of the first pass
     const build = () => {
       draw(ctx, height)
       texture.needsUpdate = true
@@ -79,7 +79,7 @@ function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66
       geo.userData = { base: new Float32Array(base), seed: new Float32Array(sd), last: -1 }
     }
     build()
-    return { texture, geo, build, dot: step * k * 1.15 }
+    return { texture, geo, build, dot: step * k * 1.3 }
   }, [draw, height, width, seed])
   useEffect(() => {
     Promise.all([
@@ -166,7 +166,7 @@ export default function IntroPhoto() {
       <spotLight ref={spot} target={target} position={PHOTO.center.clone().add(new THREE.Vector3(0.05, 0.45, 0.42))}
         color="#fff0dc" angle={0.38} penumbra={0.75} decay={2} distance={2} />
       {/* name up at the turban, behind the cut-out; the hint below the photo */}
-      <Lettering draw={drawName} height={420} width={0.47} offsetY={0.084} seed={1} range={[0.004, 0.62]} />
+      <Lettering draw={drawName} height={420} width={0.47} offsetY={0.112} seed={1} range={[0.004, 0.62]} />
       <Lettering draw={drawHint} height={140} width={0.3} offsetY={-0.098} seed={9001} range={[0.004, 0.5]} tallScale={1.05} />
       <mesh ref={plane} quaternion={quat} renderOrder={2}>
         <planeGeometry args={[SIZE, SIZE]} />

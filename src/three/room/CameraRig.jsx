@@ -20,7 +20,7 @@ const OVERVIEW_TALL = { pos: V(0.85, 1.38, 1.05), look: V(0.12, 0.88, -0.62) }
 // The scroll tour (order in tourData.js). The camera holds at each stop for
 // the first part of its scroll segment, then travels to the next.
 const SHOTS = {
-  intro: { pos: PHOTO.center.clone().addScaledVector(PHOTO.normal, 0.5), look: PHOTO.center.clone().add(V(0, 0.006, 0)) },
+  intro: { pos: PHOTO.center.clone().addScaledVector(PHOTO.normal, 0.5), look: PHOTO.center.clone().add(V(0, 0.022, 0)) },
   experience: { pos: V(BOARD.x - 0.06, BOARD.y + 0.15, BACK + 1.45), look: V(BOARD.x - 0.05, BOARD.y + 0.19, BACK) },
   wins: { pos: V(BOARD.x - 0.08, BOARD.y - 0.12, BACK + 1.2), look: V(BOARD.x - 0.12, BOARD.y - 0.19, BACK) },
   projects: { pos: V(0.66, 1.2, 0.36), look: V(0.55, 0.62, -0.28) },
