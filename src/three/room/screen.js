@@ -24,10 +24,13 @@ const COPPER = '#F07A1A', GOLD = '#84D0E8'
 // Draws the laptop screen: a desktop with a terminal typing on loop, the odd
 // notification sliding in (live.ping), and — at the tour's finale — a contact
 // card fading over it all. Redraws only when something visible changed.
-export function createScreen() {
+// scale: canvas resolution factor (phones use 0.5 — the canvas is re-uploaded
+// to the GPU every time the terminal types, ~7×/s); all drawing stays in
+// 1600×1000 design units via the transform
+export function createScreen(scale = 1) {
   const canvas = document.createElement('canvas')
-  canvas.width = W
-  canvas.height = H
+  canvas.width = Math.round(W * scale)
+  canvas.height = Math.round(H * scale)
   const ctx = canvas.getContext('2d')
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
@@ -167,6 +170,7 @@ export function createScreen() {
 
   // ui: { notif 0…1, msg {app, text}, invite 0…1, contact 0…1 }
   function draw(t, ui) {
+    ctx.setTransform(scale, 0, 0, scale, 0, 0)
     const key = [Math.floor(t * 2) % 2, new Date().getMinutes(), Math.floor(t * TYPE_RATE), ui.notif.toFixed(3), ui.contact.toFixed(3), ui.invite.toFixed(3), ui.msg?.text].join('|')
     if (key === last.key) return false
     last.key = key

@@ -50,12 +50,15 @@ export function wake(ms = 1200) {
   live.activeUntil = Math.max(live.activeUntil, performance.now() + ms)
 }
 
+const SHADOW_KEYS = new Set(['focus', 'folder', 'pin', 'side', 'lampOn', 'hour', 'curtains', 'drawerShut', 'diaryShut', 'spread', 'page', 'photo', 'tourStop'])
+
 export const room = {
   get: () => state,
   set(patch) {
     const p = typeof patch === 'function' ? patch(state) : patch
     state = { ...state, ...p }
-    if (Object.keys(p).some(k => k !== 'hover' && k !== 'explore')) dirtyShadows(150)
+    // shadow maps re-render only when something that casts one may move
+    if (Object.keys(p).some(k => SHADOW_KEYS.has(k))) dirtyShadows(p.tourStop ? 70 : 110)
     wake(2500)
     listeners.forEach(l => l())
   },

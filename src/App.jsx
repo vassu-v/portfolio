@@ -343,7 +343,7 @@ export default function App() {
     // 1300ms gives a fair chance without meaningfully hurting perceived
     // load time on a real page.
     const MIN_VISIBLE = 1300
-    const MAX_WAIT     = 4500 // never hold a slow connection hostage
+    const MAX_WAIT     = 6500 // never hold a slow connection hostage
     const start = performance.now()
     let settled = false
     let rafId, hideT
@@ -376,9 +376,13 @@ export default function App() {
     // finishing on fonts/hero-image alone and dropping the visitor into
     // a still-loading background right after the loader disappears.
     const deskSceneReady = (CLASSIC ? import('./three/DeskScene') : import('./three/room/RoomScene')).catch(() => {})
+    // the room also pre-renders every shader it will need (RoomScene ›
+    // Warmup) — on phones that's seconds of work that otherwise lands as
+    // stutter mid-scroll, so the loader waits for it (capped by MAX_WAIT)
+    const roomWarm = CLASSIC ? Promise.resolve() : new Promise(resolve => window.addEventListener('room-warm', resolve, { once: true }))
 
     Promise.race([
-      Promise.all([heroImageReady, fontsReady, deskSceneReady]),
+      Promise.all([heroImageReady, fontsReady, deskSceneReady, roomWarm]),
       new Promise(resolve => setTimeout(resolve, MAX_WAIT)),
     ]).then(() => {
       settled = true

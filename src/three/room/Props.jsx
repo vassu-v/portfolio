@@ -40,8 +40,10 @@ function Laptop() {
     // lid stays open; everything but the live screen collapses to a few meshes
     return bakeStatic(m, { keep: [m.userData.parts.screen] })
   }, [])
-  const screen = useMemo(() => createScreen(), [])
+  const lite = useRoom(s => s.tier === 'low')
+  const screen = useMemo(() => createScreen(lite ? 0.5 : 1), [lite])
   const glow = useRef()
+  const rich = useRoom(s => s.tier !== 'low')
 
   useEffect(() => {
     const { screen: mesh } = model.userData.parts
@@ -88,7 +90,7 @@ function Laptop() {
   return (
     <Hotspot id="laptop" label="Laptop — the terminal" onClick={() => focusOn('laptop')} position={[-0.17, Y, -0.74]} rotation={[0, 0.06, 0]}>
       <primitive object={model} scale={0.07} />
-      {!off.has('rect') && <rectAreaLight ref={glow} width={0.28} height={0.18} color="#ffd7a8" position={[0, 0.13, -0.06]} rotation={[-0.25, 0, 0]} intensity={0.55} />}
+      {rich && !off.has('rect') && <rectAreaLight ref={glow} width={0.28} height={0.18} color="#ffd7a8" position={[0, 0.13, -0.06]} rotation={[-0.25, 0, 0]} intensity={0.55} />}
     </Hotspot>
   )
 }
@@ -109,6 +111,7 @@ function Lamp({ tier }) {
     return bakeStatic(m, { keep: [m.userData.parts.bulb] })
   }, [])
   const spot = useRef()
+  const rich = useRoom(s => s.tier !== 'low')
   const fill = useRef()
   const target = useMemo(() => new THREE.Object3D(), [])
   const btn = useRef()
@@ -163,7 +166,7 @@ function Lamp({ tier }) {
         castShadow={(TIERS[tier]?.lampShadow ?? false) && !off.has('shadow')}
         onUpdate={l => l.shadow.camera.layers.enable(1)}
       />
-      {!off.has('fill') && <pointLight ref={fill} color="#ffcf94" distance={4} decay={2} />}
+      {rich && !off.has('fill') && <pointLight ref={fill} color="#ffcf94" distance={4} decay={2} />}
     </>
   )
 }

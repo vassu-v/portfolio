@@ -139,12 +139,15 @@ function TourCopy({ hidden, mobile }) {
   const stop = useRoom(s => s.tourStop)
   const veil = useRef()
   useEffect(() => {
-    let raf
+    let raf, lastKey = ''
     const run = () => {
       raf = requestAnimationFrame(run)
       const u = tourU(live.scroll)
       const lift = Math.min(1, Math.max(0, (u - 0.2) / 0.65))
       const [x, y] = live.photoPx || [window.innerWidth * 0.4, window.innerHeight * 0.45]
+      const key = `${lift.toFixed(3)}|${Math.round(x)}|${Math.round(y)}|${hidden}`
+      if (key === lastKey) return
+      lastKey = key
       if (veil.current) {
         veil.current.style.opacity = String((1 - lift) * (hidden ? 0 : 1))
         // clear over the photo and the name above it, dark towards the edges
@@ -479,6 +482,9 @@ export default function RoomHome() {
   const tierReason = useRoom(s => s.tierReason)
   const struggling = useRoom(s => s.struggling)
   const [asking, setAsking] = useState(() => shouldAsk(tier, tierReason))
+  useEffect(() => { document.documentElement.classList.toggle('lite', tier === 'low') }, [tier])
+  // no 3D to warm up (still image, or waiting on the device choice): don't hold the loader
+  useEffect(() => { if (poster || asking) window.dispatchEvent(new Event('room-warm')) }, [poster, asking])
 
   useEffect(() => {
     const open = e => e.detail && navigate(`/blog/${e.detail}`)

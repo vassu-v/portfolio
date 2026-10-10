@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { live } from './store'
+import { live, useRoom } from './store'
 import { PHOTO } from './CameraRig'
 import { tourU } from './tourData'
 
@@ -49,6 +49,7 @@ function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66
   const dots = useRef()
   const group = useRef()
   const { size } = useThree()
+  const lite = useRoom(s => s.tier === 'low')
   const quat = useMemo(() => new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), PHOTO.normal), [])
   const L = useMemo(() => {
     const c = document.createElement('canvas')
@@ -59,7 +60,9 @@ function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66
     texture.anisotropy = 8
     const geo = new THREE.BufferGeometry()
     const k = width / CW
-    const step = 2 // dense: ~4x the particles of the first pass
+    // dense on laptops; phones get ~half the particles (each one is moved
+    // on the CPU every frame of the dissolve)
+    const step = lite ? 3 : 2
     const build = () => {
       draw(ctx, height)
       texture.needsUpdate = true
@@ -82,7 +85,7 @@ function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66
     }
     build()
     return { texture, geo, build, dot: step * k * 1.3 }
-  }, [draw, height, width, seed])
+  }, [draw, height, width, seed, lite])
   useEffect(() => {
     Promise.all([
       document.fonts?.load('italic 300 300px "Instrument Serif"'),

@@ -232,6 +232,7 @@ function IndexCard({ p, i, z, open }) {
 // Second drawer: side projects. Same mechanics as the project drawer, but
 // index cards instead of hanging files, and a sticky note on the front.
 function SideDrawer({ y, h }) {
+  const rich = useRoom(s => s.tier !== 'low')
   const ref = useRef()
   const focus = useRoom(s => s.focus)
   const open = focus === 'sides'
@@ -248,7 +249,7 @@ function SideDrawer({ y, h }) {
   })
   return (
     <group position={[(PED.x0 + PED.x1) / 2, y, (PED.z0 + PED.z1) / 2]}>
-      <pointLight ref={fill} position={[0.05, 0.3, SIDE_TRAVEL + 0.25]} color="#ffe9cf" distance={1.2} decay={2} intensity={0} />
+      {rich && <pointLight ref={fill} position={[0.05, 0.3, SIDE_TRAVEL + 0.25]} color="#ffe9cf" distance={1.2} decay={2} intensity={0} />}
       <group ref={ref}>
         <Hotspot id="sides" label={open ? 'close the drawer' : 'Side projects — open the drawer'}
           onClick={() => (open ? room.set({ focus: null, side: -1 }) : focusOn('sides'))}>

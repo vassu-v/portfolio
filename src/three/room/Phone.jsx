@@ -210,6 +210,7 @@ export default function Phone() {
   const focused = focus === 'phone' || finale || stood
   const holder = useRef()
   const glow = useRef()
+  const rich = useRoom(s => s.tier !== 'low')
   // screen UI state, read by the canvas draw callback outside React's render
   const ui = useMemo(() => ({ current: { notif: 0, wake: 0, app: 0, hot: -1, dirty: true, buzz: 0, minute: -1, pingId: 0, msg: PINGS[0] } }), [])
 
@@ -335,7 +336,7 @@ export default function Phone() {
             }
           }}>
             <primitive object={model} scale={0.053} />
-            <pointLight ref={glow} position={[0, 0.03, 0]} color="#9fdcf0" distance={0.5} decay={2} intensity={0} />
+            {rich && <pointLight ref={glow} position={[0, 0.03, 0]} color="#9fdcf0" distance={0.5} decay={2} intensity={0} />}
           </group>
         </Hotspot>
       </group>

@@ -296,6 +296,7 @@ function Yarn() {
 // lamp's falloff and every card (and anything pulled forward) reads near-black.
 // Always mounted so toggling never recompiles shaders — only intensity moves.
 function PictureLight() {
+  const rich = useRoom(s => s.tier !== 'low')
   const focus = useRoom(inHand)
   const lampOn = useRoom(s => s.lampOn)
   const spot = useRef()
@@ -307,7 +308,7 @@ function PictureLight() {
     const k = spot.current.userData.k = damp(spot.current.userData.k ?? want, want, 4, dt)
     spot.current.intensity = 1.9 * k
     // fill for cards pulled off the board towards the camera
-    front.current.intensity = room.get().pin ? 0.35 : 0
+    if (front.current) front.current.intensity = room.get().pin ? 0.35 : 0
   })
   const top = BOARD.h / 2 + 0.03
   return (
@@ -326,7 +327,7 @@ function PictureLight() {
         </mesh>
       </group>
       <spotLight ref={spot} target={target} position={[0, top + 0.02, 0.42]} color="#ffe6c4" angle={1.15} penumbra={0.85} decay={2} distance={3} />
-      <pointLight ref={front} position={[0, 0.05, 0.75]} color="#fff1de" distance={1.6} decay={2} intensity={0} />
+      {rich && <pointLight ref={front} position={[0, 0.05, 0.75]} color="#fff1de" distance={1.6} decay={2} intensity={0} />}
     </>
   )
 }

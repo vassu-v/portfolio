@@ -16,13 +16,14 @@ import DeskPhotos from './DeskPhotos'
 import Extras from './Extras'
 import PaperBalls from './PaperBalls'
 import IntroPhoto from './IntroPhoto'
-import CameraRig from './CameraRig'
+import CameraRig, { WARM_SHOTS } from './CameraRig'
 import PerfProbe from './PerfProbe'
 import { sky as skyAt } from './timeOfDay'
-import { room, live, useRoom, wake, off, closeLayer } from './store'
+import { room, live, useRoom, wake, off, closeLayer, dirtyShadows } from './store'
 import { TIERS, downgrade, rememberTier, dprFor } from './tier'
 
 RectAreaLightUniformsLib.init()
+const LVH = typeof CSS !== 'undefined' && CSS.supports?.('height', '100lvh') ? '100lvh' : '100vh'
 
 // Sun (or moon) through the window — the main shadow caster. Its frustum is
 // fitted to the room so the window frame lands on the desk and wall.
@@ -271,22 +272,75 @@ function SceneContent() {
       {roam ? <Roam /> : <CameraRig />}
       <Driver idleFps={cfg.idleFps} />
       {!roam && !/[?&]tier=/.test(window.location.search) && <TierProbe />}
+      <Warmup post={cfg.post && !off.has('post')} />
       {(debug || roam) && <PerfProbe selfRender={!(cfg.post && !off.has('post'))} />}
       {!off.has('post') && <Post key={tier} cfg={cfg} />}
     </>
   )
 }
 
+// Warm every shader up front, before the loader lifts, instead of the first
+// time each object scrolls into view — on phones each lazy compile froze
+// the page for 100–500 ms (≈27% of scroll-time CPU in profiles). A compile()
+// call alone misses the shadow-pass and post-pass variants, so this renders
+// one real frame from every camera the tour can reach (all objects shown,
+// shadows on), through the same path the visible frame takes, then puts the
+// view back. It happens in one task, so nothing flashes on screen.
+function Warmup({ post }) {
+  const { gl, scene, camera } = useThree()
+  useEffect(() => {
+    if (!room.get().debug) gl.debug.checkShaderErrors = false
+    else window.__gl = gl
+    let cancelled = false, raf
+    const t0 = performance.now()
+    const run = () => {
+      const hidden = []
+      // never lights: the light count is part of every shader, and the
+      // switched-off library lights must stay off or nothing would match
+      scene.traverse(o => { if (!o.visible && !o.isLight) { hidden.push(o); o.visible = true } })
+      const target = post ? new THREE.WebGLRenderTarget(64, 64, { type: THREE.HalfFloatType }) : null
+      const pos = camera.position.clone(), quat = camera.quaternion.clone()
+      const prev = gl.getRenderTarget()
+      for (const shot of WARM_SHOTS) {
+        camera.position.copy(shot.pos)
+        camera.lookAt(shot.look)
+        camera.updateMatrixWorld()
+        gl.shadowMap.needsUpdate = true
+        gl.setRenderTarget(target)
+        gl.render(scene, camera)
+      }
+      gl.setRenderTarget(prev)
+      target?.dispose()
+      hidden.forEach(o => { o.visible = false })
+      camera.position.copy(pos); camera.quaternion.copy(quat); camera.updateMatrixWorld()
+      dirtyShadows(2)
+      wake(300)
+      window.dispatchEvent(new Event('room-warm'))
+    }
+    // wait for the environment map (it changes every lit material's shader)
+    const wait = () => {
+      if (cancelled) return
+      if (!scene.environment && performance.now() - t0 < 4000) { raf = requestAnimationFrame(wait); return }
+      run()
+    }
+    raf = requestAnimationFrame(wait)
+    return () => { cancelled = true; cancelAnimationFrame(raf) }
+  }, [gl, scene, camera, post])
+  return null
+}
+
 export default function RoomScene() {
   const tier = useRoom(s => s.tier)
   const cfg = TIERS[tier] || TIERS.low
-  const [dpr, setDpr] = useState(() => dprFor(cfg))
+  // only a width change re-plans resolution: on phones the address bar
+  // sliding in/out changes the height on every scroll direction change
+  const [width, setWidth] = useState(() => window.innerWidth)
   useEffect(() => {
-    const on = () => setDpr(dprFor(cfg))
-    on()
+    const on = () => setWidth(window.innerWidth)
     window.addEventListener('resize', on)
     return () => window.removeEventListener('resize', on)
-  }, [cfg])
+  }, [])
+  const dpr = useMemo(() => dprFor(cfg, width), [cfg, width])
 
   useEffect(() => {
     const onMove = e => {
@@ -309,7 +363,9 @@ export default function RoomScene() {
       dpr={dpr}
       gl={{ antialias: !cfg.post, powerPreference: 'high-performance', stencil: false }}
       camera={{ position: [1, 1.25, 0.9], fov: 36, near: 0.01, far: 40 }}
-      style={{ position: 'fixed', inset: 0, zIndex: 0, touchAction: room.get().roam ? 'none' : 'auto' }}
+      // sized to the *large* viewport (address bar hidden) so the canvas
+      // never reallocates as the bar slides in and out on phones
+      style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: LVH, zIndex: 0, touchAction: room.get().roam ? 'none' : 'auto' }}
       onPointerMissed={closeLayer}
     >
       <SceneContent />
