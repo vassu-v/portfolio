@@ -91,6 +91,25 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- CLI escape hatch while loading: plain script, runs before the app
+         bundle, so "press C" / the "switch to CLI mode" link work even while
+         the 3D room is busy being built. Reacts on press, not on release.
+         App.jsx sets window.__loaderGone when the loading screen goes. -->
+    <script>
+      (function () {
+        if (location.pathname !== '/') return // the loader only shows on the home page
+        var go = function () { location.href = '/terminal/index.html' }
+        addEventListener('keydown', function (e) {
+          if (window.__loaderGone || e.metaKey || e.ctrlKey || e.altKey) return
+          if (e.key === 'c' || e.key === 'C') { e.preventDefault(); go() }
+        }, true)
+        addEventListener('pointerdown', function (e) {
+          if (window.__loaderGone) return
+          var a = e.target && e.target.closest && e.target.closest('a[data-cli]')
+          if (a) { e.preventDefault(); go() }
+        }, true)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

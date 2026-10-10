@@ -44,10 +44,6 @@ const FOCUS = {
   card:      { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 1.02), look: V(BOARD.x, BOARD.y - 0.02, BACK) },
 }
 
-// every camera the visitor can end up at — RoomScene › Warmup renders one
-// frame from each before the loader lifts, so no shader compiles mid-scroll
-export const WARM_SHOTS = [...Object.values(SHOTS), ...Object.values(FOCUS), OVERVIEW_TALL]
-
 const ease = t => 1 - Math.pow(1 - t, 3)
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 

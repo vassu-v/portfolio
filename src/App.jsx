@@ -39,12 +39,9 @@ function ZoneDivider() {
 }
 
 function Preloader({ progress }) {
-  // keyboard way out to the CLI, no pointer needed
-  useEffect(() => {
-    const onKey = e => { if ((e.key === 'c' || e.key === 'C') && !e.metaKey && !e.ctrlKey && !e.altKey) window.location.href = '/terminal/index.html' }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  // "press C" and the link itself are handled by a plain script in
+  // index.html (works even while the 3D room is busy); it stops listening
+  // once this screen goes (window.__loaderGone, set where it's hidden)
   return (
     <motion.div
       initial={{ clipPath: 'inset(0% 0% 0% 0%)' }}
@@ -107,6 +104,7 @@ function Preloader({ progress }) {
           on it, for slow connections or anyone who just wants the text. */}
       <a
         href="/terminal/index.html"
+        data-cli=""
         style={{
           fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
           letterSpacing: '0.06em', color: 'var(--text3)', textDecoration: 'none',
@@ -375,7 +373,11 @@ export default function App() {
     // that's the whole reason a CLI-mode fallback exists, instead of
     // finishing on fonts/hero-image alone and dropping the visitor into
     // a still-loading background right after the loader disappears.
-    const deskSceneReady = (CLASSIC ? import('./three/DeskScene') : import('./three/room/RoomScene')).catch(() => {})
+    // fetched now, but its (long, blocking) evaluation waits a beat so the
+    // loader stays responsive at first — see RoomHome's sceneGo
+    const deskSceneReady = CLASSIC
+      ? import('./three/DeskScene').catch(() => {})
+      : new Promise(r => setTimeout(r, 1000)).then(() => import('./three/room/RoomScene')).catch(() => {})
     // the room also pre-renders every shader it will need (RoomScene ›
     // Warmup) — on phones that's seconds of work that otherwise lands as
     // stutter mid-scroll, so the loader waits for it (capped by MAX_WAIT)
@@ -389,7 +391,7 @@ export default function App() {
       cancelAnimationFrame(rafId)
       setLoadProgress(100)
       const wait = Math.max(0, MIN_VISIBLE - (performance.now() - start))
-      hideT = setTimeout(() => setPreloaderVisible(false), wait + 220) // brief pause so 100% registers
+      hideT = setTimeout(() => { window.__loaderGone = true; setPreloaderVisible(false) }, wait + 220) // brief pause so 100% registers
     })
 
     return () => { cancelAnimationFrame(rafId); clearTimeout(hideT) }

@@ -16,7 +16,7 @@ import DeskPhotos from './DeskPhotos'
 import Extras from './Extras'
 import PaperBalls from './PaperBalls'
 import IntroPhoto from './IntroPhoto'
-import CameraRig, { WARM_SHOTS } from './CameraRig'
+import CameraRig from './CameraRig'
 import PerfProbe from './PerfProbe'
 import { sky as skyAt } from './timeOfDay'
 import { room, live, useRoom, wake, off, closeLayer, dirtyShadows } from './store'
@@ -257,68 +257,81 @@ function SceneContent() {
   const debug = useRoom(s => s.debug)
   const cfg = TIERS[tier] || TIERS.low
   const sky = useMemo(() => skyAt(hour), [hour])
+  // Phones skip the image-based environment light: building it (PMREM blur)
+  // compiles shaders that can't be done in the background — a multi-second
+  // freeze on load — and sampling it costs every pixel. A sky/floor
+  // hemisphere light stands in for the soft bounce.
+  const env = cfg.post && !off.has('env')
+  // Built in stages, a frame apart, so no single step locks the page (the
+  // loading screen's CLI link has to stay clickable). The scene stays hidden
+  // until Warmup has compiled everything (see there).
+  const [stage, setStage] = useState(0)
+  useEffect(() => {
+    if (stage >= 3) return
+    const id = setTimeout(() => setStage(stage + 1), 30)
+    return () => clearTimeout(id)
+  }, [stage])
 
   return (
     <>
       <RendererTone post={cfg.post && !off.has('post')} />
-      {!off.has('env') && <Env sky={sky} lampOn={lampOn} />}
+      {env ? <Env sky={sky} lampOn={lampOn} /> : <hemisphereLight args={['#f1e4d0', '#3a2a1c', 0.5 + sky.amb * 1.4]} />}
       <Sun key={`sun-${cfg.sunMap}`} sky={sky} mapSize={cfg.sunMap} />
       <Room sky={sky} sway={false} />
       <Desk />
-      <Props tier={tier} />
-      <Corkboard />
-      <Diary />
-      <Dossier />
-      <Phone />
-      <DeskPhotos />
-      <Extras />
-      <PaperBalls />
-      {!roam && <IntroPhoto />}
+      {stage >= 1 && <Props tier={tier} />}
+      {stage >= 2 && <><Corkboard /><Diary /><Dossier /><Phone /></>}
+      {stage >= 3 && <><DeskPhotos /><Extras /><PaperBalls />{!roam && <IntroPhoto />}</>}
       {cfg.dust && <Dust sky={sky} />}
-      {roam ? <Roam /> : <CameraRig />}
+      {roam ? <Roam /> : stage >= 1 && <CameraRig />}
       <Driver idleFps={cfg.idleFps} />
       {!roam && !/[?&]tier=/.test(window.location.search) && <TierProbe />}
-      <Warmup post={cfg.post && !off.has('post')} />
+      <Warmup post={cfg.post && !off.has('post')} env={env} ready={stage >= 3} />
       {(debug || roam) && <PerfProbe selfRender={!(cfg.post && !off.has('post'))} />}
       {!off.has('post') && <Post key={tier} cfg={cfg} />}
     </>
   )
 }
 
-// Warm every shader up front, before the loader lifts, instead of the first
-// time each object scrolls into view — on phones each lazy compile froze
-// the page for 100–500 ms (≈27% of scroll-time CPU in profiles). A compile()
-// call alone misses the shadow-pass and post-pass variants, so this renders
-// one real frame from every camera the tour can reach (all objects shown,
-// shadows on), through the same path the visible frame takes, then puts the
-// view back. It happens in one task, so nothing flashes on screen.
-function Warmup({ post }) {
+// Compile every shader up front, in the background, before the room is
+// first drawn. On Windows each shader goes through DirectX translation
+// (~0.3 s apiece); compiled lazily, they froze the page — at the first frame
+// (one 12 s block, during which the loading screen's "switch to CLI mode"
+// and C key did nothing) and again mid-scroll on phones. compileAsync hands
+// the work to the GPU process (KHR_parallel_shader_compile) without blocking.
+function Warmup({ post, env, ready }) {
   const { gl, scene, camera } = useThree()
   useEffect(() => {
     if (!room.get().debug) gl.debug.checkShaderErrors = false
     else window.__gl = gl
+    scene.visible = false
+    if (!ready) return
     let cancelled = false, raf
     const t0 = performance.now()
-    const run = () => {
+    // everything hidden (except lights — the light count is part of every
+    // shader, and the switched-off library lights must stay off) is shown
+    // just for the compile call, so its shaders are included
+    const reveal = () => {
       const hidden = []
-      // never lights: the light count is part of every shader, and the
-      // switched-off library lights must stay off or nothing would match
       scene.traverse(o => { if (!o.visible && !o.isLight) { hidden.push(o); o.visible = true } })
-      const target = post ? new THREE.WebGLRenderTarget(64, 64, { type: THREE.HalfFloatType }) : null
-      const pos = camera.position.clone(), quat = camera.quaternion.clone()
+      return () => hidden.forEach(o => { o.visible = false })
+    }
+    const run = async () => {
+      // the scene stays hidden until it's done, so no frame compiles on the spot
+      scene.visible = true
+      let hide = reveal()
+      // with post-processing the scene is drawn into a (linear, untonemapped)
+      // buffer, not the screen — compile for that, or every shader differs
+      const target = post ? new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType }) : null
       const prev = gl.getRenderTarget()
-      for (const shot of WARM_SHOTS) {
-        camera.position.copy(shot.pos)
-        camera.lookAt(shot.look)
-        camera.updateMatrixWorld()
-        gl.shadowMap.needsUpdate = true
-        gl.setRenderTarget(target)
-        gl.render(scene, camera)
-      }
+      gl.setRenderTarget(target)
+      const done = gl.compileAsync ? gl.compileAsync(scene, camera) : Promise.resolve(gl.compile(scene, camera))
       gl.setRenderTarget(prev)
+      hide()
+      scene.visible = false
+      await Promise.race([done.catch(() => {}), new Promise(r => setTimeout(r, 15000))])
       target?.dispose()
-      hidden.forEach(o => { o.visible = false })
-      camera.position.copy(pos); camera.quaternion.copy(quat); camera.updateMatrixWorld()
+      scene.visible = true
       dirtyShadows(2)
       wake(300)
       window.dispatchEvent(new Event('room-warm'))
@@ -326,12 +339,12 @@ function Warmup({ post }) {
     // wait for the environment map (it changes every lit material's shader)
     const wait = () => {
       if (cancelled) return
-      if (!scene.environment && performance.now() - t0 < 4000) { raf = requestAnimationFrame(wait); return }
+      if (env && !scene.environment && performance.now() - t0 < 4000) { raf = requestAnimationFrame(wait); return }
       run()
     }
     raf = requestAnimationFrame(wait)
-    return () => { cancelled = true; cancelAnimationFrame(raf) }
-  }, [gl, scene, camera, post])
+    return () => { cancelled = true; cancelAnimationFrame(raf); scene.visible = true }
+  }, [gl, scene, camera, post, env, ready])
   return null
 }
 
@@ -363,7 +376,10 @@ export default function RoomScene() {
   return (
     <Canvas
       key={tier}
-      shadows={off.has('vsm') ? 'variance' : off.has('basic') ? 'basic' : true}
+      // 'percentage' (PCF), stated explicitly: `true` asks for PCFSoft, which
+      // three swaps for PCF at draw time — but not when pre-compiling, so
+      // every shadowed shader got compiled twice (once as each)
+      shadows={off.has('vsm') ? 'variance' : off.has('basic') ? 'basic' : 'percentage'}
       flat
       frameloop="demand"
       dpr={dpr}

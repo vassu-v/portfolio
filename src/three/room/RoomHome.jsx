@@ -515,6 +515,11 @@ export default function RoomHome() {
   const measuredFps = useRoom(s => s.measuredFps)
   const [measuredDone, setMeasuredDone] = useState(false)
   const [asking, setAsking] = useState(() => shouldAsk(tier, tierReason))
+  // give the loading screen a responsive moment before the heavy 3D build
+  // starts (evaluating three.js, building the room) — so a quick "switch to
+  // CLI mode" always gets through
+  const [sceneGo, setSceneGo] = useState(false)
+  useEffect(() => { const id = setTimeout(() => setSceneGo(true), 1100); return () => clearTimeout(id) }, [])
   useEffect(() => { document.documentElement.classList.toggle('lite', tier === 'low') }, [tier])
   // no 3D to warm up (still image, or waiting on the device choice): don't hold the loader
   useEffect(() => { if (poster || asking) window.dispatchEvent(new Event('room-warm')) }, [poster, asking])
@@ -568,7 +573,7 @@ export default function RoomHome() {
       <AnimatePresence>{struggling === 'severe' && !roam && !asking && !storedMode() && !measuredDone && (
         <DeviceChoice key="measured" kind="measured" fps={measuredFps} onContinue={() => setMeasuredDone(true)} />
       )}</AnimatePresence>
-      {poster ? <Poster /> : !asking && <Suspense fallback={null}><RoomScene /></Suspense>}
+      {poster ? <Poster /> : !asking && sceneGo && <Suspense fallback={null}><RoomScene /></Suspense>}
       {roam && <Inspector full />}
       {!roam && debug && <Inspector />}
       {capture ? null : <>
