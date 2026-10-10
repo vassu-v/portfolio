@@ -156,14 +156,20 @@ function TierProbe() {
     if (!started.current) started.current = now
     if (now - started.current < 2500) return
     samples.current.push(dt)
-    if (samples.current.length < 120) return
+    // decide after 120 frames, or after 6 s of watching on a device too slow
+    // to ever reach 120 (at 3 fps that would take 40 s)
+    if (samples.current.length < 120 && !(samples.current.length >= 15 && now - started.current > 2500 + 6000)) return
     done.current = true
     const s = [...samples.current].sort((a, b) => a - b)
     const fps = 1 / s[Math.floor(s.length / 2)]
     const floor = tier === 'high' ? 40 : tier === 'mid' ? 26 : 22
     // the "try CLI mode" nudge is for genuinely struggling devices only
     const roomy = (navigator.deviceMemory || 0) >= 8 || (navigator.hardwareConcurrency || 0) >= 8
-    if (tier === 'low' && fps < (roomy ? 10 : 16)) room.set({ struggling: true })
+    // low tier still crawling: below ~8 fps is a machine the room can't
+    // serve — the CLI is offered properly (a prompt, CLI first); below the
+    // softer line it's just the small "running slow?" nudge
+    if (tier === 'low' && fps < 8) room.set({ struggling: 'severe', measuredFps: Math.round(fps) })
+    else if (tier === 'low' && fps < (roomy ? 10 : 16)) room.set({ struggling: 'mild', measuredFps: Math.round(fps) })
     if (fps < floor && tier !== 'low') {
       const next = downgrade(tier)
       room.set({ tier: next, tierReason: `measured ${Math.round(fps)} fps on ${tier}` })

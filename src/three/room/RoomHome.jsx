@@ -369,27 +369,49 @@ function shouldAsk(tier, reason) {
   return tier === 'poster' && !/url override|remembered/.test(reason || '')
 }
 
-function DeviceChoice({ onContinue, reason, still }) {
+// Signals that mean the 3D room genuinely can't run here (not "might be
+// heavy"): on these the CLI isn't just offered, it's the default.
+const POTATO = /no WebGL2|software rendering|GB RAM, \d cores/i
+
+// kind 'before'  — asked before anything heavy loads (poster-tier signals)
+// kind 'measured' — the room loaded, but measured far too slow to enjoy
+function DeviceChoice({ onContinue, reason, still, kind = 'before', fps }) {
   const mobile = useMobile(768)
+  const potato = kind === 'measured' || POTATO.test(reason || '')
+  // potato machines go to the CLI on their own unless the visitor picks the room
+  const [left, setLeft] = useState(potato ? 8 : 0)
+  useEffect(() => {
+    if (!left) return
+    const id = setTimeout(() => {
+      if (left === 1) { rememberMode('cli'); window.location.href = '/terminal/' }
+      else setLeft(left - 1)
+    }, 1000)
+    return () => clearTimeout(id)
+  }, [left])
+  const stop = () => setLeft(0)
+  const title = kind === 'measured'
+    ? `The room is running at ${fps || 'a few'} fps here.`
+    : potato ? "This device can't run the 3D room smoothly." : 'This device might find the 3D room heavy.'
   return (
     <motion.div role="dialog" aria-modal="true" aria-labelledby="dc-title"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'grid', placeItems: 'center', padding: 16, background: 'radial-gradient(900px 600px at 50% 0%, rgba(240,122,26,0.12), transparent 60%), #0b0907' }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'grid', placeItems: 'center', padding: 16, background: kind === 'measured' ? 'rgba(11,9,7,0.92)' : 'radial-gradient(900px 600px at 50% 0%, rgba(240,122,26,0.12), transparent 60%), #0b0907' }}>
       <div style={{ width: 'min(520px, 100%)', ...mono, color: '#efe6d8', border: '1px solid rgba(255,240,220,0.1)', borderRadius: 14, padding: mobile ? '26px 20px' : '34px 34px 28px', background: 'rgba(255,240,220,0.02)' }}>
-        <p style={{ fontSize: '0.66rem', letterSpacing: '0.18em', color: 'var(--cu)', marginBottom: 14 }}>BEFORE WE LOAD THE ROOM</p>
-        <h2 id="dc-title" style={{ ...serif, fontSize: mobile ? '2.1rem' : '2.6rem', lineHeight: 1.05, marginBottom: 12, color: '#f6efe4' }}>This device might find the 3D room heavy.</h2>
+        <p style={{ fontSize: '0.66rem', letterSpacing: '0.18em', color: 'var(--cu)', marginBottom: 14 }}>{kind === 'measured' ? 'HEADS UP' : 'BEFORE WE LOAD THE ROOM'}</p>
+        <h2 id="dc-title" style={{ ...serif, fontSize: mobile ? '2.1rem' : '2.6rem', lineHeight: 1.05, marginBottom: 12, color: '#f6efe4' }}>{title}</h2>
         <p style={{ fontSize: '0.8rem', lineHeight: 1.7, color: 'rgba(239,230,216,0.72)', marginBottom: 22 }}>
-          The CLI version has everything (projects, work, writing, contact) and opens instantly. Or load the 3D room anyway; you can switch any time.
+          The CLI version has everything (projects, work, writing, contact) and opens instantly{potato ? ' — it is the better way to see this site on this device' : ''}. Or {kind === 'measured' ? 'stay in' : 'load'} the 3D room anyway; you can switch any time.
         </p>
         <div style={{ display: 'grid', gap: 10 }}>
           <a href="/terminal/" onClick={() => rememberMode('cli')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '14px 18px', borderRadius: 10, background: 'var(--cu)', color: '#120d08', fontWeight: 500, fontSize: '0.85rem' }}>
-            open CLI mode — fast, text-first
+            open CLI mode — fast, text-first{left ? ` (opening in ${left}s)` : ''}
           </a>
-          <button onClick={() => { rememberMode('3d'); onContinue() }} style={{ ...mono, padding: '13px 18px', borderRadius: 10, background: 'transparent', color: '#efe6d8', border: '1px solid rgba(132,208,232,0.4)', fontSize: '0.85rem' }}>
-            {still ? 'continue to the site' : 'continue to the 3D room'}
+          <button onClick={() => { stop(); rememberMode('3d'); onContinue() }} style={{ ...mono, padding: '13px 18px', borderRadius: 10, background: 'transparent', color: '#efe6d8', border: '1px solid rgba(132,208,232,0.4)', fontSize: '0.85rem' }}>
+            {kind === 'measured' ? 'stay in the 3D room' : still ? 'continue to the site' : 'continue to the 3D room'}
           </button>
+          {left > 0 && <button onClick={stop} style={{ ...mono, background: 'none', border: 0, color: 'rgba(239,230,216,0.5)', fontSize: '0.7rem', textDecoration: 'underline' }}>wait — let me choose</button>}
         </div>
-        <p style={{ marginTop: 16, fontSize: '0.62rem', color: 'rgba(239,230,216,0.4)' }}>why: {reason}</p>
+        <p style={{ marginTop: 16, fontSize: '0.62rem', color: 'rgba(239,230,216,0.4)' }}>why: {kind === 'measured' ? `measured ${fps} fps on the lightest quality` : reason}</p>
       </div>
     </motion.div>
   )
@@ -490,6 +512,8 @@ export default function RoomHome() {
   const { navigate } = useRoute()
   const tierReason = useRoom(s => s.tierReason)
   const struggling = useRoom(s => s.struggling)
+  const measuredFps = useRoom(s => s.measuredFps)
+  const [measuredDone, setMeasuredDone] = useState(false)
   const [asking, setAsking] = useState(() => shouldAsk(tier, tierReason))
   useEffect(() => { document.documentElement.classList.toggle('lite', tier === 'low') }, [tier])
   // no 3D to warm up (still image, or waiting on the device choice): don't hold the loader
@@ -540,7 +564,10 @@ export default function RoomHome() {
   return (
     <>
       <AnimatePresence>{asking && <DeviceChoice key="choice" reason={tierReason} still={poster} onContinue={() => setAsking(false)} />}</AnimatePresence>
-      {struggling && !roam && <SlowToast />}
+      {struggling === 'mild' && !roam && <SlowToast />}
+      <AnimatePresence>{struggling === 'severe' && !roam && !asking && !storedMode() && !measuredDone && (
+        <DeviceChoice key="measured" kind="measured" fps={measuredFps} onContinue={() => setMeasuredDone(true)} />
+      )}</AnimatePresence>
       {poster ? <Poster /> : !asking && <Suspense fallback={null}><RoomScene /></Suspense>}
       {roam && <Inspector full />}
       {!roam && debug && <Inspector />}

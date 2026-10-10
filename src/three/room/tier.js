@@ -64,9 +64,11 @@ export function detectTier() {
   if (mem && mem <= 2 && cores <= 2) return { tier: 'poster', reason: `${mem} GB RAM, ${cores} cores` }
   if (/swiftshader|llvmpipe|software|basic render/i.test(gpu)) return { tier: 'poster', reason: 'software rendering' }
 
+  // phones / tablets = touch is the *primary* input (touch-screen laptops
+  // report a fine primary pointer). Screen size is NOT used: a 1366×768
+  // laptop has a short side under 820 and was wrongly treated as a phone.
   const coarse = window.matchMedia('(pointer: coarse)').matches
-  const small = Math.min(window.screen.width, window.screen.height) < 820
-  if (coarse || small) return { tier: 'low', reason: 'phone / tablet' }
+  if (coarse) return { tier: 'low', reason: 'phone / tablet' }
   if (cores <= 4 && (!mem || mem <= 4)) return { tier: 'low', reason: `${cores} cores${mem ? `, ${mem} GB RAM` : ''}` }
 
   if (/nvidia|geforce|rtx|gtx|quadro|radeon rx|radeon pro|apple m\d|apple gpu|arc\(tm\) a/i.test(gpu)) return { tier: 'high', reason: gpu }

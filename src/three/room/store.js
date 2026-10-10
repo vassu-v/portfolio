@@ -25,7 +25,8 @@ let state = {
   page: 0,           // dossier page on top
   photo: -1,         // desk print picked up
   toast: null,       // { text, at } short one-liner (paper-ball shots, etc.)
-  struggling: false, // low tier still under ~20 fps after the intro
+  struggling: false, // false | 'mild' | 'severe' — measured on the low tier
+  measuredFps: 0,
   explore: false,    // scroll intro finished, objects are clickable
   roam: params.has('roam'), // free-orbit inspection mode, no scroll story
   ...(typeof window !== 'undefined' ? (({ tier, reason }) => ({ tier, tierReason: reason }))(detectTier()) : { tier: 'low', tierReason: 'ssr' }),
