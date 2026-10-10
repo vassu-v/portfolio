@@ -15,6 +15,7 @@ let state = {
   hour: typeof window !== 'undefined' ? readHour() : 21,
   debug: params.has('debug'),
   folder: -1,        // project folder pulled out of the drawer
+  drawerShut: false, // visitor shut the drawer the projects stop opened
   side: -1,          // side-project index card lifted out of the second drawer
   tourStop: 'intro', // scroll-tour stop the camera is at (CameraRig TOUR)
   pin: null,         // corkboard item brought forward (corkData id)

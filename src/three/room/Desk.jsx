@@ -97,7 +97,9 @@ function Drawer() {
   const focus = useRoom(s => s.focus)
   const folder = useRoom(s => s.folder)
   const tour = useRoom(s => s.tourStop)
-  const open = focus === 'drawer' || (!focus && tour === 'projects')
+  // at the projects stop it opens by itself, but it's still yours to shut
+  const shut = useRoom(s => s.drawerShut)
+  const open = (focus === 'drawer' || (!focus && tour === 'projects')) && !shut
   const carcass = useMemo(() => new THREE.MeshStandardMaterial({ color: '#d9cdb8', roughness: 0.8 }), [])
   const front = useMemo(() => new THREE.MeshStandardMaterial({ map: walnutTexture(), roughness: 0.5 }), [])
 
@@ -113,21 +115,27 @@ function Drawer() {
   return (
     <group position={[(PED.x0 + PED.x1) / 2, DESK.top - DESK.th - 0.095, (PED.z0 + PED.z1) / 2]}>
       <group ref={ref}>
-        <Hotspot id="drawer" always={open} label={open ? 'pick a folder' : 'Projects — the drawer'}
-          onClick={() => (open ? room.set({ folder: -1 }) : goToStop('projects'))}>
+        <Hotspot id="drawer" always={open || shut} label={open ? 'close the drawer' : shut ? 'open the drawer' : 'Projects — the drawer'}
+          onClick={() => {
+            const s = room.get()
+            if (s.folder >= 0) room.set({ folder: -1 })
+            else if (open) room.set({ drawerShut: true })
+            else if (shut) room.set({ drawerShut: false })
+            else goToStop('projects')
+          }}>
           {/* front panel + pull */}
           <RoundedBox args={[W + 0.016, 0.15, 0.02]} radius={0.003} position={[0, 0, D / 2 + 0.03]} material={front} castShadow receiveShadow />
           <mesh position={[0, 0.03, D / 2 + 0.048]} rotation={[0, 0, Math.PI / 2]} castShadow>
             <cylinderGeometry args={[0.006, 0.006, 0.12, 12]} />
             <meshStandardMaterial color="#b8894a" metalness={0.9} roughness={0.28} />
           </mesh>
+          {/* box — part of the click target, so any edge of the drawer shuts it */}
+          <mesh position={[0, -0.065, 0]} material={carcass} receiveShadow><boxGeometry args={[W, 0.01, D]} /></mesh>
+          <mesh position={[-W / 2, 0, 0]} material={carcass} castShadow receiveShadow><boxGeometry args={[0.01, H, D]} /></mesh>
+          <mesh position={[W / 2, 0, 0]} material={carcass} castShadow receiveShadow><boxGeometry args={[0.01, H, D]} /></mesh>
+          <mesh position={[0, 0, -D / 2]} material={carcass} receiveShadow><boxGeometry args={[W, H, 0.01]} /></mesh>
+          <mesh position={[0, 0, D / 2 + 0.01]} material={carcass} receiveShadow><boxGeometry args={[W, H, 0.01]} /></mesh>
         </Hotspot>
-        {/* box */}
-        <mesh position={[0, -0.065, 0]} material={carcass} receiveShadow><boxGeometry args={[W, 0.01, D]} /></mesh>
-        <mesh position={[-W / 2, 0, 0]} material={carcass} castShadow receiveShadow><boxGeometry args={[0.01, H, D]} /></mesh>
-        <mesh position={[W / 2, 0, 0]} material={carcass} castShadow receiveShadow><boxGeometry args={[0.01, H, D]} /></mesh>
-        <mesh position={[0, 0, -D / 2]} material={carcass} receiveShadow><boxGeometry args={[W, H, 0.01]} /></mesh>
-        <mesh position={[0, 0, D / 2 + 0.01]} material={carcass} receiveShadow><boxGeometry args={[W, H, 0.01]} /></mesh>
         <group position={[0, 0.045, 0]}>
           {folders.map((p, i) => (
             <Folder

@@ -23,7 +23,8 @@ const SHOTS = {
   intro: { pos: PHOTO.center.clone().addScaledVector(PHOTO.normal, 0.5), look: PHOTO.center.clone().add(V(0, 0.022, 0)) },
   experience: { pos: V(BOARD.x - 0.06, BOARD.y + 0.15, BACK + 1.45), look: V(BOARD.x - 0.05, BOARD.y + 0.19, BACK) },
   wins: { pos: V(BOARD.x - 0.08, BOARD.y - 0.12, BACK + 1.2), look: V(BOARD.x - 0.12, BOARD.y - 0.19, BACK) },
-  projects: { pos: V(0.66, 1.2, 0.36), look: V(0.55, 0.62, -0.28) },
+  // pulled back far enough that the drawer front (to shut it) is in frame
+  projects: { pos: V(0.74, 1.22, 0.68), look: V(0.55, 0.58, -0.2) },
   diary: { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
   ping: { pos: V(0.3, 1.22, 0.42), look: V(0.26, 0.8, -0.56) },
   finale: { pos: V(0.17, 1.22, 0.3), look: V(0.17, 0.84, -0.7) },
@@ -32,7 +33,7 @@ const SHOTS = {
 const TOUR = TOUR_STOPS.map(({ id }) => ({ id, ...SHOTS[id] }))
 
 const FOCUS = {
-  drawer:    { pos: V(0.66, 1.2, 0.36),  look: V(0.55, 0.62, -0.28) },
+  drawer:    { pos: V(0.74, 1.22, 0.68), look: V(0.55, 0.58, -0.2) },
   diary:     { pos: V(-0.47, 1.1, -0.27), look: V(-0.53, 0.755, -0.47) },
   corkboard: { pos: V(BOARD.x, BOARD.y - 0.02, BACK + 1.85), look: V(BOARD.x, BOARD.y, BACK) },
   phone:     { pos: V(0.39, 0.9, -0.32), look: V(0.5, 0.83, -0.6) },
@@ -107,7 +108,7 @@ export default function CameraRig() {
     const st = room.get()
     if (st.tourStop !== tour.stop || st.explore !== (tour.stop !== 'intro')) {
       const leaving = st.tourStop !== tour.stop
-      room.set({ tourStop: tour.stop, explore: tour.stop !== 'intro', ...(leaving ? { focus: null, folder: -1, pin: null, side: -1, photo: -1 } : {}) })
+      room.set({ tourStop: tour.stop, explore: tour.stop !== 'intro', ...(leaving ? { focus: null, folder: -1, pin: null, side: -1, photo: -1, drawerShut: false } : {}) })
     }
     const hand = inHand(room.get())
     const f = hand === 'drawer' && folder >= 0 ? FOCUS.sheet : hand === 'corkboard' && pin ? FOCUS.card : focus === 'sides' && side >= 0 ? FOCUS.sidecard : FOCUS[focus]

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import * as THREE from 'three'
-import { room, useRoom, closeLayer } from './store'
+import { room, useRoom, closeLayer, inHand } from './store'
 
 // Library models ship in a stylised "lighting world" look: faint amber
 // emissive on every surface, flat shading, and their own point lights. In a
@@ -67,7 +67,7 @@ export function Hotspot({ id, label, onClick, children, enabled = true, always =
   const click = e => {
     // an object that's already open swallows clicks on itself (e.g. the cork
     // around a pulled card) — treat those as "click away" too
-    if (!active) { if (focus === id) { e.stopPropagation(); closeLayer() } return }
+    if (!active) { if (inHand(room.get()) === id) { e.stopPropagation(); closeLayer() } return }
     e.stopPropagation()
     onClick?.(e)
   }
