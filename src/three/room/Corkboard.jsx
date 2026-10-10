@@ -8,6 +8,7 @@ import { room, useRoom, inHand } from './store'
 import { goToStop } from './tourData'
 import { BACK } from './Room'
 import { ITEMS, HEADERS, CHRONO } from './corkData'
+import { decorateNote, tape, circleAround, squiggle, arrow, star, sparkle, spiral, heart, check, burst } from './doodles'
 
 // sized for the future: room to the right for roles and wins still to come
 export const BOARD = { x: 0.64, y: 1.47, z: BACK + 0.012, w: 1.5, h: 0.95 }
@@ -16,7 +17,7 @@ const SIZE = {
   expcard: [0.165, 0.11], polaroid: [0.1, 0.12], note: [0.085, 0.085], receipt: [0.07, 0.13],
   stat: [0.12, 0.08], link: [0.13, 0.06], card: [0.13, 0.08],
 }
-const sizeOf = it => (it.big ? [0.115, 0.115] : SIZE[it.kind])
+const sizeOf = it => (it.large ? [0.12, 0.12] : SIZE[it.kind])
 const PIN_COLORS = ['#c0392b', '#F07A1A', '#2f6f8f', '#d4a017', '#4f7d4a', '#e9e4da']
 const PRESENT = new THREE.Vector3(0, 0.02, 0.24)
 const SUPPORT_SLOTS = [[-0.24, 0.05], [0.24, 0.05], [-0.22, -0.14], [0.22, -0.14], [0, -0.19]]
@@ -41,17 +42,53 @@ function wrap(ctx, text, maxW) {
   return out
 }
 
+// The hire-me note goes loud: hot paper, the words circled twice, arrows,
+// stars, sparkles, a spiral — a page someone doodled all over in class.
+function hireNote(ctx, w, h, it) {
+  ctx.fillStyle = '#ffb36b'; ctx.fillRect(0, 0, w, h)
+  const g = ctx.createRadialGradient(w * 0.3, h * 0.25, 10, w * 0.5, h * 0.5, w * 0.8)
+  g.addColorStop(0, 'rgba(255,240,200,0.55)'); g.addColorStop(1, 'rgba(200,70,10,0.18)')
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  tape(ctx, 90, 14, 150, -0.3, 'rgba(132,208,232,0.7)')
+  tape(ctx, w - 80, 14, 140, 0.25, 'rgba(255,255,255,0.55)')
+  ctx.fillStyle = '#7a1f05'; ctx.font = '700 104px Caveat, cursive'
+  const head = it.title.replace(' →', '').toUpperCase() + '!'
+  ctx.fillText(head, 40, 170)
+  const tw = ctx.measureText(head).width
+  circleAround(ctx, 40 + tw / 2, 138, tw / 2 + 34, 66, '#c2185b', 5, 7)
+  circleAround(ctx, 40 + tw / 2, 140, tw / 2 + 46, 76, 'rgba(29,20,12,0.6)', 2.5, 11)
+  burst(ctx, 40 + tw + 52, 96, 40, '#7a1f05', 4)
+  ctx.fillStyle = '#1d140c'; ctx.font = '700 40px Caveat, cursive'
+  let y = 270
+  for (const l of it.lines || []) { ctx.fillText(l, 48, y); y += 50 }
+  squiggle(ctx, 48, y - 34, 260, '#7a1f05', 4)
+  arrow(ctx, w - 150, h - 150, w - 60, h - 70, '#7a1f05', 5, -0.35)
+  star(ctx, w - 90, 250, 26, '#7a1f05', 4)
+  star(ctx, 70, h - 70, 18, '#c2185b', 3.5)
+  sparkle(ctx, w - 160, 300, 16, '#fff6e0', 4); sparkle(ctx, 150, h - 46, 11, '#7a1f05')
+  spiral(ctx, w - 70, h - 200, 24, 'rgba(29,20,12,0.55)')
+  heart(ctx, 210, h - 72, 14, '#c2185b', 3.5)
+}
+
 const PAINTERS = {
   expcard(ctx, w, h, it) {
     const e = it.exp
-    ctx.fillStyle = '#fbf7ee'; ctx.fillRect(0, 0, w, h)
-    ctx.strokeStyle = 'rgba(70,110,170,0.25)'; ctx.lineWidth = 2
+    // the open-for-work role gets warm paper and a highlighter swipe
+    const hot = e.org === 'Freelance'
+    ctx.fillStyle = hot ? '#ffe2c4' : '#fbf7ee'; ctx.fillRect(0, 0, w, h)
+    ctx.strokeStyle = hot ? 'rgba(200,90,20,0.22)' : 'rgba(70,110,170,0.25)'; ctx.lineWidth = 2
     for (let y = 120; y < h; y += 44) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke() }
     ctx.strokeStyle = 'rgba(200,60,60,0.45)'; ctx.beginPath(); ctx.moveTo(0, 96); ctx.lineTo(w, 96); ctx.stroke()
+    if (hot) {
+      ctx.font = 'italic 64px "Instrument Serif", serif'
+      ctx.fillStyle = 'rgba(240,122,26,0.42)'; ctx.fillRect(22, 30, ctx.measureText(e.org).width + 22, 58)
+      ctx.strokeStyle = '#F07A1A'; ctx.lineWidth = 8; ctx.strokeRect(4, 4, w - 8, h - 8)
+    }
     ctx.fillStyle = '#1d1712'; ctx.font = 'italic 64px "Instrument Serif", serif'; ctx.fillText(e.org, 30, 76)
     ctx.font = '600 44px Caveat, cursive'; ctx.fillStyle = '#2a3550'; ctx.fillText(e.primaryRole, 30, 158)
     ctx.fillStyle = '#7a4a1c'; ctx.font = '500 26px "JetBrains Mono", monospace'; ctx.fillText(e.period.toUpperCase(), 30, 246)
     ctx.fillStyle = '#3e342c'; ctx.font = '400 24px "JetBrains Mono", monospace'; ctx.fillText(e.type, 30, 290)
+    if (hot) { star(ctx, w - 70, 60, 22, '#d4380d', 3.5); sparkle(ctx, w - 118, 92, 11) }
     if (e.live) { ctx.fillStyle = '#F07A1A'; ctx.font = '600 40px Caveat, cursive'; ctx.fillText('● now', w - 130, h - 60) }
   },
   polaroid(ctx, w, h, it, redraw) {
@@ -67,48 +104,40 @@ const PAINTERS = {
     }
     ctx.fillStyle = '#2a2018'; ctx.font = '600 38px Caveat, cursive'; ctx.fillText(it.cap || '', 30, h - 34)
   },
-  // designed like a real note: a strip of washi tape, a lifted corner, a
-  // hand-drawn underline and a little doodle (drawn as vector paths)
+  // designed like a real note: washi tape, a curled corner, a hand-drawn
+  // underline and doodles (vector paths, see doodles.js)
   note(ctx, w, h, it) {
+    if (it.hire) return hireNote(ctx, w, h, it)
     ctx.fillStyle = it.color || '#f7e27a'; ctx.fillRect(0, 0, w, h)
     const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(0,0,0,0.07)'); g.addColorStop(0.25, 'rgba(0,0,0,0)')
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
-    // lifted bottom-right corner
-    ctx.fillStyle = 'rgba(0,0,0,0.10)'
-    ctx.beginPath(); ctx.moveTo(w, h - 70); ctx.lineTo(w - 70, h); ctx.lineTo(w, h); ctx.closePath(); ctx.fill()
-    ctx.fillStyle = 'rgba(255,255,255,0.35)'
-    ctx.beginPath(); ctx.moveTo(w, h - 70); ctx.lineTo(w - 70, h); ctx.lineTo(w - 58, h - 58); ctx.closePath(); ctx.fill()
-    // washi tape
-    ctx.save(); ctx.translate(w * 0.62, 10); ctx.rotate(0.06)
-    ctx.fillStyle = 'rgba(132,208,232,0.55)'; ctx.fillRect(-70, -18, 140, 34)
-    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3
-    for (let x = -60; x < 70; x += 22) { ctx.beginPath(); ctx.moveTo(x, -18); ctx.lineTo(x + 12, 16); ctx.stroke() }
-    ctx.restore()
-    let y = 70
+    decorateNote(ctx, w, h, it.title || it.lines?.[0] || '', { link: !!it.href })
+    let y = 72
     if (it.title) {
       ctx.fillStyle = '#7a3b14'; ctx.font = '700 42px Caveat, cursive'; ctx.fillText(it.title, 24, y)
-      const tw = ctx.measureText(it.title).width
-      ctx.strokeStyle = '#F07A1A'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'
-      ctx.beginPath(); ctx.moveTo(24, y + 10)
-      for (let x = 24; x <= 24 + tw; x += 14) ctx.quadraticCurveTo(x + 7, y + (Math.round(x / 14) % 2 ? 4 : 16), x + 14, y + 10)
-      ctx.stroke()
+      squiggle(ctx, 24, y + 12, ctx.measureText(it.title).width)
       y += 58
     }
-    // doodle in the free corner: a star, or an arrow on notes that link out
-    ctx.save(); ctx.translate(w - 60, h - 110); ctx.strokeStyle = 'rgba(29,20,12,0.55)'; ctx.lineWidth = 3; ctx.lineJoin = 'round'
-    ctx.beginPath()
-    if (it.href) { ctx.moveTo(-26, 0); ctx.lineTo(18, 0); ctx.moveTo(6, -12); ctx.lineTo(20, 0); ctx.lineTo(6, 12) }
-    else { for (let k = 0; k < 10; k++) { const r = k % 2 ? 7 : 17, a = -Math.PI / 2 + k * Math.PI / 5; ctx[k ? 'lineTo' : 'moveTo'](Math.cos(a) * r, Math.sin(a) * r) } ctx.closePath() }
-    ctx.stroke(); ctx.restore()
     ctx.fillStyle = '#1d140c'; ctx.font = '700 35px Caveat, cursive'
     for (const l of it.lines || []) { ctx.fillText(l, 24, y); y += 43 }
   },
+  // the receipt reads at a glance: dark header, one heavy number, the
+  // facts in bold mono, laid out over the whole slip
   receipt(ctx, w, h, it) {
-    ctx.fillStyle = '#fbfaf6'; ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = '#1d1712'; ctx.font = '600 27px "JetBrains Mono", monospace'
-    ;(it.lines || []).forEach((l, i) => ctx.fillText(l, 22, 74 + i * 50))
-    ctx.fillStyle = '#fbfaf6'
-    for (let x = 0; x < w; x += 20) { ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x + 10, h - 12); ctx.lineTo(x + 20, h); ctx.fill() }
+    ctx.fillStyle = '#fffaf0'; ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = '#16110c'; ctx.fillRect(0, 0, w, 150)
+    ctx.fillStyle = '#ffd9b0'; ctx.font = '800 50px "JetBrains Mono", monospace'; ctx.fillText('INTL', 34, 70)
+    ctx.fillText('PAYMENTS', 34, 126)
+    ctx.fillStyle = '#16110c'; ctx.font = '800 44px "JetBrains Mono", monospace'; ctx.fillText('TOTAL', 34, 250)
+    ctx.font = '800 150px "JetBrains Mono", monospace'; ctx.fillText('$300', 24, 410)
+    circleAround(ctx, w / 2, 360, w / 2 - 6, 96, '#d4380d', 7, 3)
+    ctx.strokeStyle = '#16110c'; ctx.setLineDash([14, 12]); ctx.lineWidth = 4
+    ctx.beginPath(); ctx.moveTo(30, 500); ctx.lineTo(w - 30, 500); ctx.stroke(); ctx.setLineDash([])
+    ctx.fillStyle = '#16110c'; ctx.font = '800 46px "JetBrains Mono", monospace'
+    ;(it.lines || []).slice(3).forEach((l, i) => ctx.fillText(l.replace(/\s+/g, ' '), 34, 600 + i * 80))
+    check(ctx, w - 110, h - 190, 46, '#2f7d32', 9)
+    ctx.fillStyle = '#fffaf0'
+    for (let x = 0; x < w; x += 24) { ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x + 12, h - 14); ctx.lineTo(x + 24, h); ctx.fill() }
   },
   stat(ctx, w, h, it) {
     ctx.fillStyle = '#fbf7ee'; ctx.fillRect(0, 0, w, h)

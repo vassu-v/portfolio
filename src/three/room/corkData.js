@@ -39,7 +39,7 @@ const TILT = [-0.03, 0.025, -0.015, 0.03, -0.02]
 const EXP_POS = Object.fromEntries(CHRONO.map((o, i) => [o, [-0.6 + i * 0.235, 0.215 + (i % 2 ? -0.014 : 0.008), TILT[i]]]))
 const WIN_ROWS = [-0.08, -0.3]
 const winPos = (i, r) => [-0.6 + (i % 5) * 0.225 + (Math.floor(i / 5) ? 0.04 : 0), WIN_ROWS[Math.floor(i / 5)] + (i % 2 ? 0.012 : -0.008), r]
-const hireNote = { kind: 'note', color: '#f4a261', title: 'hire me →', lines: ['UI & landing pages', 'built fast, built right', 'book a 30-min call'], href: CAL, big: true }
+const hireNote = { kind: 'note', color: '#f4a261', title: 'hire me →', lines: ['UI & landing pages', 'built fast, built right', 'book a 30-min call'], href: CAL, large: true, hire: true }
 
 const exp = EXP.map(e => ({
   id: 'exp-' + e.org,
@@ -85,7 +85,6 @@ const wins = [
     label: "Quantum Qubit '25 — 3rd Place",
     panel: { title: '3rd Place', sub: "Quantum Qubit'25", text: 'Built real-world systems across CS and electronics under competition constraints.' },
     support: [
-      { kind: 'polaroid', src: '/solder.jpeg', cap: 'the build' },
       { kind: 'stat', big: '3rd', small: "Quantum Qubit '25" },
     ],
   },
@@ -131,7 +130,7 @@ const bits = [
 
 // at the end of the string: the next role is an open slot
 const next = [{
-  id: 'note-next', kind: 'note', color: '#f4a261', title: "what's next?", lines: ['this spot is open.', 'hire me / collab →'], pos: [0.6, 0.2, 0.05],
+  id: 'note-next', kind: 'note', color: '#f4a261', title: 'hire me →', lines: ["what's next?", 'this spot is open', 'book a 30-min call'], pos: [0.6, 0.19, 0.05], large: true, hire: true, href: CAL,
   label: 'hire me — book a collaboration', panel: { title: 'Hire me', sub: 'freelance · collaborations', text: 'UI and landing pages, prototypes, hardware + software builds. Tell me what you are making.', cta: { label: 'book a 30-min call', href: CAL } },
   support: [hireNote],
 }]

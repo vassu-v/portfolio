@@ -10,6 +10,7 @@ import { AGE } from '../../utils/meta'
 import { prepModel, Hotspot, damp } from './common'
 import { bakeStatic } from './bake'
 import { createScreen } from './screen'
+import { decorateNote, squiggle } from './doodles'
 import { goToStop } from './tourData'
 import { room, live, useRoom, focusOn, dirtyShadows, off } from './store'
 import { DESK } from './Desk'
@@ -222,20 +223,23 @@ function Mug() {
 
 function noteTexture(lines, bg) {
   const c = document.createElement('canvas')
-  c.width = c.height = 256
+  c.width = c.height = 512
   const ctx = c.getContext('2d')
   const tex = new THREE.CanvasTexture(c)
   tex.colorSpace = THREE.SRGBColorSpace
+  tex.anisotropy = 8
   const draw = () => {
     ctx.fillStyle = bg
-    ctx.fillRect(0, 0, 256, 256)
-    const g = ctx.createLinearGradient(0, 0, 0, 256)
+    ctx.fillRect(0, 0, 512, 512)
+    const g = ctx.createLinearGradient(0, 0, 0, 512)
     g.addColorStop(0, 'rgba(0,0,0,0.08)'); g.addColorStop(0.2, 'rgba(0,0,0,0)')
     ctx.fillStyle = g
-    ctx.fillRect(0, 0, 256, 256)
+    ctx.fillRect(0, 0, 512, 512)
+    decorateNote(ctx, 512, 512, lines.join(' '))
     ctx.fillStyle = '#2a2018'
-    ctx.font = '600 40px Caveat, cursive'
-    lines.forEach((l, i) => ctx.fillText(l, 22, 70 + i * 46))
+    ctx.font = '700 76px Caveat, cursive'
+    lines.forEach((l, i) => ctx.fillText(l, 40, 150 + i * 88))
+    squiggle(ctx, 40, 166 + (lines.length - 1) * 88, Math.min(380, ctx.measureText(lines[lines.length - 1]).width), '#F07A1A', 5)
     tex.needsUpdate = true
   }
   draw()

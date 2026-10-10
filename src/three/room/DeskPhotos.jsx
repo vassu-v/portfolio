@@ -9,7 +9,7 @@ const Y = 0.75
 // the camera; click again (or anything else) and it drops back where it was.
 export const PHOTOS = [
   { src: '/projects/lifi_exhibit.jpeg', pos: [-0.31, -0.665], rot: 0.42, caption: 'LiFi mesh prototype at the exhibition table', project: 'lifi-network' },
-  { src: '/solder.jpeg', pos: [0.035, -0.335], rot: 0.22, caption: 'Soldering bench, Quantum Qubit build' },
+  { src: '/solder.jpeg', pos: [0.035, -0.335], rot: 0.22, caption: 'My solar station — built on my own' },
   { src: '/dbpc.jpg', pos: [0.705, -0.37], rot: -0.38, caption: "Quantum Qubit '25 — 3rd place, on stage" },
 ]
 const W = 0.1, H = 0.075

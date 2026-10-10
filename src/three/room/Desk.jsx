@@ -8,6 +8,7 @@ import { walnutTexture } from './textures'
 import { Hotspot, damp } from './common'
 import { room, useRoom, focusOn } from './store'
 import { goToStop } from './tourData'
+import { decorateNote, squiggle } from './doodles'
 import { BACK } from './Room'
 import Baked from './Baked'
 
@@ -183,15 +184,17 @@ const STATUS = { shipped: ['#4f7d4a', 'shipped'], wip: ['#F07A1A', 'on it'], par
 
 function stickyTexture(lines) {
   const c = document.createElement('canvas')
-  c.width = c.height = 256
+  c.width = c.height = 512
   const ctx = c.getContext('2d')
   const t = new THREE.CanvasTexture(c)
   t.colorSpace = THREE.SRGBColorSpace
   const draw = () => {
-    ctx.fillStyle = '#f7e27a'; ctx.fillRect(0, 0, 256, 256)
-    ctx.fillStyle = '#7a3b14'; ctx.font = '700 44px Caveat, cursive'; ctx.fillText(lines[0], 18, 58)
-    ctx.fillStyle = '#2a2018'; ctx.font = '600 32px Caveat, cursive'
-    lines.slice(1).forEach((l, i) => ctx.fillText(l, 18, 104 + i * 38))
+    ctx.fillStyle = '#f7e27a'; ctx.fillRect(0, 0, 512, 512)
+    decorateNote(ctx, 512, 512, lines.join(' '))
+    ctx.fillStyle = '#7a3b14'; ctx.font = '700 88px Caveat, cursive'; ctx.fillText(lines[0], 36, 130)
+    squiggle(ctx, 36, 150, ctx.measureText(lines[0]).width, '#F07A1A', 5)
+    ctx.fillStyle = '#2a2018'; ctx.font = '600 64px Caveat, cursive'
+    lines.slice(1).forEach((l, i) => ctx.fillText(l, 36, 232 + i * 74))
     t.needsUpdate = true
   }
   draw(); document.fonts?.ready.then(draw)

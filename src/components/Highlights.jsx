@@ -82,7 +82,7 @@ const CARDS = [
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
       { src: '/dbpc.jpg', alt: 'Receiving the 3rd place Quantum Qubit trophy on stage at Don Bosco School Kolkata', rotate: 8, top: '-42px', right: '-18px' },
-      { src: '/solder.jpeg', alt: 'Soldering workbench with a breadboard, wires, and tools for the Quantum Qubit build', rotate: -6, bottom: '-36px', left: '-14px' },
+      { src: '/solder.jpeg', alt: 'Soldering workbench with a breadboard, wires, and tools — a solar station built on my own', rotate: -6, bottom: '-36px', left: '-14px' },
     ],
   },
   {
