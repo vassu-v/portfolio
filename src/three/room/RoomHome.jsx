@@ -83,20 +83,21 @@ const SOCIALS = [
 ]
 
 // icon row: hover (or keyboard focus) shows the full name; each opens in a new tab
-function Socials() {
+function Socials({ compact }) {
   const [hot, setHot] = useState(-1)
+  const sz = compact ? 34 : 40
   return (
-    <div style={{ marginTop: 16, pointerEvents: 'auto' }}>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+    <div style={{ marginTop: compact ? 10 : 16, pointerEvents: 'auto' }}>
+      <div style={{ display: 'flex', gap: compact ? 6 : 8, flexWrap: 'wrap' }}>
         {SOCIALS.map((l, i) => (
           <a key={l.name} href={l.href} target={l.href.startsWith('mailto') ? undefined : '_blank'} rel="noreferrer" aria-label={l.name}
             onMouseEnter={() => setHot(i)} onMouseLeave={() => setHot(-1)} onFocus={() => setHot(i)} onBlur={() => setHot(-1)}
-            style={{ display: 'grid', placeItems: 'center', width: 40, height: 40, borderRadius: 10, color: hot === i ? '#120d08' : '#efe6d8', background: hot === i ? 'var(--cu)' : 'rgba(255,240,220,0.06)', border: '1px solid rgba(132,208,232,0.35)', transition: 'background .15s, color .15s' }}>
+            style={{ display: 'grid', placeItems: 'center', width: sz, height: sz, borderRadius: 10, color: hot === i ? '#120d08' : '#efe6d8', background: hot === i ? 'var(--cu)' : 'rgba(255,240,220,0.06)', border: '1px solid rgba(132,208,232,0.35)', transition: 'background .15s, color .15s' }}>
             {l.icon}
           </a>
         ))}
       </div>
-      <p style={{ ...mono, marginTop: 10, minHeight: '1.2em', fontSize: '0.66rem', letterSpacing: '0.06em', color: hot >= 0 ? 'var(--cu)' : 'rgba(240,230,216,0.4)' }}>
+      <p style={{ ...mono, marginTop: compact ? 6 : 10, minHeight: '1.2em', fontSize: '0.66rem', letterSpacing: '0.06em', color: hot >= 0 ? 'var(--cu)' : 'rgba(240,230,216,0.4)' }}>
         {hot >= 0 ? SOCIALS[hot].name + ' ↗' : 'hover an icon'}
       </p>
     </div>
@@ -167,17 +168,19 @@ function TourCopy({ hidden, mobile }) {
             initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             style={{
-              ...(mobile ? { position: 'absolute', left: 16, right: 16, top: 66 } : { position: 'absolute', left: 'var(--pad)', bottom: 48, maxWidth: 440 }),
+              // phones: a compact card along the bottom; CameraRig lifts the
+              // scene above it so it never sits on what the stop is about
+              ...(mobile ? { position: 'absolute', left: 12, right: 12, bottom: 14 } : { position: 'absolute', left: 'var(--pad)', bottom: 48, maxWidth: 440 }),
               background: 'rgba(12,10,8,0.55)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: mobile ? '16px 18px' : '20px 24px',
+              border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: mobile ? '12px 14px' : '20px 24px', ...(mobile ? { background: 'rgba(12,10,8,0.82)' } : {}),
             }}>
             <p style={{ ...mono, fontSize: '0.62rem', letterSpacing: '0.2em', color: 'var(--cu)', marginBottom: 10, textTransform: 'uppercase' }}>{c.n && <span style={{ color: 'var(--go)' }}>{c.n} — </span>}{c.label}</p>
-            <p style={{ ...serif, fontSize: mobile ? '2rem' : 'clamp(2.2rem, 3.6vw, 3.2rem)', lineHeight: 1.02, color: '#f6efe4', textShadow: '0 2px 30px rgba(0,0,0,0.6)' }}>{c.title}</p>
+            <p style={{ ...serif, fontSize: mobile ? '1.55rem' : 'clamp(2.2rem, 3.6vw, 3.2rem)', lineHeight: 1.02, color: '#f6efe4', textShadow: '0 2px 30px rgba(0,0,0,0.6)' }}>{c.title}</p>
             {c.links
               ? <a href="mailto:shoryavardhaans2@gmail.com" style={{ ...mono, display: 'inline-block', marginTop: 12, fontSize: '0.78rem', color: 'var(--cu)', pointerEvents: 'auto', borderBottom: '1px solid rgba(132,208,232,0.4)', textDecoration: 'none' }}>{c.line}</a>
-              : <p style={{ ...mono, marginTop: 12, fontSize: '0.74rem', lineHeight: 1.6, color: 'rgba(240,230,216,0.78)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>{c.line}</p>}
+              : <p style={{ ...mono, marginTop: mobile ? 6 : 12, fontSize: mobile ? '0.68rem' : '0.74rem', lineHeight: 1.6, color: 'rgba(240,230,216,0.78)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>{c.line}</p>}
             {c.ps && <p style={{ ...mono, marginTop: 10, fontSize: '0.7rem', lineHeight: 1.6, color: 'var(--go)' }}>{c.ps}</p>}
-            {c.links && <Socials />}
+            {c.links && <Socials compact={mobile} />}
           </motion.div>
         )}
       </AnimatePresence>
@@ -228,13 +231,13 @@ function Chip({ children, onClick, active }) {
   )
 }
 
-function FocusPanel({ focus }) {
+// Content comes in as props (a snapshot), not live from the store: when the
+// panel closes, AnimatePresence keeps rendering the *last* props while it
+// fades, so its contents can't flip to "nothing pinned" mid-exit — that flip
+// used to swap in a fresh element that never got an exit, and the panel
+// ("The work so far") stayed on screen for good.
+function FocusPanel({ focus, folder, pin, spread, page, side }) {
   const mobile = useMobile(768)
-  const folder = useRoom(s => s.folder)
-  const pin = useRoom(s => s.pin)
-  const spread = useRoom(s => s.spread)
-  const page = useRoom(s => s.page)
-  const side = useRoom(s => s.side)
   const { navigate } = useRoute()
   const closeDrawer = () => room.set({ focus: null, folder: -1, side: -1 })
   let title = '', body = null
@@ -289,14 +292,15 @@ function FocusPanel({ focus }) {
   }
   return (
     <motion.aside
-      key={focus + folder + side + pin + (focus === 'diary' ? spread : '')}
       initial={{ opacity: 0, x: -14 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -8, transition: { duration: 0.18 } }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      style={{ position: 'fixed', left: mobile ? 16 : 'var(--pad)', right: mobile ? 16 : 'auto', bottom: mobile ? 72 : 48, zIndex: 50, maxWidth: mobile ? 'none' : 380, color: '#efe6d8', ...mono, fontSize: '0.78rem', lineHeight: 1.65, background: 'rgba(12,10,8,0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '20px 22px' }}
+      // phones: a compact bottom sheet that scrolls itself, so it never
+      // covers more than ~a third of the screen (the scene is lifted above it)
+      style={{ position: 'fixed', left: mobile ? 12 : 'var(--pad)', right: mobile ? 12 : 'auto', bottom: mobile ? 62 : 48, zIndex: 50, maxWidth: mobile ? 'none' : 380, maxHeight: mobile ? '34vh' : 'none', overflowY: mobile ? 'auto' : 'visible', color: '#efe6d8', ...mono, fontSize: mobile ? '0.72rem' : '0.78rem', lineHeight: 1.6, background: mobile ? 'rgba(12,10,8,0.82)' : 'rgba(12,10,8,0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: mobile ? '14px 16px' : '20px 22px' }}
     >
-      <h2 style={{ ...serif, fontSize: '2.2rem', lineHeight: 1.05, marginBottom: 10, color: '#f6efe4' }}>{title}</h2>
+      <h2 style={{ ...serif, fontSize: mobile ? '1.6rem' : '2.2rem', lineHeight: 1.05, marginBottom: mobile ? 6 : 10, color: '#f6efe4' }}>{title}</h2>
       <div style={{ display: 'grid', gap: 10 }}>{body}</div>
     </motion.aside>
   )
@@ -466,6 +470,11 @@ export default function RoomHome() {
   const focus = useRoom(s => s.focus)
   const tourStop = useRoom(s => s.tourStop)
   const hand = useRoom(inHand)
+  const folder = useRoom(s => s.folder)
+  const pin = useRoom(s => s.pin)
+  const side = useRoom(s => s.side)
+  const spread = useRoom(s => s.spread)
+  const page = useRoom(s => s.page)
   const hireSeen = useRoom(s => s.hireSeen)
   // a detail panel shows for anything explicitly opened, or a card / folder
   // pulled out at a tour stop
@@ -580,7 +589,10 @@ export default function RoomHome() {
 
       {/* no mode="wait": with rapid open/close (click a card, click away,
           scroll on) its exit could stall and leave a stale panel on screen */}
-      <AnimatePresence>{panelFor && <FocusPanel key={panelFor} focus={panelFor} />}</AnimatePresence>
+      <AnimatePresence>{panelFor && (
+        <FocusPanel key={`${panelFor}|${pin}|${folder}|${side}|${panelFor === 'diary' ? spread : ''}`}
+          focus={panelFor} folder={folder} pin={pin} side={side} spread={spread} page={page} />
+      )}</AnimatePresence>
       <AnimatePresence>
         {photo >= 0 && (
           <motion.div key={'photo' + photo} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}

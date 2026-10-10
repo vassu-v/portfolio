@@ -181,7 +181,8 @@ function PopCard({ kind, on, holder }) {
     // phones see the desk from further back — a bigger card to stay readable
     const big = size.width / size.height < 1 ? 1.9 : 1
     g.scale.setScalar((0.25 + 0.75 * e) * big)
-    if (big > 1) g.position.x -= 0.1 * e
+    // on narrow screens pull it in from the edge, towards the middle of the shot
+    if (big > 1) g.position.x -= (kind === 'hello' ? 0.19 : 0.1) * e
     g.children[0].material.opacity = Math.min(1, t * 1.5)
     if (t > 0.01 && t < 0.99) wake(100)
   })

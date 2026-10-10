@@ -30,6 +30,7 @@ const SHOTS = {
   finale: { pos: V(0.17, 1.22, 0.3), look: V(0.17, 0.84, -0.7) },
   free: { pos: OVERVIEW.pos, look: OVERVIEW.look },
 }
+const TALL_BACK = { intro: 0.5, experience: 1.1, wins: 1.1, projects: 0.3, diary: 0.45, ping: 0.6, finale: 0.7 }
 const TOUR = TOUR_STOPS.map(({ id }) => ({ id, ...SHOTS[id] }))
 
 const FOCUS = {
@@ -66,6 +67,7 @@ export default function CameraRig() {
   const folder = useRoom(s => s.folder)
   const pin = useRoom(s => s.pin)
   const side = useRoom(s => s.side)
+  const shift = useRef(0)
   const pos = useRef(TOUR[0].pos.clone().addScaledVector(PHOTO.normal, 0.35))
   const look = useRef(TOUR[0].look.clone())
   const tmp = useMemo(() => ({ sp: V(0, 0, 0), sn: V(0, 0, 1), a: V(0, 0, 0), b: V(0, 0, 0), c: V(0, 0, 0), q: new THREE.Quaternion() }), [])
@@ -134,7 +136,10 @@ export default function CameraRig() {
       const ov = tall ? OVERVIEW_TALL : OVERVIEW
       target.copy(a.id === 'free' ? ov.pos : a.pos).lerp(b.id === 'free' ? ov.pos : b.pos, k)
       at.copy(a.id === 'free' ? ov.look : a.look).lerp(b.id === 'free' ? ov.look : b.look, k)
-      if (b.id !== 'free' || k < 1) backOff(target, at, i === 0 && k < 0.5 ? 0.5 : 1.1)
+      // how far a phone (narrow screen) backs off at each stop: the wide board
+      // needs room, the drawer / diary / phone want to be close
+      const m = THREE.MathUtils.lerp(TALL_BACK[a.id] ?? 1.1, TALL_BACK[b.id] ?? 1.1, k)
+      if (b.id !== 'free' || k < 1) backOff(target, at, m)
       // load-in: settle forward onto the photo
       const intro = ease(live.intro)
       if (intro < 1) target.addScaledVector(PHOTO.normal, 0.35 * (1 - intro))
@@ -163,6 +168,17 @@ export default function CameraRig() {
     look.current.z = THREE.MathUtils.damp(look.current.z, at.z, k, dt)
     camera.position.copy(pos.current)
     camera.lookAt(look.current)
+
+    // Phones: captions and detail panels sit along the bottom, so shift the
+    // rendered view up into the free space above them (a view offset, not a
+    // camera move — framing and aim stay exactly the same).
+    const r = room.get()
+    const panel = (r.focus && r.focus !== 'laptop') || r.pin || r.folder >= 0 || r.side >= 0
+    const caption = r.tourStop !== 'intro' && r.tourStop !== 'free'
+    const want = !tall ? 0 : panel ? 0.25 : r.tourStop === 'finale' ? 0.24 : caption ? 0.17 : 0
+    shift.current = THREE.MathUtils.damp(shift.current, want, 5, dt)
+    if (shift.current > 0.002) camera.setViewOffset(size.width, size.height, 0, shift.current * size.height, size.width, size.height)
+    else if (camera.view?.enabled) camera.clearViewOffset()
 
     // where the photo is on the page — the intro's dark vignette centres on it
     camera.updateMatrixWorld()
