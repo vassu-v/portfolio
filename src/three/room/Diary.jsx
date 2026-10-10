@@ -210,7 +210,8 @@ export default function Diary() {
   // the tour's diary stop opens it and turns to the first entry by itself,
   // so it reads as a real book of posts, not a prop
   const tourOpen = !focus && tourStop === 'diary'
-  const open = focus === 'diary' || tourOpen
+  const shut = useRoom(s => s.diaryShut)
+  const open = (focus === 'diary' || tourOpen) && !shut
   const hinge = useRef()
   const leaf = useRef()
   const band = useRef()
@@ -317,7 +318,7 @@ export default function Diary() {
   const onRight = e => { if (!open) return; e.stopPropagation(); go(room.get().spread + 1) }
 
   return (
-    <Hotspot id="diary" label="Diary — the log" enabled={!open} onClick={() => goToStop('diary')} position={[-0.53, 0.75 + 0.0005, -0.47]} rotation={[0, 0.3, 0]}>
+    <Hotspot id="diary" label="Diary — the log" enabled={!open} onClick={() => (shut ? room.set({ diaryShut: false }) : goToStop('diary'))} position={[-0.53, 0.75 + 0.0005, -0.47]} rotation={[0, 0.3, 0]}>
       {/* back cover + right page block */}
       <mesh position={[W / 2, COVER / 2, 0]} material={cover} castShadow receiveShadow>
         <boxGeometry args={[W + 0.004, COVER, D + 0.006]} />

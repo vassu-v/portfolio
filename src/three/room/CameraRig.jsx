@@ -108,7 +108,7 @@ export default function CameraRig() {
     const st = room.get()
     if (st.tourStop !== tour.stop || st.explore !== (tour.stop !== 'intro')) {
       const leaving = st.tourStop !== tour.stop
-      room.set({ tourStop: tour.stop, explore: tour.stop !== 'intro', ...(leaving ? { focus: null, folder: -1, pin: null, side: -1, photo: -1, drawerShut: false } : {}) })
+      room.set({ tourStop: tour.stop, explore: tour.stop !== 'intro', ...(leaving ? { focus: null, folder: -1, pin: null, side: -1, photo: -1, drawerShut: false, diaryShut: false } : {}), ...(TOUR_STOPS.findIndex(t => t.id === tour.stop) > 3 && !st.hireSeen ? { hireSeen: true } : {}) })
     }
     const hand = inHand(room.get())
     const f = hand === 'drawer' && folder >= 0 ? FOCUS.sheet : hand === 'corkboard' && pin ? FOCUS.card : focus === 'sides' && side >= 0 ? FOCUS.sidecard : FOCUS[focus]

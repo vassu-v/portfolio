@@ -39,6 +39,12 @@ function ZoneDivider() {
 }
 
 function Preloader({ progress }) {
+  // keyboard way out to the CLI, no pointer needed
+  useEffect(() => {
+    const onKey = e => { if ((e.key === 'c' || e.key === 'C') && !e.metaKey && !e.ctrlKey && !e.altKey) window.location.href = '/terminal/index.html' }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
   return (
     <motion.div
       initial={{ clipPath: 'inset(0% 0% 0% 0%)' }}
@@ -110,7 +116,7 @@ function Preloader({ progress }) {
         onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu)' }}
         onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border2)' }}
       >
-        switch to CLI mode
+        switch to CLI mode <span style={{ opacity: 0.6 }}>· press C</span>
       </a>
     </motion.div>
   )
@@ -312,6 +318,12 @@ export default function App() {
   // readiness (web fonts + the hero portrait actually decoded), not a flat
   // timer — see the effect below.
   const [preloaderVisible, setPreloaderVisible] = useState(() => window.location.pathname === '/')
+  // While the loader is up, use the plain system pointer — the custom one
+  // only exists once the mouse has moved over the page, which left people
+  // unable to find the "CLI mode" link on the loading screen.
+  useEffect(() => {
+    document.documentElement.classList.toggle('preloading', preloaderVisible)
+  }, [preloaderVisible])
   const [loadProgress, setLoadProgress] = useState(0)
 
   useEffect(() => {

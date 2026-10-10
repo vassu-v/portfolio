@@ -18,7 +18,7 @@ const rnd = i => { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math
 
 function drawName(ctx, h) {
   ctx.clearRect(0, 0, CW, h)
-  ctx.fillStyle = '#f6efe4'
+  ctx.fillStyle = '#F07A1A'
   let px = 300
   ctx.font = `italic 300 ${px}px "Instrument Serif", serif`
   let w = ctx.measureText('Shoryavardhaan').width
@@ -42,7 +42,9 @@ function drawHint(ctx, h) {
 
 // Lettering drawn on a canvas, shown crisp at rest and swapped for a particle
 // cloud sampled from the very same pixels the moment it starts to go.
-function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66 }) {
+// glow: emissive strength — a saturated colour (the orange name) needs less,
+// or tone mapping washes it towards white
+function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66, glow = 2.6 }) {
   const crisp = useRef()
   const dots = useRef()
   const group = useRef()
@@ -123,10 +125,10 @@ function Lettering({ draw, height, width, offsetY, seed, range, tallScale = 0.66
     <group ref={group} quaternion={quat}>
       <mesh ref={crisp} renderOrder={1}>
         <planeGeometry args={[width, width * height / CW]} />
-        <meshStandardMaterial color="#000" emissive="#ffffff" emissiveMap={L.texture} emissiveIntensity={2.6} alphaMap={L.texture} transparent depthWrite={false} depthTest={false} />
+        <meshStandardMaterial color="#000" emissive="#ffffff" emissiveMap={L.texture} emissiveIntensity={glow} map={L.texture} transparent depthWrite={false} depthTest={false} />
       </mesh>
       <points ref={dots} geometry={L.geo} renderOrder={1}>
-        <pointsMaterial size={L.dot} color={[2.4, 2.4, 2.4]} sizeAttenuation vertexColors transparent depthWrite={false} depthTest={false} />
+        <pointsMaterial size={L.dot} color={[glow * 0.92, glow * 0.92, glow * 0.92]} sizeAttenuation vertexColors transparent depthWrite={false} depthTest={false} />
       </points>
     </group>
   )
@@ -166,7 +168,7 @@ export default function IntroPhoto() {
       <spotLight ref={spot} target={target} position={PHOTO.center.clone().add(new THREE.Vector3(0.05, 0.45, 0.42))}
         color="#fff0dc" angle={0.38} penumbra={0.75} decay={2} distance={2} />
       {/* name up at the turban, behind the cut-out; the hint below the photo */}
-      <Lettering draw={drawName} height={420} width={0.47} offsetY={0.112} seed={1} range={[0.004, 0.62]} />
+      <Lettering draw={drawName} height={420} width={0.47} offsetY={0.112} seed={1} range={[0.004, 0.62]} glow={1.8} />
       <Lettering draw={drawHint} height={140} width={0.3} offsetY={-0.098} seed={9001} range={[0.004, 0.5]} tallScale={1.05} />
       <mesh ref={plane} quaternion={quat} renderOrder={2}>
         <planeGeometry args={[SIZE, SIZE]} />

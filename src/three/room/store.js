@@ -16,6 +16,8 @@ let state = {
   debug: params.has('debug'),
   folder: -1,        // project folder pulled out of the drawer
   drawerShut: false, // visitor shut the drawer the projects stop opened
+  diaryShut: false,  // …and the diary the diary stop opened
+  hireSeen: false,   // past the projects stop once: the hire-me CTA stays
   side: -1,          // side-project index card lifted out of the second drawer
   tourStop: 'intro', // scroll-tour stop the camera is at (CameraRig TOUR)
   pin: null,         // corkboard item brought forward (corkData id)
@@ -78,6 +80,9 @@ export function closeLayer() {
   if (s.photo >= 0) room.set({ photo: -1 })
   else if (s.folder >= 0 || s.pin || s.side >= 0) room.set({ folder: -1, pin: null, side: -1 })
   else if (s.focus) room.set({ focus: null })
+  // at a tour stop: the drawer / diary it opened can still be shut
+  else if (inHand(s) === 'drawer' && !s.drawerShut) room.set({ drawerShut: true })
+  else if (inHand(s) === 'diary' && !s.diaryShut) room.set({ diaryShut: true })
 }
 
 export function focusOn(id) {

@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-09",
+ "generated": "2026-10-10",
  "birth": "2009-09-02",
  "projects": [
   {
@@ -454,10 +454,10 @@
    "project": null
   },
   {
-   "title": "From Kolkata.",
+   "title": "From Kolkata. Age 17.",
    "sub": "International payments processed",
-   "text": "The first international payment to land in Kolkata, through a supporter page built for exactly the developers Stripe locks out.",
-   "project": "buy4chai"
+   "text": "$300 in international payments processed — from Kolkata, at 17.",
+   "project": null
   },
   {
    "title": "3rd Place",

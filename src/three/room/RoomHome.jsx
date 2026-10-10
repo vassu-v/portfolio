@@ -10,7 +10,7 @@ import { useRoute } from '../../router'
 import { useMobile } from '../../hooks/useMobile'
 import { room, live, useRoom, focusOn, closeLayer, inHand } from './store'
 import { forgetTier } from './tier'
-import { goToStop, tourU, RUNWAY_UNITS } from './tourData'
+import { TOUR, goToStop, tourU, RUNWAY_UNITS } from './tourData'
 
 const RoomScene = lazy(() => import('./RoomScene'))
 
@@ -30,16 +30,34 @@ const SPOTS = [
 
 // Scroll position → live.scroll (read every frame by CameraRig, which also
 // publishes the tour stop and explore state back into the store).
+// Magnetic stops: each stop has some give (the camera holds for the first
+// ~30% of a leg), but if you stop scrolling mid-journey between two stops
+// the tour finishes the move in the direction you were going — never
+// stranded halfway between two shots.
 function useScrollProgress() {
   useEffect(() => {
+    let last = window.scrollY, dir = 0, idle
     const on = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight
       live.scroll = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
+      if (window.scrollY !== last) dir = Math.sign(window.scrollY - last)
+      last = window.scrollY
+      clearTimeout(idle)
+      idle = setTimeout(settle, 260)
+    }
+    const settle = () => {
+      const s = room.get()
+      if (s.focus || s.roam || s.pin || s.folder >= 0 || s.side >= 0) return
+      const u = tourU(live.scroll)
+      const i = Math.floor(u), f = u - i
+      const hold = i === 0 ? 0.72 : 0.3
+      if (i >= TOUR.length - 1 || f <= hold || f >= 0.97) return
+      goToStop(TOUR[dir < 0 ? i : i + 1].id)
     }
     on()
     window.addEventListener('scroll', on, { passive: true })
     window.addEventListener('resize', on)
-    return () => { window.removeEventListener('scroll', on); window.removeEventListener('resize', on) }
+    return () => { clearTimeout(idle); window.removeEventListener('scroll', on); window.removeEventListener('resize', on) }
   }, [])
 }
 
@@ -59,6 +77,8 @@ const SOCIALS = [
   { name: 'LinkedIn', href: 'https://www.linkedin.com/in/shoryavardhaan', icon: <svg {...ic}><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10.5V17M8 7.2v.1M12 17v-3.6a2.4 2.4 0 0 1 4.8 0V17M12 10.5V17" /></svg> },
   { name: 'GitHub', href: 'https://github.com/vassu-v', icon: <svg {...ic}><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" /></svg> },
   { name: 'X / Twitter', href: 'https://x.com/shoryavardhaan', icon: <svg {...ic}><path d="M4 4l16 16M20 4 4 20" /></svg> },
+  { name: 'Instagram', href: 'https://www.instagram.com/let_shorya.be/', icon: <svg {...ic}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><path d="M17.5 6.5v.1" /></svg> },
+  { name: 'ORCID — research', href: 'https://orcid.org/0009-0009-1370-5230', icon: <svg {...ic}><circle cx="12" cy="12" r="9" /><path d="M9 10v6M9 7.5v.1M12.5 16v-6h1.6a3 3 0 0 1 0 6z" /></svg> },
   { name: 'CLI mode — the web terminal', href: '/terminal/', icon: <svg {...ic}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="m7 9 3 3-3 3M12.5 15H17" /></svg> },
 ]
 
@@ -440,6 +460,7 @@ export default function RoomHome() {
   const focus = useRoom(s => s.focus)
   const tourStop = useRoom(s => s.tourStop)
   const hand = useRoom(inHand)
+  const hireSeen = useRoom(s => s.hireSeen)
   // a detail panel shows for anything explicitly opened, or a card / folder
   // pulled out at a tour stop
   const panelFor = useRoom(s => s.focus || (s.pin ? 'corkboard' : s.folder >= 0 ? 'drawer' : s.side >= 0 ? 'sides' : null))
@@ -516,7 +537,7 @@ export default function RoomHome() {
           : <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {/* the one call to action, on hand everywhere past the opening */}
               <AnimatePresence>
-                {tourStop !== 'intro' && (
+                {hireSeen && (
                   <motion.a key="hire" href={CAL} target="_blank" rel="noreferrer"
                     initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
                     style={{ ...mono, pointerEvents: 'auto', fontSize: '0.68rem', letterSpacing: '0.06em', fontWeight: 600, color: '#120d08', background: 'var(--go)', borderRadius: 999, padding: '8px 14px', textDecoration: 'none', boxShadow: '0 4px 18px rgba(240,122,26,0.35)' }}>

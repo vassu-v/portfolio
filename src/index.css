@@ -211,3 +211,8 @@ body:hover #cursor-dot { opacity: 1; }
   .bi-hero, .bp-hero-grid { display: block !important; }
   .bi-crt, .bp-crt        { display: none !important; }
 }
+
+/* loading screen: system pointer, custom one hidden (see App.jsx) */
+html.preloading body, html.preloading a, html.preloading button { cursor: auto !important; }
+html.preloading a, html.preloading button { cursor: pointer !important; }
+html.preloading #cursor, html.preloading #cursor-dot { display: none !important; }

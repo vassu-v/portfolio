@@ -1,4 +1,5 @@
 import { EXP } from '../../components/Experience'
+import { AGE } from '../../utils/meta'
 
 // Everything pinned to the corkboard. Positions are board-local metres
 // (board centre = 0,0; x ∈ ±0.75, y ∈ ±0.475), r = tilt in radians.
@@ -13,7 +14,7 @@ const skillsNote = e => ({ kind: 'note', color: '#f7e27a', title: 'skills', line
 
 const EXP_SUPPORT = {
   'Bits&Bytes': [
-    { kind: 'note', color: '#bfe3c0', title: 'the plan', lines: ['Eastern India chapter', 'hackathons · builder events', 'core team formation', 'launched Apr 2026'] },
+    { kind: 'note', color: '#bfe3c0', title: 'the idea', lines: ['teen-led builder community', 'hackathons · real projects', 'Eastern India'] },
     { kind: 'link', title: 'gobitsnbytes.org', sub: 'the community', href: 'https://gobitsnbytes.org/' },
   ],
   '4MQ.org': [
@@ -58,7 +59,7 @@ const wins = [
     panel: { title: 'National Semi-Finalist', sub: 'India Innovates 2026', text: 'SarkarSathi. Top 1,000 from 26,000+ entries. Sole technical lead on a 5-person team during board exams. Media coverage.', project: 'sarkarsathi' },
     support: [
       { kind: 'stat', big: 'Top 1k', small: 'of 26,000+ entries', sub: 'India Innovates 2026' },
-      { kind: 'note', color: '#f4b98a', title: 'built during boards', lines: ['sole technical lead', '5-person remote team', 'media coverage'] },
+      { kind: 'note', color: '#f4b98a', title: 'built during boards', lines: ['sole technical lead', '5-person team', 'media coverage'] },
       { kind: 'link', title: 'SarkarSathi →', sub: 'the project', project: 'sarkarsathi' },
     ],
   },
@@ -72,12 +73,11 @@ const wins = [
     ],
   },
   {
-    id: 'win-pay', kind: 'receipt', lines: ['INTL PAYMENTS', '— — — — — —', 'TOTAL   $300', 'FROM    KOLKATA', 'VIA     BUY4CHAI'], pos: winPos(2, 0.04),
+    id: 'win-pay', kind: 'receipt', lines: ['INTL PAYMENTS', '— — — — — —', 'TOTAL   $300', 'FROM    KOLKATA', `AGE     ${AGE}`], pos: winPos(2, 0.04),
     label: '$300 in international payments',
-    panel: { title: 'From Kolkata.', sub: 'International payments processed', text: 'The first international payment to land in Kolkata, through a supporter page built for exactly the developers Stripe locks out.', project: 'buy4chai' },
+    panel: { title: `From Kolkata. Age ${AGE}.`, sub: 'International payments processed', text: `$300 in international payments processed — from Kolkata, at ${AGE}.` },
     support: [
-      { kind: 'stat', big: '$300', small: 'processed internationally' },
-      { kind: 'link', title: 'Buy4Chai →', sub: 'how it got paid', project: 'buy4chai' },
+      { kind: 'stat', big: '$300', small: 'processed internationally', sub: `by ${AGE}` },
     ],
   },
   {
@@ -86,7 +86,7 @@ const wins = [
     panel: { title: '3rd Place', sub: "Quantum Qubit'25", text: 'Built real-world systems across CS and electronics under competition constraints.' },
     support: [
       { kind: 'polaroid', src: '/solder.jpeg', cap: 'the build' },
-      { kind: 'stat', big: '3rd', small: "Quantum Qubit '25", sub: 'Don Bosco, Kolkata' },
+      { kind: 'stat', big: '3rd', small: "Quantum Qubit '25" },
     ],
   },
   {

@@ -26,9 +26,12 @@ export function goToStop(id) {
   if (i < 0) return
   const max = document.documentElement.scrollHeight - window.innerHeight
   const y = Math.round(max * stopScroll(i))
+  // App's wheel smooth-scroll owns scrolling on desktop and only listens to
+  // this event; it's switched off on phones / portrait tablets / touch, where
+  // native smooth scrolling does the job instead
   window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: y }))
-  // touch devices scroll natively (the smooth-scroll shim is wheel-only)
-  if (window.matchMedia('(pointer: coarse)').matches) window.scrollTo({ top: y, behavior: 'smooth' })
+  const native = window.matchMedia('(max-width: 767px), (max-width: 1023px) and (orientation: portrait), (pointer: coarse)').matches
+  if (native) window.scrollTo({ top: y, behavior: 'smooth' })
 }
 
 // which object each stop puts in your hands

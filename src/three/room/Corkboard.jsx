@@ -67,12 +67,39 @@ const PAINTERS = {
     }
     ctx.fillStyle = '#2a2018'; ctx.font = '600 38px Caveat, cursive'; ctx.fillText(it.cap || '', 30, h - 34)
   },
+  // designed like a real note: a strip of washi tape, a lifted corner, a
+  // hand-drawn underline and a little doodle (drawn as vector paths)
   note(ctx, w, h, it) {
     ctx.fillStyle = it.color || '#f7e27a'; ctx.fillRect(0, 0, w, h)
     const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(0,0,0,0.07)'); g.addColorStop(0.25, 'rgba(0,0,0,0)')
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
-    let y = 64
-    if (it.title) { ctx.fillStyle = '#7a3b14'; ctx.font = '700 40px Caveat, cursive'; ctx.fillText(it.title, 24, y); y += 52 }
+    // lifted bottom-right corner
+    ctx.fillStyle = 'rgba(0,0,0,0.10)'
+    ctx.beginPath(); ctx.moveTo(w, h - 70); ctx.lineTo(w - 70, h); ctx.lineTo(w, h); ctx.closePath(); ctx.fill()
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    ctx.beginPath(); ctx.moveTo(w, h - 70); ctx.lineTo(w - 70, h); ctx.lineTo(w - 58, h - 58); ctx.closePath(); ctx.fill()
+    // washi tape
+    ctx.save(); ctx.translate(w * 0.62, 10); ctx.rotate(0.06)
+    ctx.fillStyle = 'rgba(132,208,232,0.55)'; ctx.fillRect(-70, -18, 140, 34)
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3
+    for (let x = -60; x < 70; x += 22) { ctx.beginPath(); ctx.moveTo(x, -18); ctx.lineTo(x + 12, 16); ctx.stroke() }
+    ctx.restore()
+    let y = 70
+    if (it.title) {
+      ctx.fillStyle = '#7a3b14'; ctx.font = '700 42px Caveat, cursive'; ctx.fillText(it.title, 24, y)
+      const tw = ctx.measureText(it.title).width
+      ctx.strokeStyle = '#F07A1A'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(24, y + 10)
+      for (let x = 24; x <= 24 + tw; x += 14) ctx.quadraticCurveTo(x + 7, y + (Math.round(x / 14) % 2 ? 4 : 16), x + 14, y + 10)
+      ctx.stroke()
+      y += 58
+    }
+    // doodle in the free corner: a star, or an arrow on notes that link out
+    ctx.save(); ctx.translate(w - 60, h - 110); ctx.strokeStyle = 'rgba(29,20,12,0.55)'; ctx.lineWidth = 3; ctx.lineJoin = 'round'
+    ctx.beginPath()
+    if (it.href) { ctx.moveTo(-26, 0); ctx.lineTo(18, 0); ctx.moveTo(6, -12); ctx.lineTo(20, 0); ctx.lineTo(6, 12) }
+    else { for (let k = 0; k < 10; k++) { const r = k % 2 ? 7 : 17, a = -Math.PI / 2 + k * Math.PI / 5; ctx[k ? 'lineTo' : 'moveTo'](Math.cos(a) * r, Math.sin(a) * r) } ctx.closePath() }
+    ctx.stroke(); ctx.restore()
     ctx.fillStyle = '#1d140c'; ctx.font = '700 35px Caveat, cursive'
     for (const l of it.lines || []) { ctx.fillText(l, 24, y); y += 43 }
   },
@@ -80,7 +107,6 @@ const PAINTERS = {
     ctx.fillStyle = '#fbfaf6'; ctx.fillRect(0, 0, w, h)
     ctx.fillStyle = '#1d1712'; ctx.font = '600 27px "JetBrains Mono", monospace'
     ;(it.lines || []).forEach((l, i) => ctx.fillText(l, 22, 74 + i * 50))
-    ctx.fillStyle = '#F07A1A'; ctx.font = '600 40px Caveat, cursive'; ctx.fillText('first one ✓', 22, h - 80)
     ctx.fillStyle = '#fbfaf6'
     for (let x = 0; x < w; x += 20) { ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x + 10, h - 12); ctx.lineTo(x + 20, h); ctx.fill() }
   },

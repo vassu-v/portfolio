@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import { createModel as createPhone } from './lib/iphone'
 import { prepModel, Hotspot, damp } from './common'
 import { bakeStatic } from './bake'
-import { room, live, useRoom, wake, dirtyShadows } from './store'
+import { room, live, useRoom, wake, dirtyShadows, focusOn } from './store'
 import { goToStop } from './tourData'
 import { PINGS, ping } from './pings'
 
@@ -304,7 +304,8 @@ export default function Phone() {
   const screen = model.userData.parts.screen
   const hitButton = e => {
     // the glass layer sits in front of the screen — look through it for the UV
-    const hit = focused && e.intersections?.find(i => i.object === screen)
+    // buttons only once you're looking at the phone up close
+    const hit = focus === 'phone' && e.intersections?.find(i => i.object === screen)
     if (!hit?.uv) return -1
     const y = (1 - hit.uv.y) * 1860
     return BUTTONS.findIndex(b => y >= b.y && y <= b.y + BTN_H - 20)
@@ -316,11 +317,13 @@ export default function Phone() {
       <PopCard kind="invite" on={incoming} holder={holder} />
       <PopCard kind="hello" on={finale} holder={holder} />
       <group ref={holder}>
-        <Hotspot id="phone" label={focused ? 'tap a button' : 'Phone — 1 new message'} onClick={e => {
+        <Hotspot id="phone" label={focus === 'phone' ? 'tap a button' : focused ? 'pick up the phone' : 'Phone — 1 new message'} onClick={e => {
+          // first click brings you to the phone (or the phone to you); only
+          // then are its buttons live
           if (!focused) return goToStop('finale')
+          if (focus !== 'phone') return focusOn('phone')
           const i = hitButton(e)
           if (i >= 0) window.open(BUTTONS[i].href, BUTTONS[i].href.startsWith('mailto') ? '_self' : '_blank', 'noopener')
-          else if (tourStop !== 'finale') goToStop('finale')
         }}>
           <group onPointerMove={e => {
             const i = hitButton(e)
