@@ -158,7 +158,7 @@ function TourCopy({ hidden, mobile }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
       <div ref={veil} style={{ position: 'absolute', inset: 0 }} />
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {c && !hidden && (
           <motion.div key={stop}
             initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
@@ -289,7 +289,7 @@ function FocusPanel({ focus }) {
       key={focus + folder + side + pin + (focus === 'diary' ? spread : '')}
       initial={{ opacity: 0, x: -14 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -8 }}
+      exit={{ opacity: 0, x: -8, transition: { duration: 0.18 } }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       style={{ position: 'fixed', left: mobile ? 16 : 'var(--pad)', right: mobile ? 16 : 'auto', bottom: mobile ? 72 : 48, zIndex: 50, maxWidth: mobile ? 'none' : 380, color: '#efe6d8', ...mono, fontSize: '0.78rem', lineHeight: 1.65, background: 'rgba(12,10,8,0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '20px 22px' }}
     >
@@ -356,7 +356,10 @@ function rememberMode(m) {
 function shouldAsk(tier, reason) {
   if (new URLSearchParams(window.location.search).has('ask')) return true
   if (storedMode()) return false
-  return tier === 'poster' || (tier === 'low' && /RAM|core|software/i.test(reason || ''))
+  // only when the 3D genuinely can't run well (no WebGL2, software GPU, data
+  // saver, a truly tiny machine). Everyone else just loads; if it then runs
+  // slow, the measured-FPS probe steps quality down and offers the CLI.
+  return tier === 'poster' && !/url override|remembered/.test(reason || '')
 }
 
 function DeviceChoice({ onContinue, reason, still }) {
@@ -569,7 +572,9 @@ export default function RoomHome() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">{panelFor && <FocusPanel key={panelFor} focus={panelFor} />}</AnimatePresence>
+      {/* no mode="wait": with rapid open/close (click a card, click away,
+          scroll on) its exit could stall and leave a stale panel on screen */}
+      <AnimatePresence>{panelFor && <FocusPanel key={panelFor} focus={panelFor} />}</AnimatePresence>
       <AnimatePresence>
         {photo >= 0 && (
           <motion.div key={'photo' + photo} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
