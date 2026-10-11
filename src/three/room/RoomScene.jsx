@@ -301,11 +301,16 @@ function SceneContent() {
 // the work to the GPU process (KHR_parallel_shader_compile) without blocking.
 function Warmup({ post, env, ready }) {
   const { gl, scene, camera } = useThree()
+  const done = useRef(false)
   useEffect(() => {
+    // once per canvas: a later change (a quality drop turning post-processing
+    // off) must never hide the scene again mid-visit — it read as a black screen
+    if (done.current) return
     if (!room.get().debug) gl.debug.checkShaderErrors = false
     else window.__gl = gl
     scene.visible = false
     if (!ready) return
+    done.current = true
     let cancelled = false, raf
     const t0 = performance.now()
     // everything hidden (except lights — the light count is part of every
@@ -373,9 +378,39 @@ export default function RoomScene() {
     return () => { window.removeEventListener('pointermove', onMove); clearInterval(id) }
   }, [])
 
+  // If the GPU drops the WebGL context (phones do this under memory
+  // pressure) the canvas just goes black. Show the still of the room
+  // instead, then rebuild the 3D — on the browser's restore event, or with a
+  // fresh context if that never comes.
+  const [gen, setGen] = useState(0)
+  const [lost, setLost] = useState(false)
+  const onCreated = ({ gl }) => {
+    const el = gl.domElement
+    let timer
+    // the still stays up until the rebuilt room has compiled (room-warm)
+    const rebuild = () => {
+      clearTimeout(timer)
+      const back = () => setLost(false)
+      window.addEventListener('room-warm', back, { once: true })
+      setTimeout(back, 8000)
+      setGen(g => g + 1)
+    }
+    el.addEventListener('webglcontextlost', e => {
+      e.preventDefault()
+      setLost(true)
+      timer = setTimeout(rebuild, 2500)
+    })
+    el.addEventListener('webglcontextrestored', rebuild)
+  }
+
   return (
+    <>
+    {lost && <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 1, background: `#0b0907 url(${window.innerWidth < window.innerHeight ? '/room-poster-portrait.jpg' : '/room-poster.jpg'}) center / cover no-repeat` }} />}
     <Canvas
-      key={tier}
+      // a quality change no longer rebuilds the canvas (that hid the room for
+      // seconds, mid-scroll); only a lost GPU context does
+      key={gen}
+      onCreated={onCreated}
       // 'percentage' (PCF), stated explicitly: `true` asks for PCFSoft, which
       // three swaps for PCF at draw time — but not when pre-compiling, so
       // every shadowed shader got compiled twice (once as each)
@@ -392,5 +427,6 @@ export default function RoomScene() {
     >
       <SceneContent />
     </Canvas>
+    </>
   )
 }
