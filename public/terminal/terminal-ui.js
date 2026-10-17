@@ -195,7 +195,8 @@
     }
 
     // ---------- run ----------
-    function run(raw) {
+    // passive: deep-linked (?cmd= / #hash) commands print but never open or navigate
+    function run(raw, passive) {
       var line = raw.replace(/\s+$/, "");
       cursor = null;
       if (state.in_editor || state.awaiting_password) {
@@ -217,8 +218,8 @@
         state.command_history = (state.command_history || []).concat([line]);
         entry(line, out.html);
         if (out.theme) setTheme(out.theme);
-        if (out.open) global.open(out.open, /^mailto:/.test(out.open) ? "_self" : "_blank", "noopener");
-        if (out.navigate) leave(out.navigate);
+        if (out.open && !passive) global.open(out.open, /^mailto:/.test(out.open) ? "_self" : "_blank", "noopener");
+        if (out.navigate && !passive) leave(out.navigate);
         return;
       }
 
@@ -239,7 +240,7 @@
         entry(line, text ? formatPlain(text) : "");
       }
       syncPrompt();
-      if (state.should_exit) leave("/");
+      if (state.should_exit) { if (passive) state.should_exit = false; else leave("/"); }
     }
 
     // ---------- suggestions ----------
@@ -394,7 +395,7 @@
     entry(null, '<p class="k-dim">Welcome to ShoryaOS (arch, btw) · tty1<br>Last login: ' + esc(last.toDateString()) + " " + esc(last.toTimeString().slice(0, 5)) + " from your browser</p>");
     entry("screenfetch", rich.run("screenfetch", []).html);
     var first = new URLSearchParams(global.location.search).get("cmd") || decodeURIComponent((global.location.hash || "").slice(1)).replace(/-/g, " ");
-    if (first) run(first);
+    if (first) run(first, true);
     syncPrompt();
     if (!matchMedia("(pointer: coarse)").matches) input.focus();
 

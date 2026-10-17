@@ -339,6 +339,7 @@ function Warmup({ post, env, ready }) {
       scene.visible = true
       dirtyShadows(2)
       wake(300)
+      window.__roomWarm = true
       window.dispatchEvent(new Event('room-warm'))
     }
     // wait for the environment map (it changes every lit material's shader)

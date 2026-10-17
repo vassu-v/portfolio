@@ -46,7 +46,7 @@ emulated, so phone numbers are CPU-realistic, GPU-optimistic.
 
 Detection: GPU name + RAM + cores + touch + screen → initial guess; an FPS probe after
 the intro steps down once if the device can't hold it, and the result is remembered
-per device (`localStorage room-tier-v1`). Override: `?tier=high|mid|low|poster`.
+per device (`localStorage room-tier-v3`). Override: `?tier=high|mid|low|poster`.
 
 ## Roam mode — `/?roam`
 

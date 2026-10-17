@@ -17,6 +17,7 @@ import Blog from './components/Blog'
 import Footer from './components/Footer'
 import DeskBackdrop from './three/DeskBackdrop'
 import RoomHome from './three/room/RoomHome'
+import { room } from './three/room/store'
 import ProjectPage from './pages/ProjectPage'
 import BlogPost from './pages/BlogPost'
 import BlogIndex from './pages/BlogIndex'
@@ -375,13 +376,16 @@ export default function App() {
     // a still-loading background right after the loader disappears.
     // fetched now, but its (long, blocking) evaluation waits a beat so the
     // loader stays responsive at first — see RoomHome's sceneGo
+    // poster tier never mounts the room, so don't download/evaluate it
     const deskSceneReady = CLASSIC
       ? import('./three/DeskScene').catch(() => {})
+      : room.get().tier === 'poster' ? Promise.resolve()
       : new Promise(r => setTimeout(r, 1000)).then(() => import('./three/room/RoomScene')).catch(() => {})
     // the room also pre-renders every shader it will need (RoomScene ›
     // Warmup) — on phones that's seconds of work that otherwise lands as
     // stutter mid-scroll, so the loader waits for it (capped by MAX_WAIT)
-    const roomWarm = CLASSIC ? Promise.resolve() : new Promise(resolve => window.addEventListener('room-warm', resolve, { once: true }))
+    // RoomHome can fire room-warm from a child effect before this listener exists
+    const roomWarm = CLASSIC || window.__roomWarm ? Promise.resolve() : new Promise(resolve => window.addEventListener('room-warm', resolve, { once: true }))
 
     Promise.race([
       Promise.all([heroImageReady, fontsReady, deskSceneReady, roomWarm]),

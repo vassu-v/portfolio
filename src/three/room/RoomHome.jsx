@@ -522,7 +522,7 @@ export default function RoomHome() {
   useEffect(() => { const id = setTimeout(() => setSceneGo(true), 1100); return () => clearTimeout(id) }, [])
   useEffect(() => { document.documentElement.classList.toggle('lite', tier === 'low') }, [tier])
   // no 3D to warm up (still image, or waiting on the device choice): don't hold the loader
-  useEffect(() => { if (poster || asking) window.dispatchEvent(new Event('room-warm')) }, [poster, asking])
+  useEffect(() => { if (poster || asking) { window.__roomWarm = true; window.dispatchEvent(new Event('room-warm')) } }, [poster, asking])
 
   useEffect(() => {
     const open = e => e.detail && navigate(`/blog/${e.detail}`)
