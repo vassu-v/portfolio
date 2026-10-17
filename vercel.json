@@ -22,6 +22,12 @@
     { "src": "/projects/(.*)", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/work", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/blog", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/blog/(.*)", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/about", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/wins", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/skills", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/side", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
+    { "src": "/side/(.*)", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/contact", "has": [{ "type": "header", "key": "user-agent", "value": ".*curl.*" }], "dest": "/api/cli" },
     { "src": "/api/cli/(.*)", "dest": "/api/cli" },
 

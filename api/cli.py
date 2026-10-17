@@ -94,7 +94,7 @@ def screen_home():
         c("OS:", BOLD, BLUE) + " ShoryaOS (arch, btw)",
         c("Kernel:", BOLD, BLUE) + f" {age()}.0-builder",
         c("Location:", BOLD, BLUE) + " Kolkata, IN",
-        c("Packages:", BOLD, BLUE) + f" {len(d['projects'])} projects, {len(d['posts'])} essays, {len(d['wins'])} wins",
+        c("Packages:", BOLD, BLUE) + f" {len(d['projects'])} projects, {len(d['side'])} side, {len(d['posts'])} essays",
         c("Now:", BOLD, BLUE) + " Bits&Bytes · 4MQ.org",
         c("Status:", BOLD, BLUE) + " " + c("open to collab", OK),
     ]
@@ -107,10 +107,15 @@ def screen_home():
 
 COMMANDS = [
     ("", "this card"),
+    ("/about", "who I am, in a paragraph"),
     ("/projects", "things I've built"),
     ("/projects/<name>", "one project, e.g. /projects/buy4chai"),
+    ("/side", "side projects, e.g. /side/1"),
     ("/work", "roles & where I've been"),
     ("/blog", "essays"),
+    ("/blog/<n>", "read one, e.g. /blog/1"),
+    ("/wins", "awards, receipts, firsts"),
+    ("/skills", "the toolbox"),
     ("/contact", "every way to say hi"),
     ("/help", "this list"),
 ]
@@ -177,7 +182,75 @@ def screen_blog():
     for i, p in enumerate(DATA["posts"], 1):
         out.append(c(f"{i:02d}", FAINT) + "  " + c(p["title"], BOLD, BLUE))
         out.append(c(f"    {p.get('category') or ''} · {p['date']} · {p.get('readTime') or ''}", DIM))
-        out.append(c(f"    {p.get('external') or SITE + '/blog/' + p['slug']}", FAINT))
+        out.append(c(f"    curl {SITE.split('//')[1]}/blog/{i}", FAINT))
+    return "\n".join(out)
+
+
+def find(items, key, field):
+    key = key.lower()
+    for i, x in enumerate(items, 1):
+        if key in (x.get("slug", ""), str(i)) or (x.get("slug") or "").startswith(key) or str(x[field]).lower().startswith(key):
+            return x
+    return None
+
+
+def screen_post(p):
+    out = ["", header(p["title"]), c(f"{p.get('category') or ''} · {p['date']} · {p.get('readTime') or ''}", DIM), "",
+           c(wrap(p.get("subtitle")), BOLD, FG), "", wrap(p.get("lede"))]
+    if p.get("quote"):
+        out += ["", wrap(p["quote"], c("  │ ", ORANGE))]
+    out += ["", kv([("keep reading", c(p.get("external") or f"{SITE}/blog/{p['slug']}", BLUE))], key_w=14)]
+    return "\n".join(out)
+
+
+def screen_about():
+    a = DATA["about"]
+    return "\n".join(["", header("about.md"), c(wrap(a["lead"]), BOLD, FG), "",
+                      wrap(f"Shoryavardhaan Gupta, {age()}, Kolkata. " + a["body"][0]),
+                      *["\n" + wrap(p) for p in a["body"][1:]]])
+
+
+def screen_wins():
+    out = ["", header("wins & receipts")]
+    for w in DATA["wins"]:
+        out.append(c("★ ", ORANGE) + c(w["title"], BOLD, BLUE) + (c(f"  {w['sub']}", DIM) if w.get("sub") else ""))
+        out.append(wrap(w["text"], "  "))
+        if w.get("project"):
+            out.append(c(f"  curl {SITE.split('//')[1]}/projects/{w['project']}", FAINT))
+        out.append("")
+    return "\n".join(out)
+
+
+def screen_skills():
+    # wrap by visible width: textwrap would count (and split) the ANSI codes
+    lines, cur, w = [], [], 0
+    for s in DATA["skills"]:
+        if cur and w + len(s) + 4 > WIDTH:
+            lines.append("  ".join(cur))
+            cur, w = [], 0
+        cur.append(c("[", FAINT) + c(s, ORANGE) + c("]", FAINT))
+        w += len(s) + 4
+    lines.append("  ".join(cur))
+    return "\n".join(["", header("toolbox"), *lines])
+
+
+STATUS = {"shipped": "shipped", "wip": "on it", "parked": "parked"}
+
+
+def screen_side_list():
+    out = ["", header("side projects") + c("  the not-so-serious drawer", DIM)]
+    for i, s in enumerate(DATA["side"], 1):
+        out.append(c(f"{i:02d}", FAINT) + "  " + c(s["name"], BOLD, BLUE) + c(f"  {STATUS.get(s['status'], s['status'])}", DIM))
+        out.append(wrap(s["line"], "    "))
+        out.append(c(f"    curl {SITE.split('//')[1]}/side/{i}", FAINT))
+    return "\n".join(out)
+
+
+def screen_side(s):
+    out = ["", header(s["name"]) + c(f"  · {STATUS.get(s['status'], s['status'])}", DIM), c(wrap(s["line"]), BOLD, FG), "", wrap(s["desc"])]
+    links = [(k, s[k]) for k in ("github", "live") if s.get(k)]
+    if links:
+        out += ["", kv([(k, c(v, BLUE)) for k, v in links])]
     return "\n".join(out)
 
 
@@ -262,6 +335,60 @@ async def blog(request: fastapi.Request):
     if not is_curl(request):
         return JSONResponse({"blog": [{"title": p["title"], "url": f"{SITE}/blog/{p['slug']}"} for p in DATA["posts"]]})
     return respond(request, screen_blog(), ("/projects", "/contact"))
+
+
+@app.get("/blog/{key}")
+@app.get("/api/cli/blog/{key}")
+async def post(request: fastapi.Request, key: str):
+    p = find(DATA["posts"], key, "title")
+    if not is_curl(request):
+        return JSONResponse(p or {"error": "no such post"}, status_code=200 if p else 404)
+    if not p:
+        return respond(request, "\n" + c(f"no post matching '{key}'", ORANGE) + "\n\n" + screen_blog(), ("/blog",))
+    return respond(request, screen_post(p), ("/blog", "/contact"))
+
+
+@app.get("/about")
+@app.get("/api/cli/about")
+async def about(request: fastapi.Request):
+    if not is_curl(request):
+        return JSONResponse({"about": DATA["about"]})
+    return respond(request, screen_about(), ("/projects", "/work"))
+
+
+@app.get("/wins")
+@app.get("/api/cli/wins")
+async def wins(request: fastapi.Request):
+    if not is_curl(request):
+        return JSONResponse({"wins": DATA["wins"]})
+    return respond(request, screen_wins(), ("/projects", "/contact"))
+
+
+@app.get("/skills")
+@app.get("/api/cli/skills")
+async def skills(request: fastapi.Request):
+    if not is_curl(request):
+        return JSONResponse({"skills": DATA["skills"]})
+    return respond(request, screen_skills(), ("/projects", "/contact"))
+
+
+@app.get("/side")
+@app.get("/api/cli/side")
+async def side_list(request: fastapi.Request):
+    if not is_curl(request):
+        return JSONResponse({"side": DATA["side"]})
+    return respond(request, screen_side_list(), ("/side/1", "/projects"))
+
+
+@app.get("/side/{key}")
+@app.get("/api/cli/side/{key}")
+async def side(request: fastapi.Request, key: str):
+    s = find(DATA["side"], key, "name")
+    if not is_curl(request):
+        return JSONResponse(s or {"error": "no such side project"}, status_code=200 if s else 404)
+    if not s:
+        return respond(request, "\n" + c(f"no side project matching '{key}'", ORANGE) + "\n\n" + screen_side_list(), ("/side",))
+    return respond(request, screen_side(s), ("/side", "/contact"))
 
 
 @app.get("/contact")

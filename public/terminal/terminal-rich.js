@@ -165,7 +165,7 @@
     };
     return {
       html: panel("help", '<div class="k-help">' +
-        group("explore", [["about", "who I am, in a paragraph"], ["projects", "things I've built — try <code>project 1</code>"], ["work", "roles &amp; where I've been"], ["blog", "essays — try <code>read 1</code>"], ["wins", "awards, receipts, firsts"], ["skills", "the toolbox"]]) +
+        group("explore", [["about", "who I am, in a paragraph"], ["projects", "things I've built — try <code>project 1</code>"], ["side", "side projects — try <code>side 1</code>"], ["work", "roles &amp; where I've been"], ["blog", "essays — try <code>read 1</code>"], ["wins", "awards, receipts, firsts"], ["skills", "the toolbox"]]) +
         group("reach me", [["contact", "every way to say hi"], ["email", "opens your mail app"], ["call", "book a 30-min call"], ["sudo hire-me", "you know you want to"]]) +
         group("the shell", [["ls", "list files (it's a real-ish filesystem)"], ["cd work", "move around"], ["cat about.md", "read a file"], ["history", "what you've typed"], ["clear", "clean the screen"], ["theme", "change colours"]]) +
         group("elsewhere", [["gui", "back to the 3D room"], ["classic", "the plain web page"], ["exit", "leave"]]) +
@@ -269,10 +269,32 @@
   C.awards = C.wins;
 
   C.skills = function () {
-    return {
-      html: panel("toolbox", tags(["Python", "C++", "JavaScript", "Arduino", "IoT", "Flask", "Linux (Pop!_OS)", "Vercel", "Razorpay / UPI", "AI / planning systems", "Hardware", "Product design", "Systems thinking", "Constraint thinking"])),
-    };
+    return { html: panel("toolbox", tags(D.skills)) };
   };
+
+  var STATUS = { shipped: "shipped", wip: "on it", parked: "parked" };
+  C.side = function (args) {
+    var list = D.side || [];
+    if (args[0]) {
+      var s = pick(list, args[0], "name");
+      if (!s) return { html: '<p class="k-err">side: no side project matching "' + esc(args[0]) + '". ' + cmd("side", "see all") + "</p>" };
+      var links = [];
+      if (s.github) links.push(link(s.github, "source"));
+      if (s.live) links.push(link(s.live, "live"));
+      return {
+        html: panel(esc(s.name) + ' <span class="k-dim">· ' + esc(STATUS[s.status] || s.status || "") + "</span>",
+          '<p class="k-lead">' + esc(s.line) + "</p>" + paras(s.desc) +
+          (links.length ? '<p class="k-links">' + links.join(" · ") + "</p>" : ""), { accent: true }),
+      };
+    }
+    var rows = list.map(function (s, i) {
+      return '<li class="k-row"><span class="k-row__n">' + String(i + 1).padStart(2, "0") + "</span>" +
+        '<span class="k-row__main">' + cmd("side " + (i + 1), s.name) + '<span class="k-row__sub">' + esc(s.line) + "</span></span>" +
+        '<span class="k-row__meta">' + esc(STATUS[s.status] || s.status || "") + "</span></li>";
+    }).join("");
+    return { html: panel("side projects", '<ol class="k-rows">' + rows + "</ol>") + hint("the not-so-serious drawer · details: " + cmd("side 1")) };
+  };
+  C.sides = C.side;
   C.stack = C.skills;
 
   C.contact = function () {
@@ -322,6 +344,7 @@
     if (name === "project") return D.projects.map(function (p) { return p.slug; });
     if (name === "read") return D.posts.map(function (p, i) { return String(i + 1); });
     if (name === "work") return D.work.map(function (e, i) { return String(i + 1); });
+    if (name === "side") return (D.side || []).map(function (s, i) { return String(i + 1); });
     if (name === "theme") return THEMES;
     if (name === "sudo") return ["hire-me"];
     return [];

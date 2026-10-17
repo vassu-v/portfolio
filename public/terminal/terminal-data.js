@@ -491,5 +491,55 @@ window.TERMINAL_DATA = {
    "text": "Wrote, formatted, designed the cover, navigated Amazon's publishing at 14. No AI. Zero sales. Redesigned it a year later. Then sold copies. The lesson wasn't the book. It was finishing.",
    "project": null
   }
+ ],
+ "side": [
+  {
+   "name": "Tackety",
+   "line": "support tickets, by impact",
+   "desc": "An open-source, self-hostable support engine that sits between customers and developers. A chatbot sorts each complaint into a bug or a service request, similar issues get clustered, and the team sees what to fix first, ranked by real impact instead of arrival time. Python, FastAPI and one SQLite file. The core engine runs today; clustering and the developer dashboard are still being built.",
+   "status": "wip",
+   "github": "https://github.com/vassu-v/Tackety",
+   "live": null
+  },
+  {
+   "name": "S.H.O.A.V.",
+   "line": "a bodyguard for web agents",
+   "desc": "An MCP server that gives any AI agent a real browser with a deterministic guard in the path. It stops clickjacking, dark patterns and hidden prompt injection before the agent acts on them. Built for Genesis Hackathon 2026, Track 03. Alpha, in active development.",
+   "status": "wip",
+   "github": "https://github.com/vassu-v/SHOAV",
+   "live": "https://shoav.vercel.app/"
+  },
+  {
+   "name": "Switchyard",
+   "line": "one CLI for all my agents",
+   "desc": "A small local daemon that keeps one live session per coding agent (agy, Claude Code, OpenCode, Codex). Spawn, watch, steer, interrupt and stop them from one CLI, an MCP bridge or a dashboard, with tier routing and a policy guard for risky commands.",
+   "status": "wip",
+   "github": "https://github.com/vassu-v/agent-supervisor-multiprovider_mcp",
+   "live": null
+  }
+ ],
+ "about": {
+  "lead": "I don't wait to be qualified. I ship things, see what breaks, and figure it out from there.",
+  "body": [
+   "Leading Bits&Bytes Kolkata, consulting at 4MQ.org, and building open-source tools that solve real gaps, not demo projects.",
+   "Work spans hardware (LiFi mesh networks, Arduino reaction simulators), AI research (planning failures, published on Zenodo), and product: Buy4Chai for India's Stripe exclusion problem, SarkarSathi for civic accountability.",
+   "The thread: constraint thinking. Building the right thing with what's actually available."
+  ]
+ },
+ "skills": [
+  "Python",
+  "C++",
+  "JavaScript",
+  "Arduino",
+  "IoT",
+  "Flask",
+  "Linux (Pop!_OS)",
+  "Vercel",
+  "Razorpay / UPI",
+  "AI / planning systems",
+  "Hardware",
+  "Product design",
+  "Systems thinking",
+  "Constraint thinking"
  ]
 };
