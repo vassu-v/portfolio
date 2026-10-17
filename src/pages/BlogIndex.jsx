@@ -394,7 +394,7 @@ export default function BlogIndex() {
             border: '1px solid var(--border)',
             borderLeft: '2px solid var(--cu)',
             borderRadius: '0 4px 4px 0',
-            background: 'rgba(197,123,43,0.04)',
+            background: 'rgba(132,208,232,0.04)',
             marginBottom: '48px',
             maxWidth: '420px',
           }}

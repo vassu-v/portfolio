@@ -95,7 +95,7 @@ function LiquidHeading({ scrollYProgress }) {
             style={{
               position: 'absolute',
               inset: '-0.09em -0.14em',
-              background: 'rgba(197,123,43,0.23)',
+              background: 'rgba(132,208,232,0.23)',
               borderRadius: '3px',
               transformOrigin: 'left center',
               zIndex: 0,
@@ -137,7 +137,7 @@ function MagneticCTA({ href, icon, label, secondary }) {
       }}
       whileHover={secondary
         ? { background: 'var(--cu-d)', borderColor: 'var(--cu)' }
-        : { background: 'var(--go)', boxShadow: '0 14px 40px rgba(197,123,43,0.28)' }}
+        : { background: 'var(--go)', boxShadow: '0 14px 40px rgba(132,208,232,0.28)' }}
     >
       <i className={icon} />
       {label}
@@ -195,7 +195,7 @@ export default function Footer() {
         <div style={{
           position: 'absolute', left: '50%', transform: 'translateX(-50%)',
           width: '70%', height: '280px', top: '-140px',
-          background: 'radial-gradient(ellipse, rgba(197,123,43,0.10) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(132,208,232,0.10) 0%, transparent 70%)',
           pointerEvents: 'none',
         }} />
       </div>

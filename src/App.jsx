@@ -16,6 +16,8 @@ import Experience from './components/Experience'
 import Blog from './components/Blog'
 import Footer from './components/Footer'
 import DeskBackdrop from './three/DeskBackdrop'
+import RoomHome from './three/room/RoomHome'
+import { room } from './three/room/store'
 import ProjectPage from './pages/ProjectPage'
 import BlogPost from './pages/BlogPost'
 import BlogIndex from './pages/BlogIndex'
@@ -25,9 +27,9 @@ import { projectJsonLdNode } from './utils/projectSeo'
 // Section → cursor RGB color map
 const SECTION_COLORS = {
   about:      { r: 91,  g: 143, b: 175 }, // slate
-  highlights: { r: 212, g: 152, b: 58  }, // gold
+  highlights: { r: 240, g: 122, b: 26  }, // orange
 }
-const COPPER = { r: 197, g: 123, b: 43 }
+const COPPER = { r: 132, g: 208, b: 232 }
 
 function ZoneDivider() {
   return (
@@ -38,6 +40,9 @@ function ZoneDivider() {
 }
 
 function Preloader({ progress }) {
+  // "press C" and the link itself are handled by a plain script in
+  // index.html (works even while the 3D room is busy); it stops listening
+  // once this screen goes (window.__loaderGone, set where it's hidden)
   return (
     <motion.div
       initial={{ clipPath: 'inset(0% 0% 0% 0%)' }}
@@ -100,6 +105,7 @@ function Preloader({ progress }) {
           on it, for slow connections or anyone who just wants the text. */}
       <a
         href="/terminal/index.html"
+        data-cli=""
         style={{
           fontFamily: 'JetBrains Mono, monospace', fontSize: '0.56rem',
           letterSpacing: '0.06em', color: 'var(--text3)', textDecoration: 'none',
@@ -109,13 +115,16 @@ function Preloader({ progress }) {
         onMouseEnter={e => { e.currentTarget.style.color = 'var(--cu)'; e.currentTarget.style.borderColor = 'var(--cu)' }}
         onMouseLeave={e => { e.currentTarget.style.color = 'var(--text3)'; e.currentTarget.style.borderColor = 'var(--border2)' }}
       >
-        switch to CLI mode
+        switch to CLI mode <span style={{ opacity: 0.6 }}>· press C</span>
       </a>
     </motion.div>
   )
 }
 
+const CLASSIC = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('classic')
+
 function Portfolio() {
+  if (!CLASSIC) return <RoomHome />
   return (
     <>
       <DeskBackdrop />
@@ -232,16 +241,13 @@ function AppShell() {
     }
 
     let robotsEl = document.querySelector('meta[name="robots"]')
-    if (is404) {
-      if (!robotsEl) {
-        robotsEl = document.createElement('meta')
-        robotsEl.name = 'robots'
-        document.head.appendChild(robotsEl)
-      }
-      robotsEl.content = 'noindex'
-    } else {
-      robotsEl?.remove()
+    if (!robotsEl) {
+      robotsEl = document.createElement('meta')
+      robotsEl.name = 'robots'
+      document.head.appendChild(robotsEl)
     }
+    // must match index.html's default, which a 404 would otherwise overwrite for good
+    robotsEl.content = is404 ? 'noindex' : 'index, follow, max-image-preview:large, max-snippet:-1'
 
     document.title = title
 
@@ -308,13 +314,19 @@ export default function App() {
   // readiness (web fonts + the hero portrait actually decoded), not a flat
   // timer — see the effect below.
   const [preloaderVisible, setPreloaderVisible] = useState(() => window.location.pathname === '/')
+  // While the loader is up, use the plain system pointer — the custom one
+  // only exists once the mouse has moved over the page, which left people
+  // unable to find the "CLI mode" link on the loading screen.
+  useEffect(() => {
+    document.documentElement.classList.toggle('preloading', preloaderVisible)
+  }, [preloaderVisible])
   const [loadProgress, setLoadProgress] = useState(0)
 
   useEffect(() => {
     console.log(
       '%cpsst, curl this site: %ccurl shoryavardhaan.vercel.app',
       'color:#8a8a8a;font-family:monospace',
-      'color:#c57b2b;font-family:monospace;font-weight:bold'
+      'color:#84D0E8;font-family:monospace;font-weight:bold'
     )
   }, [])
 
@@ -327,7 +339,7 @@ export default function App() {
     // 1300ms gives a fair chance without meaningfully hurting perceived
     // load time on a real page.
     const MIN_VISIBLE = 1300
-    const MAX_WAIT     = 4500 // never hold a slow connection hostage
+    const MAX_WAIT     = 6500 // never hold a slow connection hostage
     const start = performance.now()
     let settled = false
     let rafId, hideT
@@ -359,17 +371,28 @@ export default function App() {
     // that's the whole reason a CLI-mode fallback exists, instead of
     // finishing on fonts/hero-image alone and dropping the visitor into
     // a still-loading background right after the loader disappears.
-    const deskSceneReady = import('./three/DeskScene').catch(() => {})
+    // fetched now, but its (long, blocking) evaluation waits a beat so the
+    // loader stays responsive at first — see RoomHome's sceneGo
+    // poster tier never mounts the room, so don't download/evaluate it
+    const deskSceneReady = CLASSIC
+      ? import('./three/DeskScene').catch(() => {})
+      : room.get().tier === 'poster' ? Promise.resolve()
+      : new Promise(r => setTimeout(r, 1000)).then(() => import('./three/room/RoomScene')).catch(() => {})
+    // the room also pre-renders every shader it will need (RoomScene ›
+    // Warmup) — on phones that's seconds of work that otherwise lands as
+    // stutter mid-scroll, so the loader waits for it (capped by MAX_WAIT)
+    // RoomHome can fire room-warm from a child effect before this listener exists
+    const roomWarm = CLASSIC || window.__roomWarm ? Promise.resolve() : new Promise(resolve => window.addEventListener('room-warm', resolve, { once: true }))
 
     Promise.race([
-      Promise.all([heroImageReady, fontsReady, deskSceneReady]),
+      Promise.all([heroImageReady, fontsReady, deskSceneReady, roomWarm]),
       new Promise(resolve => setTimeout(resolve, MAX_WAIT)),
     ]).then(() => {
       settled = true
       cancelAnimationFrame(rafId)
       setLoadProgress(100)
       const wait = Math.max(0, MIN_VISIBLE - (performance.now() - start))
-      hideT = setTimeout(() => setPreloaderVisible(false), wait + 220) // brief pause so 100% registers
+      hideT = setTimeout(() => { window.__loaderGone = true; setPreloaderVisible(false) }, wait + 220) // brief pause so 100% registers
     })
 
     return () => { cancelAnimationFrame(rafId); clearTimeout(hideT) }
@@ -530,7 +553,7 @@ export default function App() {
 
   return (
     <Router>
-      <DotGrid />
+      {CLASSIC && <DotGrid />}
       <div id="sp" ref={spRef} />
       <div id="cursor" ref={cursorRef} />
       <div id="cursor-dot" ref={dotRef}>

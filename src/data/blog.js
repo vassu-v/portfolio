@@ -15,6 +15,48 @@
 export const POSTS = [
   {
     n: '01',
+    slug: 'pixel-budget',
+    title: 'A 3D room on a laptop with no graphics card',
+    subtitle: 'My portfolio\'s first 3D room took 95 ms to draw one frame on my own laptop. Here\'s how it got to 6.7 ms, and why every visitor now gets a pixel budget instead of a resolution.',
+    category: 'Building',
+    date: '17 Oct 2026',
+    isoDate: '2026-10-17',
+    readTime: '6 min read',
+    hero: '/room-poster.jpg',
+    featured: false,
+    personal: null,
+    diary: false,
+    externalUrl: null,
+    platform: null,
+    keywords: ['three.js performance integrated graphics', 'react three fiber slow on laptop', 'reduce draw calls three.js', 'pixel budget device pixel ratio', '3D portfolio performance', 'webgl quality tiers for weak devices', 'render on demand three.js'],
+    content: [
+      { type: 'paragraph', text: 'The homepage of this site is a 3D room: a desk, a corkboard, a drawer of projects, a diary. I built it on the only computer I have, a Ryzen 5 7430U laptop with AMD Radeon integrated graphics and 16 GB of RAM. No graphics card.' },
+      { type: 'paragraph', text: 'The first version ran at about 11 frames a second on that laptop. At 1440×900 one frame took 95 ms to draw; at 1080p, 109 ms. On a phone with its CPU throttled 4× it was the same 95 ms. Under the hood it was making 2,156 draw calls for one view of the room, across 589 meshes.' },
+      { type: 'pullquote', text: 'Frame time grew almost exactly with pixel count. So I stopped picking a resolution and started handing out a budget.' },
+      { type: 'heading', text: 'What was actually slow' },
+      { type: 'paragraph', text: 'Draw calls first. The 3D models I used are built from dozens of tiny parts. The keyboard alone was 190 separate meshes, and every part got drawn once for the picture and again for every shadow. The fix was to merge everything that never moves into one mesh per material when the room loads, and to drop the keyboard\'s 60 per-key legend materials. Draw calls went from 2,156 to about 300–450, meshes from 589 to 221.' },
+      { type: 'paragraph', text: 'The single biggest phone win was one material. The phone on the desk had a glass camera lens using transmission, which quietly forces a full second render of the whole scene every frame, and with tone mapping on it rebuilt shader programs every frame too. That was 30% of the CPU on phones. Swapping it for plain transparency took a phone frame from 43 ms to 20 ms.' },
+      { type: 'paragraph', text: 'Then the room stopped drawing when nothing changes. It renders at full rate only while something moves (a scroll, the pointer, the camera easing, a drawer sliding) and otherwise idles at 24–30 fps, just enough to keep the steam and dust alive. Shadows became static: they re-render only when something that casts one moves. The desk lamp used to sway gently when idle; I removed that, because it forced the shadows to re-render constantly.' },
+      { type: 'paragraph', text: 'Small things added up too. The phone\'s screen was a 900×1860 texture uploaded to the GPU every frame. Now it redraws once a minute, which is how often a clock needs to change.' },
+      { type: 'heading', text: 'A pixel budget, not a resolution' },
+      { type: 'paragraph', text: 'Once draw calls were down, cost was all about fill rate: frame time scaled almost linearly with the number of pixels drawn. So instead of a fixed resolution, each quality tier gets a budget in megapixels, and the render resolution is worked out from the visitor\'s screen: the square root of budget ÷ (width × height), kept between 0.6 and the device\'s own pixel ratio. A retina phone stays sharp enough. A 4K monitor on integrated graphics doesn\'t melt.' },
+      { type: 'paragraph', text: 'There are four tiers. High is for proper graphics cards and Apple silicon: ambient occlusion, bloom, anti-aliasing, 2k shadows, up to 3.6 megapixels. Mid is for laptops like mine: bloom and anti-aliasing, no ambient occlusion, 1k shadows, 1.6 megapixels. Low is for phones and machines with 4 GB of RAM or 4 cores or fewer: no post-processing, no dust, 0.9 megapixels. Poster is for devices with no WebGL2, data saver on, 2 GB of RAM or less, or a software GPU: they get a still image of the room with every section one tap away, and never download the 3D at all.' },
+      { type: 'paragraph', text: 'The first guess comes from the GPU name, RAM, cores, touch and screen. After the intro, a short frame-rate probe steps down one tier if the device can\'t hold it, and the result is remembered for next time. You can force any tier yourself: here is the room on the low tier.', link: { word: 'the room on the low tier', href: '/?tier=low' } },
+      { type: 'heading', text: 'Where it landed' },
+      { type: 'paragraph', text: 'On my laptop at 1440×900: 95 ms per frame before, 6.7 ms now on mid. At 1080p: 109 ms before, 7.8 ms on mid and 10.9 ms on high. A phone with its CPU throttled 4×: 95 ms before, 17 ms now on low, about 58 frames a second. A budget phone at 6× throttling: 29 ms, about 35 frames a second. One honest caveat: a phone\'s GPU can\'t be emulated on a laptop, so the phone numbers are realistic for the CPU and optimistic for the GPU.' },
+      { type: 'divider' },
+      { type: 'heading', text: 'What broke after it was fast' },
+      { type: 'paragraph', text: 'Fast in a benchmark isn\'t the same as fast for a visitor. Three things went wrong after the numbers looked good.' },
+      { type: 'paragraph', text: 'Laptops were mistaken for phones. Device detection leaned on screen size, and plenty of 1366×768 laptops looked like phones to it. Now phones are recognised by their primary input being touch, not by how small the screen is.' },
+      { type: 'paragraph', text: 'Phones froze mid-scroll. Shaders were compiling the first time each object came into view, which on a phone meant stutter halfway through the tour, and at worst a 12-second freeze. Now the room is built in stages and every shader is compiled in the background before the loading screen lifts.' },
+      { type: 'paragraph', text: 'And sometimes the screen just went black. Browsers can take the GPU away from a page mid-visit. When that happens now, the room shows a still image of itself and quietly rebuilds the 3D behind it.' },
+      { type: 'pullquote', text: 'The slowest machines don\'t get a worse room. They get a different door: a still picture, or the terminal.' },
+      { type: 'paragraph', text: 'For machines that can\'t run it at all, the room isn\'t the only way in. They\'re offered the text terminal version of the site first, which has every project, role and essay, and loads instantly.' },
+      { type: 'paragraph', text: 'If you want to see the cost for yourself, open the room in roam mode. You can fly around the whole setup, and an inspector shows the frame rate, draw calls, triangles and render resolution live, with a switch for every tier.', link: { word: 'open the room in roam mode', href: '/?roam' } },
+    ],
+  },
+  {
+    n: '02',
     slug: 'why-i-build',
     title: 'Nobody told me to start. That was the point.',
     subtitle: 'Three years of shipping real things from Kolkata, and what nobody tells you about starting before you\'re supposed to.',
@@ -46,7 +88,7 @@ export const POSTS = [
     ],
   },
   {
-    n: '02',
+    n: '03',
     slug: 'building-buy4chai',
     title: 'Why Indian developers can\'t get paid online, and how I fixed it',
     subtitle: 'How a Reddit thread confirmed the problem was real. Everyone was just coping.',
@@ -72,7 +114,7 @@ export const POSTS = [
     ],
   },
   {
-    n: '03',
+    n: '04',
     slug: 'markets-dont-get-disrupted',
     title: 'Markets don\'t get disrupted. They get aged out.',
     subtitle: 'Everyone\'s watching AI take jobs. That\'s not where the quiet danger is.',
@@ -98,7 +140,7 @@ export const POSTS = [
     ],
   },
   {
-    n: '04',
+    n: '05',
     slug: 'apple-ai-decade',
     title: 'Apple\'s been playing a different game since 2017',
     subtitle: 'While everyone rented Nvidia GPUs and called it infrastructure, Apple quietly built AI silicon before AI was the thing to build for.',
@@ -120,7 +162,7 @@ export const POSTS = [
     ],
   },
   {
-    n: '05',
+    n: '06',
     slug: 'both-groups-are-losing',
     title: 'Both groups are losing. Just differently.',
     subtitle: 'One ships without understanding. The other learns syntax while the world moves on. Neither has figured out the actual question.',
@@ -143,7 +185,7 @@ export const POSTS = [
     ],
   },
   {
-    n: '06',
+    n: '07',
     slug: 'hardware-failure',
     title: 'Why "needs vs. wants" is the wrong framework',
     subtitle: 'Teaching traditional financial literacy to a generation running on algorithmic desire engines, and what we\'re actually missing.',
@@ -172,3 +214,6 @@ export function getPost(slug) {
 
 // Automatically reflects the date of the newest post (POSTS[0])
 export const LAST_UPDATED = POSTS[0]?.date ?? '—'
+
+// the 3D room's diary skips posts marked diary: false (they still list on /blog)
+export const DIARY_POSTS = POSTS.filter(p => p.diary !== false)

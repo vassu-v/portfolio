@@ -90,7 +90,7 @@ export default function Hero() {
       <section style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', zIndex: 1 }}>
         <div style={{
           position: 'absolute', top: 0, right: 0, width: '100%', height: '50%',
-          background: 'radial-gradient(ellipse at 70% 35%, rgba(197,123,43,0.10) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse at 70% 35%, rgba(132,208,232,0.10) 0%, transparent 60%)',
           pointerEvents: 'none', zIndex: 0,
         }} />
 
@@ -175,7 +175,7 @@ export default function Hero() {
     >
       <div style={{
         position: 'absolute', top: 0, right: 0, width: '55%', height: '100%',
-        background: 'radial-gradient(ellipse at 70% 35%, rgba(197,123,43,0.13) 0%, transparent 60%), radial-gradient(ellipse at 30% 80%, rgba(91,143,175,0.06) 0%, transparent 50%)',
+        background: 'radial-gradient(ellipse at 70% 35%, rgba(132,208,232,0.13) 0%, transparent 60%), radial-gradient(ellipse at 30% 80%, rgba(91,143,175,0.06) 0%, transparent 50%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
 

@@ -82,7 +82,7 @@ const CARDS = [
     border: 'var(--border)', bg: 'rgba(255,255,255,0.025)',
     images: [
       { src: '/dbpc.jpg', alt: 'Receiving the 3rd place Quantum Qubit trophy on stage at Don Bosco School Kolkata', rotate: 8, top: '-42px', right: '-18px' },
-      { src: '/solder.jpeg', alt: 'Soldering workbench with a breadboard, wires, and tools for the Quantum Qubit build', rotate: -6, bottom: '-36px', left: '-14px' },
+      { src: '/solder.jpeg', alt: 'Soldering workbench with a breadboard, wires, and tools — a solar station built on my own', rotate: -6, bottom: '-36px', left: '-14px' },
     ],
   },
   {
@@ -208,7 +208,7 @@ function GramophoneCard({ index }) {
               transition: 'filter 0.3s ease',
             }}>
               {!hoveredSrc && (
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--go)', boxShadow: '0 0 6px rgba(212,152,58,0.6)' }} />
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--go)', boxShadow: '0 0 6px rgba(240,122,26,0.6)' }} />
               )}
             </div>
           </motion.div>
@@ -246,7 +246,7 @@ function GramophoneCard({ index }) {
               </radialGradient>
               <radialGradient id="gram-knob" cx="0.35" cy="0.3" r="1">
                 <stop offset="0" stopColor="#fbe3a8" />
-                <stop offset="0.5" stopColor="#d4983a" />
+                <stop offset="0.5" stopColor="#F07A1A" />
                 <stop offset="1" stopColor="#7a5518" />
               </radialGradient>
               <linearGradient id="gram-cart" x1="0" y1="0" x2="1" y2="1">
@@ -259,13 +259,13 @@ function GramophoneCard({ index }) {
               </filter>
             </defs>
             <g filter="url(#gram-shadow)">
-              <circle cx="72" cy="24" r="18" fill="url(#gram-pivot)" stroke="rgba(212,152,58,0.35)" strokeWidth="1.5" />
+              <circle cx="72" cy="24" r="18" fill="url(#gram-pivot)" stroke="rgba(240,122,26,0.35)" strokeWidth="1.5" />
               <circle cx="72" cy="24" r="9" fill="url(#gram-knob)" />
               <circle cx="69" cy="21" r="3" fill="rgba(255,255,255,0.55)" />
               <path d="M72 24 C 75 82, 54 112, 36 152" stroke="rgba(60,38,8,0.9)" strokeWidth="7" strokeLinecap="round" />
               <path d="M72 24 C 75 82, 54 112, 36 152" stroke="url(#gram-arm)" strokeWidth="5" strokeLinecap="round" />
               <path d="M71 24 C 73.5 80, 53 110, 35.5 150" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" strokeLinecap="round" />
-              <rect x="24" y="148" width="22" height="36" rx="5" transform="rotate(24 35 166)" fill="url(#gram-cart)" stroke="rgba(212,152,58,0.4)" strokeWidth="1.5" />
+              <rect x="24" y="148" width="22" height="36" rx="5" transform="rotate(24 35 166)" fill="url(#gram-cart)" stroke="rgba(240,122,26,0.4)" strokeWidth="1.5" />
               <circle cx="31" cy="158" r="1.6" fill="var(--go)" transform="rotate(24 35 166)" />
               <circle cx="40" cy="158" r="1.6" fill="var(--go)" transform="rotate(24 35 166)" />
             </g>

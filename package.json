@@ -9,14 +9,17 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate:blog": "node scripts/generate-blog-static.mjs",
-    "generate:projects": "node scripts/generate-project-static.mjs"
+    "generate:projects": "node scripts/generate-project-static.mjs",
+    "generate:terminal": "node scripts/generate-terminal-data.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
+    "@react-three/postprocessing": "^3.1.3",
     "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.40.0",
     "motion-utils": "^12.39.0",
+    "postprocessing": "^6.39.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "three": "^0.185.1"

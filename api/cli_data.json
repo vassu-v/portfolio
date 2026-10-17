@@ -1,0 +1,570 @@
+{
+ "generated": "2026-10-17",
+ "birth": "2009-09-02",
+ "projects": [
+  {
+   "slug": "buy4chai",
+   "name": "Buy4Chai",
+   "tagline": "Self-hosted supporter page for devs Stripe locked out of.",
+   "period": "Early 2026",
+   "stat": "15 GitHub stars · 10 forks · MIT license",
+   "tags": [
+    "Open Source",
+    "Razorpay / UPI",
+    "Vercel",
+    "MIT",
+    "JavaScript"
+   ],
+   "desc": "Self-hosted supporter page for developers Stripe locked out of. Razorpay and UPI native, zero platform fees, deploys to Vercel in 10 minutes. Built after a Reddit thread surfaced 29 upvotes of people who'd resigned themselves to janky workarounds.",
+   "problem": "Stripe doesn't operate for most Indian developers. Buy Me a Coffee and Ko-fi don't support UPI or Razorpay natively. The workarounds people used (QR code screenshots, manual bank transfers, awkward PayPal setups) broke the supporter experience entirely.\n\nA Reddit thread surfaced it clearly: 29 upvotes from developers who'd simply stopped trying to earn from their work. Not because the audience wasn't there, but because the infrastructure didn't exist.",
+   "solution": "Buy4Chai is a self-hosted supporter page you deploy to Vercel in under 10 minutes. Razorpay and UPI work natively, so supporters in India can pay without friction. No platform cut. You own the data, the experience, and the URL.\n\nThe name is deliberately local. A cup of chai is what you actually get in Kolkata when someone wants to say thank you.",
+   "how": [
+    {
+     "label": "Setup",
+     "text": "Fork the repo, drop in your Razorpay key and UPI ID, push to Vercel. Ten minutes including reading the README."
+    },
+    {
+     "label": "Payments",
+     "text": "Razorpay handles card + UPI + netbanking. Supporters pick what they want to send and check out without leaving your page."
+    },
+    {
+     "label": "Zero fees",
+     "text": "No platform cut. Razorpay charges their standard processing fee (1.9%), and that's it. No one else takes a slice."
+    },
+    {
+     "label": "MIT licensed",
+     "text": "Fork it, modify it, white-label it. Seven people already have."
+    }
+   ],
+   "impact": [
+    {
+     "val": "15",
+     "label": "GitHub stars"
+    },
+    {
+     "val": "10",
+     "label": "Forks"
+    },
+    {
+     "val": "❤️",
+     "label": "Loved by the community"
+    },
+    {
+     "val": "1",
+     "label": "Open issue being actively tracked"
+    }
+   ],
+   "github": "https://github.com/vassu-v/Buy4Chai",
+   "live": "https://land-chai.vercel.app/"
+  },
+  {
+   "slug": "sarkarsathi",
+   "name": "SarkarSathi",
+   "tagline": "AI co-pilot for municipal accountability in India.",
+   "period": "Jan – Mar 2026",
+   "stat": "India Innovates 2026 · Top 1,000 / 26,000+ entries · National media coverage",
+   "tags": [
+    "AI",
+    "Civic Tech",
+    "Python",
+    "FastAPI",
+    "Gemini AI",
+    "Vector DB"
+   ],
+   "desc": "AI co-pilot for municipal accountability. Helps citizens structure and escalate complaints to local government. Led as sole technical member of a 5-person remote team during board exams.",
+   "problem": "Civic complaints in India vanish into systems that were never designed to respond. Citizens know what's broken in their ward (potholes, water supply failures, illegal construction) but translating lived experience into something a government portal will actually process is a skill most people don't have, and shouldn't need.\n\nThe problem isn't awareness. It's structured escalation.",
+   "solution": "SarkarSathi started as a complaint co-pilot: the AI helps citizens frame their issue clearly, identifies the right authority, and routes the complaint with the language and documentation that actually gets responses.\n\nFor India Innovates 2026, it evolved into full governance intelligence for elected representatives: commitment tracking across campaign promises, complaint clustering by district and severity, and an agentic advisor that surfaces what needs attention before it becomes a crisis.\n\nBuilt this as the sole technical member on a 5-person remote team. During board exams.",
+   "how": [
+    {
+     "label": "Complaint intake",
+     "text": "Conversational intake via chat. OCR for photo evidence. Structured output that matches government portal formats."
+    },
+    {
+     "label": "Semantic clustering",
+     "text": "FastAPI + vector database groups similar complaints across districts. A hundred separate \"no water\" complaints surface as one data point."
+    },
+    {
+     "label": "Governance intelligence",
+     "text": "Representatives see a real-time dashboard: commitments made vs. kept, complaint surge detection, agentic recommendations on where to direct resources."
+    },
+    {
+     "label": "Agentic advisor",
+     "text": "Gemini AI reads the complaint corpus and generates specific, actionable briefings. Not summaries, but decisions that can be acted on immediately."
+    }
+   ],
+   "impact": [
+    {
+     "val": "Top 1k",
+     "label": "From 26,000+ India Innovates entries"
+    },
+    {
+     "val": "6",
+     "label": "GitHub stars"
+    },
+    {
+     "val": "3",
+     "label": "Forks"
+    },
+    {
+     "val": "5",
+     "label": "Person team, sole technical lead"
+    }
+   ],
+   "github": "https://github.com/vassu-v/india-innovates-CivicNTech",
+   "live": null
+  },
+  {
+   "slug": "lifi-network",
+   "name": "Disaster-Resilient LiFi Network",
+   "tagline": "Off-grid IR mesh that turns street lamps into emergency nodes.",
+   "period": "Dec 2025 – Jan 2026",
+   "stat": "CBSE Regional Science Exhibition 2025–26 · 6 GitHub stars · Stable multi-hop in live testing",
+   "tags": [
+    "IoT",
+    "Hardware",
+    "C",
+    "Arduino",
+    "ESP8266",
+    "LiFi",
+    "Mesh Networks"
+   ],
+   "desc": "Mesh network retrofitted onto solar street lamps using IR transceivers. Hop-based routing delivers emergency messages when power grids and mobile networks fail simultaneously.",
+   "problem": "During disasters (floods, earthquakes, cyclones) power grids and mobile networks fail at the same time. Emergency coordination becomes impossible precisely when it's needed most. Battery-powered radios require infrastructure, and internet-dependent systems are the first to go.\n\nThe street lamps are already there. Most of them run on solar. The question was whether you could turn them into a communication mesh without modifying the existing infrastructure permanently.",
+   "solution": "D-LiFi-Proto retrofits solar street lamps with ESP8266 microcontrollers and IR transceivers. Each lamp becomes a mesh node. Messages hop between nodes using gradient-based routing, finding the optimal path through the network in real time, without any central server.\n\nThe system operates entirely off-grid. No power grid dependency. No mobile network. Just the solar panels that are already charging the lamps, and line-of-sight IR between nodes.",
+   "how": [
+    {
+     "label": "Hardware",
+     "text": "ESP8266 microcontrollers with IR transceivers clipped to existing lamp fixtures. No permanent modification required."
+    },
+    {
+     "label": "Routing",
+     "text": "Gradient-based routing calculates the best path through the mesh dynamically. Nodes that fail simply get routed around."
+    },
+    {
+     "label": "Power",
+     "text": "Each node draws from the lamp's existing solar battery. Works even if the grid is down and the lamp's LED circuit isn't."
+    },
+    {
+     "label": "Protocol",
+     "text": "Custom hop-based messaging in C. Messages include priority levels so emergency alerts preempt normal traffic."
+    }
+   ],
+   "impact": [
+    {
+     "val": "6",
+     "label": "GitHub stars"
+    },
+    {
+     "val": "4",
+     "label": "Forks"
+    },
+    {
+     "val": "✓",
+     "label": "Stable multi-hop in live testing"
+    },
+    {
+     "val": "2025",
+     "label": "CBSE Regional Science Exhibition"
+    }
+   ],
+   "github": "https://github.com/vassu-v/D-LiFi-Proto",
+   "live": null
+  },
+  {
+   "slug": "chemx",
+   "name": "ChemX",
+   "tagline": "Physical chemistry simulator controlled from a browser.",
+   "period": "Dec 2024 – Feb 2025",
+   "stat": "Dec 2024 – Feb 2025 · School science exhibition",
+   "tags": [
+    "Arduino",
+    "Electronics",
+    "C/C++",
+    "Web Interface",
+    "IoT"
+   ],
+   "desc": "Physical chemistry reaction simulator: Arduino, LEDs, electromagnet, controlled via browser. First hardware project. Taught constraint thinking before I had words for it.",
+   "problem": "Chemistry education in school is almost entirely symbolic: equations on a board, molecular diagrams in a textbook. The reactions happen in a flask during a lab session, and then they're over. There's no way to interact with the process, slow it down, reverse it, or ask \"what happens if I change this variable.\"\n\nI wanted to build something you could actually touch and control.",
+   "solution": "ChemX is a physical simulator where chemical reactions happen in hardware. LEDs represent atomic bonds forming and breaking. An electromagnet simulates molecular attraction and repulsion. A web interface lets you select a reaction, adjust variables, and watch it play out on the physical rig in real time. Actual hardware responding, not a simulation on a screen.\n\nIt was my first hardware project. I didn't have a framework for thinking about constraint-based building at the time, but this is where I learned it: components don't work the way documentation says they do, and the interesting problems are always at the boundary between the physical and the digital.",
+   "how": [
+    {
+     "label": "Hardware rig",
+     "text": "Arduino Uno driving a custom PCB with LED arrays and an electromagnet module. Each reaction is encoded as a timed sequence of hardware events."
+    },
+    {
+     "label": "Web interface",
+     "text": "Browser-based control panel served from the Arduino. Select reaction type, trigger it, watch the rig respond in real time."
+    },
+    {
+     "label": "Reactions",
+     "text": "Acid-base neutralisation, oxidation-reduction, and precipitation reactions, each with distinct LED patterns and electromagnet states."
+    },
+    {
+     "label": "Constraint design",
+     "text": "The Arduino's 2KB of RAM meant every byte mattered. Taught me to optimise before I knew what optimisation was."
+    }
+   ],
+   "impact": [
+    {
+     "val": "1st",
+     "label": "Hardware project ever built"
+    },
+    {
+     "val": "✓",
+     "label": "School science exhibition"
+    },
+    {
+     "val": "2mo",
+     "label": "Built in two months alongside school"
+    },
+    {
+     "val": "→",
+     "label": "Led directly to the LiFi network project"
+    }
+   ],
+   "github": "https://github.com/vassu-v/ChemX_001",
+   "live": null
+  },
+  {
+   "slug": "planning-research",
+   "name": "Grounded Planning Research",
+   "tagline": "Exposing brittle AI reasoning that high success rates hide.",
+   "period": "Late 2025 – Jan 2026",
+   "stat": "Published on Zenodo · Jan 9, 2026 · 3 GitHub stars",
+   "tags": [
+    "AI Research",
+    "Planning Systems",
+    "Python",
+    "Ablation Study",
+    "Zenodo"
+   ],
+   "desc": "How forcing agents to explicitly commit to objects during planning exposes brittle reasoning that high success rates hide. Shows structured, repeatable failure modes, the kind that only surface under real pressure.",
+   "problem": "AI planning benchmarks are saturating. Agents report 90%+ success rates on standard tasks. The assumption is that high success rates mean robust planning, but success rates measure outcomes, not the reasoning that produced them.\n\nAn agent can get to the right answer through fundamentally brittle logic, and you won't know until it fails on a slightly different problem. The question I wanted to answer: is there a pressure point that makes the brittleness visible before it fails in deployment?",
+   "solution": "Object commitment is that pressure point. When you force an agent to explicitly name which objects it's operating on before selecting actions (rather than letting it discover them opportunistically) you expose something important: agents that were planning correctly stay correct, and agents that were guessing in the right direction fall apart.\n\nThe study runs a controlled ablation in a deterministic filesystem environment. Action-only variant vs. object-centric variant. Same tasks, same success criteria. The failure modes in the object-centric variant are structured and repeatable. You can predict where they'll occur, which means you can actually debug the reasoning.",
+   "how": [
+    {
+     "label": "Environment",
+     "text": "Deterministic filesystem tasks: file operations, directory traversal, conditional logic. Clean ground truth, no ambiguity in success/failure."
+    },
+    {
+     "label": "Ablation design",
+     "text": "Action-only: agent selects an action and a target is inferred. Object-centric: agent must commit to the specific object before selecting the action."
+    },
+    {
+     "label": "Failure analysis",
+     "text": "Object-centric variant surfaces consistent failure patterns tied to specific object relationships. These patterns don't appear in aggregate success metrics."
+    },
+    {
+     "label": "Implication",
+     "text": "High-level success rates are insufficient diagnostics. Object commitment as a forced step is a practical technique for surfacing latent planning failures before deployment."
+    }
+   ],
+   "impact": [
+    {
+     "val": "3",
+     "label": "GitHub stars"
+    },
+    {
+     "val": "Jan 9",
+     "label": "Published on Zenodo, 2026"
+    },
+    {
+     "val": "Age 15",
+     "label": "Written and published at 15"
+    },
+    {
+     "val": "MIT",
+     "label": "Open licensed"
+    }
+   ],
+   "github": "https://github.com/vassu-v/action-vs-object-planning",
+   "live": "https://zenodo.org/records/19513284"
+  }
+ ],
+ "work": [
+  {
+   "org": "Bits&Bytes",
+   "role": "Kolkata Fork Lead",
+   "type": "Community",
+   "period": "Apr 2026 – Present",
+   "live": true,
+   "desc": "Leading Bits&Bytes in Kolkata, a teen-led builder community running hackathons and shipping real projects. Bringing the same energy to Eastern India that the rest of the country already has.",
+   "skills": [
+    "Leadership",
+    "Community Building",
+    "Events"
+   ],
+   "extra": [],
+   "cta": null
+  },
+  {
+   "org": "4MQ.org",
+   "role": "Youth Partner",
+   "type": "Full-time · Equity",
+   "period": "Apr 2026 – Present",
+   "live": true,
+   "desc": "First Youth Partner. Own the Antigravity Workflow, the knowledge system powering how 4MQ synthesizes content. Co-authored episodes with Richard on money and behavior. I suggest what we build, then build it.",
+   "skills": [
+    "Content Strategy",
+    "Financial Literacy",
+    "Systems"
+   ],
+   "extra": [
+    {
+     "title": "Consultant",
+     "period": "May 2026 – Present",
+     "type": "Part-time"
+    },
+    {
+     "title": "Guest Fellow",
+     "period": "Jan – Apr 2026",
+     "type": "Part-time"
+    }
+   ],
+   "cta": null
+  },
+  {
+   "org": "Beyond Rote",
+   "role": "Research & Outreach Lead",
+   "type": "Internship",
+   "period": "Jan – Apr 2026",
+   "live": false,
+   "desc": "Coordinated faculty engagement and research submissions for the Inquiry Series. Fielded 50+ research questions from 120+ students alongside researcher Chris Barry. Screened submissions, built researcher networks.",
+   "skills": [
+    "Research",
+    "Outreach",
+    "Community"
+   ],
+   "extra": [],
+   "cta": null
+  },
+  {
+   "org": "Utsavy",
+   "role": "Experience Designer, UI/UX",
+   "type": "Internship",
+   "period": "Jun – Jul 2025",
+   "live": false,
+   "desc": "Designed UX workflows and interface templates for an event management platform. Custom designs increased inquiry submissions by 20%. Designed AI prompts and onboarding flows. Trained incoming interns on the design system.",
+   "skills": [
+    "UX Design",
+    "AI Prompting",
+    "Mentoring"
+   ],
+   "extra": [],
+   "cta": null
+  },
+  {
+   "org": "Freelance",
+   "role": "UI & Landing Page Design",
+   "type": "Freelance",
+   "period": "Mar 2026 – Present",
+   "live": true,
+   "desc": "Building landing pages and UI systems for lead conversion. Brand positioning, conversion optimization, maintenance-based pricing.",
+   "skills": [
+    "UI Design",
+    "Conversion",
+    "Brand Positioning"
+   ],
+   "extra": [],
+   "cta": {
+    "label": "Book a call",
+    "href": "https://cal.com/shoryavardhaan/30min?overlayCalendar=true"
+   }
+  }
+ ],
+ "posts": [
+  {
+   "slug": "pixel-budget",
+   "title": "A 3D room on a laptop with no graphics card",
+   "subtitle": "My portfolio's first 3D room took 95 ms to draw one frame on my own laptop. Here's how it got to 6.7 ms, and why every visitor now gets a pixel budget instead of a resolution.",
+   "category": "Building",
+   "date": "17 Oct 2026",
+   "readTime": "6 min read",
+   "external": null,
+   "lede": "The homepage of this site is a 3D room: a desk, a corkboard, a drawer of projects, a diary. I built it on the only computer I have, a Ryzen 5 7430U laptop with AMD Radeon integrated graphics and 16 GB of RAM. No graphics card.",
+   "quote": "Frame time grew almost exactly with pixel count. So I stopped picking a resolution and started handing out a budget."
+  },
+  {
+   "slug": "why-i-build",
+   "title": "Nobody told me to start. That was the point.",
+   "subtitle": "Three years of shipping real things from Kolkata, and what nobody tells you about starting before you're supposed to.",
+   "category": "Reflection",
+   "date": "21 Jun 2026",
+   "readTime": "5 min read",
+   "external": null,
+   "lede": "There's a version of this story where I say I always knew I'd build things. That I was coding at eight. That growing up in Kolkata shaped me in some clean, narratable way. That version is tidy. It's also not what happened.",
+   "quote": "The permission to build doesn't come from outside. You just start, and then you're a builder."
+  },
+  {
+   "slug": "building-buy4chai",
+   "title": "Why Indian developers can't get paid online, and how I fixed it",
+   "subtitle": "How a Reddit thread confirmed the problem was real. Everyone was just coping.",
+   "category": "Building",
+   "date": "May 2026",
+   "readTime": "4 min read",
+   "external": null,
+   "lede": "A few weeks before shipping, I posted on r/indiandevs asking if anyone else couldn't accept support for their open source work without Stripe. 29 upvotes. 33 comments. 9.4K views. Turns out everyone had the same problem and nobody was solving it. Just coping. Workarounds. A quiet acceptance that this is how it is.",
+   "quote": "Buy Me a Coffee? Stripe. Ko-fi? Stripe. GitHub Sponsors? Stripe. PayPal works, but the fees and UX are embarrassing."
+  },
+  {
+   "slug": "markets-dont-get-disrupted",
+   "title": "Markets don't get disrupted. They get aged out.",
+   "subtitle": "Everyone's watching AI take jobs. That's not where the quiet danger is.",
+   "category": "Perspective",
+   "date": "May 2026",
+   "readTime": "3 min read",
+   "external": null,
+   "lede": "Everyone's watching AI take jobs. That's the only headline anyone's writing. That's not where the quiet danger is.",
+   "quote": "The gap doesn't get filled by a better tool. It disappears because the next generation of buyers never had it."
+  },
+  {
+   "slug": "apple-ai-decade",
+   "title": "Apple's been playing a different game since 2017",
+   "subtitle": "While everyone rented Nvidia GPUs and called it infrastructure, Apple quietly built AI silicon before AI was the thing to build for.",
+   "category": "Perspective",
+   "date": "Apr 2026",
+   "readTime": "3 min read",
+   "external": "https://medium.com/@shoryavardhaans2/the-ai-market-is-quietly-shifting-it-started-a-decade-ago-67201dd22fa5",
+   "lede": "Apple put the entire iPhone Air motherboard inside the camera bump: CPU, everything. The rest is screen and battery. Nobody noticed. Everyone was busy complaining about the charging cable.",
+   "quote": "Everyone else built hardware, then figured out how to make AI run on it. Apple built hardware specific to AI before AI was the thing to build for."
+  },
+  {
+   "slug": "both-groups-are-losing",
+   "title": "Both groups are losing. Just differently.",
+   "subtitle": "One ships without understanding. The other learns syntax while the world moves on. Neither has figured out the actual question.",
+   "category": "Reflection",
+   "date": "Apr 2026",
+   "readTime": "4 min read",
+   "external": "https://medium.com/p/703a2e7f624d",
+   "lede": "Coding changed more in the last year than the decade before it. And I'm watching two types of students emerge around me.",
+   "quote": "Both are losing. Just in different ways."
+  },
+  {
+   "slug": "hardware-failure",
+   "title": "Why \"needs vs. wants\" is the wrong framework",
+   "subtitle": "Teaching traditional financial literacy to a generation running on algorithmic desire engines, and what we're actually missing.",
+   "category": "Research",
+   "date": "Feb 2026",
+   "readTime": "5 min read",
+   "external": "https://www.linkedin.com/pulse/hardware-failure-why-needs-vs-wants-killing-teen-financial-kim-0gjhe/",
+   "lede": "Traditional financial literacy teaches \"needs vs. wants\" to a generation facing algorithmic desire engines, then acts surprised when restrictive saving snaps into first-paycheck binges. The framework was built for a different era.",
+   "quote": "Actual agency requires understanding the hardware. Not fighting it."
+  }
+ ],
+ "wins": [
+  {
+   "title": "National Semi-Finalist",
+   "sub": "India Innovates 2026",
+   "text": "SarkarSathi. Top 1,000 from 26,000+ entries. Sole technical lead on a 5-person team during board exams. Media coverage.",
+   "project": "sarkarsathi"
+  },
+  {
+   "title": "Followers",
+   "sub": "LinkedIn + Instagram",
+   "text": "8 months. No algorithm chasing. One post hit 15,000+ impressions.",
+   "project": null
+  },
+  {
+   "title": "From Kolkata. Age 17.",
+   "sub": "International payments processed",
+   "text": "$300 in international payments processed — from Kolkata, at 17.",
+   "project": null
+  },
+  {
+   "title": "3rd Place",
+   "sub": "Quantum Qubit'25",
+   "text": "Built real-world systems across CS and electronics under competition constraints.",
+   "project": null
+  },
+  {
+   "title": "Published Research Preprint",
+   "sub": "Zenodo · Jan 2026",
+   "text": "Object Commitment as a Diagnostic Pressure Point in Grounded Planning. Exposing failure modes that high success rates hide.",
+   "project": "planning-research"
+  },
+  {
+   "title": "Ready Facilitator",
+   "sub": "Google Cloud · Age 14",
+   "text": "Recognized for active participation and winning.",
+   "project": null
+  },
+  {
+   "title": "Top 500 National",
+   "sub": "ThinkStartup · 2025",
+   "text": "Youth Ideathon. Top 2,000 → Top 500 with PickedIn.",
+   "project": null
+  },
+  {
+   "title": "Published Author",
+   "sub": "Amazon KDP · Age 14",
+   "text": "Wrote, formatted, designed the cover, navigated Amazon's publishing at 14. No AI. Zero sales. Redesigned it a year later. Then sold copies. The lesson wasn't the book. It was finishing.",
+   "project": null
+  }
+ ],
+ "side": [
+  {
+   "name": "Tackety",
+   "line": "support tickets, by impact",
+   "desc": "An open-source, self-hostable support engine that sits between customers and developers. A chatbot sorts each complaint into a bug or a service request, similar issues get clustered, and the team sees what to fix first, ranked by real impact instead of arrival time. Python, FastAPI and one SQLite file. The core engine runs today; clustering and the developer dashboard are still being built.",
+   "status": "wip",
+   "github": "https://github.com/vassu-v/Tackety",
+   "live": null
+  },
+  {
+   "name": "S.H.O.A.V.",
+   "line": "a bodyguard for web agents",
+   "desc": "An MCP server that gives any AI agent a real browser with a deterministic guard in the path. It stops clickjacking, dark patterns and hidden prompt injection before the agent acts on them. Built for Genesis Hackathon 2026, Track 03. Alpha, in active development.",
+   "status": "wip",
+   "github": "https://github.com/vassu-v/SHOAV",
+   "live": "https://shoav.vercel.app/"
+  },
+  {
+   "name": "Switchyard",
+   "line": "one CLI for all my agents",
+   "desc": "A small local daemon that keeps one live session per coding agent (agy, Claude Code, OpenCode, Codex). Spawn, watch, steer, interrupt and stop them from one CLI, an MCP bridge or a dashboard, with tier routing and a policy guard for risky commands.",
+   "status": "wip",
+   "github": "https://github.com/vassu-v/agent-supervisor-multiprovider_mcp",
+   "live": null
+  },
+  {
+   "name": "Delhi CM Dashboard",
+   "line": "complaints, grouped by AI",
+   "desc": "A SarkarSathi spin-off built as a grievance command centre for the Delhi CM's office. Complaints across 14 districts and 11 categories on one heatmap, similar complaints merged into clusters, surge alerts against a rolling 3-week baseline, 7-day staleness flags, photo intake for handwritten letters, and an AI advisor that explains what it sees. FastAPI, SQLite, Gemini.",
+   "status": "shipped",
+   "github": "https://github.com/vassu-v/delhi-cm-dashboard-hn",
+   "live": null
+  },
+  {
+   "name": "FitHub",
+   "line": "reps from a phone or a band",
+   "desc": "A gamified fitness tracker for students: no app install, no account. Count reps with a DIY ESP8266 + MPU-6050 band, or just your phone's motion sensor. Live rep counter over WebSocket, milestone badges against yourself, and a shareable workout card. Built in 3 hours.",
+   "status": "shipped",
+   "github": "https://github.com/vassu-v/FitHub",
+   "live": null
+  }
+ ],
+ "about": {
+  "lead": "I don't wait to be qualified. I ship things, see what breaks, and figure it out from there.",
+  "body": [
+   "Leading Bits&Bytes Kolkata, consulting at 4MQ.org, and building open-source tools that solve real gaps, not demo projects.",
+   "Work spans hardware (LiFi mesh networks, Arduino reaction simulators), AI research (planning failures, published on Zenodo), and product: Buy4Chai for India's Stripe exclusion problem, SarkarSathi for civic accountability.",
+   "The thread: constraint thinking. Building the right thing with what's actually available."
+  ]
+ },
+ "skills": [
+  "Python",
+  "C++",
+  "JavaScript",
+  "Arduino",
+  "IoT",
+  "Flask",
+  "Linux (Pop!_OS)",
+  "Vercel",
+  "Razorpay / UPI",
+  "AI / planning systems",
+  "Hardware",
+  "Product design",
+  "Systems thinking",
+  "Constraint thinking"
+ ]
+}
