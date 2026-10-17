@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-10",
+ "generated": "2026-10-17",
  "birth": "2009-09-02",
  "projects": [
   {
@@ -7,7 +7,7 @@
    "name": "Buy4Chai",
    "tagline": "Self-hosted supporter page for devs Stripe locked out of.",
    "period": "Early 2026",
-   "stat": "16+ GitHub stars · 7 forks · MIT license",
+   "stat": "15 GitHub stars · 10 forks · MIT license",
    "tags": [
     "Open Source",
     "Razorpay / UPI",
@@ -38,11 +38,11 @@
    ],
    "impact": [
     {
-     "val": "16+",
+     "val": "15",
      "label": "GitHub stars"
     },
     {
-     "val": "7",
+     "val": "10",
      "label": "Forks"
     },
     {
@@ -55,7 +55,7 @@
     }
    ],
    "github": "https://github.com/vassu-v/Buy4Chai",
-   "live": null
+   "live": "https://land-chai.vercel.app/"
   },
   {
    "slug": "sarkarsathi",

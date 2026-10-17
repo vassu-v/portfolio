@@ -271,7 +271,13 @@ function FocusPanel({ focus, folder, pin, spread, page, side }) {
     const s = SIDE_PROJECTS[side]
     title = s ? s.name : 'Side projects'
     body = s
-      ? <><p>{s.line}</p>{s.href && <a style={link} href={s.href} target="_blank" rel="noreferrer">open it →</a>}{s.placeholder && <p style={{ opacity: 0.5 }}>placeholder — the real list is coming</p>}</>
+      ? <>
+          <p>{s.desc || s.line}</p>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            {s.href && <a style={link} href={s.href} target="_blank" rel="noreferrer">github →</a>}
+            {s.live && <a style={link} href={s.live} target="_blank" rel="noreferrer">live →</a>}
+          </div>
+        </>
       : <><p>Not so serious. Just listed, or still on them. Pick a card out.</p><button style={linkBtn} onClick={closeDrawer}>close the drawer</button></>
   } else if (focus === 'corkboard') {
     const it = ITEMS.find(i => i.id === pin)

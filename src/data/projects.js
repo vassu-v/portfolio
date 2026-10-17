@@ -8,9 +8,9 @@ export const PROJECTS = [
     tags: ['Open Source', 'Razorpay / UPI', 'Vercel', 'MIT', 'JavaScript'],
     keywords: ['how to accept international payments India developer', 'Stripe alternative for Indian freelancers', 'self hosted Buy Me a Coffee alternative', 'UPI donation page for developers', 'no platform fee supporter page', 'teen developer open source India', 'Kolkata developer side project'],
     desc: 'Self-hosted supporter page for developers Stripe locked out of. Razorpay and UPI native, zero platform fees, deploys to Vercel in 10 minutes. Built after a Reddit thread surfaced 29 upvotes of people who\'d resigned themselves to janky workarounds.',
-    stat: '16+ GitHub stars · 7 forks · MIT license',
+    stat: '15 GitHub stars · 10 forks · MIT license',
     github: 'https://github.com/vassu-v/Buy4Chai',
-    live: null,
+    live: 'https://land-chai.vercel.app/',
     period: 'Early 2026',
 
     // ── detail page content ──
@@ -36,8 +36,8 @@ The name is deliberately local. A cup of chai is what you actually get in Kolkat
     ],
 
     impact: [
-      { val: '16+', label: 'GitHub stars' },
-      { val: '7', label: 'Forks' },
+      { val: '15', label: 'GitHub stars' },
+      { val: '10', label: 'Forks' },
       { val: '❤️', label: 'Loved by the community' },
       { val: '1', label: 'Open issue being actively tracked' },
     ],

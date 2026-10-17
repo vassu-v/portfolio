@@ -115,7 +115,7 @@
     "10 minutes. Razorpay and UPI work natively - no platform cut, you own " +
     "the data, the experience, and the URL.\n\n" +
     "Stack: Open Source, Razorpay/UPI, Vercel, MIT, JavaScript\n" +
-    "Stats: 16+ GitHub stars · 7 forks · MIT license\n" +
+    "Stats: 15 GitHub stars · 10 forks · MIT license\n" +
     "Repo: https://github.com/vassu-v/Buy4Chai\n";
 
   var PROJ_SARKARSATHI =
