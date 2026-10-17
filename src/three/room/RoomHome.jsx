@@ -135,7 +135,7 @@ function FreeHints({ mobile }) {
 
 // Once the visitor has reached the end of the tour, jumping back to a section
 // (chip, object, photo frame) leaves a way home that isn't re-scrolling the
-// whole tour. (store.toured is set by CameraRig, remembered for the tab.)
+// whole tour. (store.toured is set by CameraRig; a refresh starts over.)
 function BackToRoom({ mobile }) {
   const stop = useRoom(s => s.tourStop)
   const busy = useRoom(s => !!(s.focus || s.pin || s.folder >= 0 || s.side >= 0))
@@ -438,10 +438,14 @@ function DeviceChoice({ onContinue, reason, still, kind = 'before', fps }) {
 }
 
 const RETURN_KEY = 'room-return'
+// dev StrictMode mounts twice: the second mount must see the same record
+let lastReturn = null
 function readReturn() {
   try {
-    const r = JSON.parse(sessionStorage.getItem(RETURN_KEY) || 'null')
+    const raw = sessionStorage.getItem(RETURN_KEY)
     sessionStorage.removeItem(RETURN_KEY)
+    if (raw) lastReturn = { r: JSON.parse(raw), read: Date.now() }
+    const r = lastReturn && Date.now() - lastReturn.read < 1000 ? lastReturn.r : null
     return r && Date.now() - r.at < 30 * 60 * 1000 ? r : null
   } catch { return null }
 }
@@ -563,8 +567,8 @@ export default function RoomHome() {
     window.dispatchEvent(new CustomEvent('programmatic-scroll-to', { detail: y }))
     if (back) {
       live.intro = 1
-      room.set({ focus: back.focus, folder: -1, side: -1, pin: null, photo: -1, spread: back.focus === 'diary' ? back.spread : 0, hover: null })
-    } else room.set({ focus: null, folder: -1, side: -1, pin: null, photo: -1, hover: null })
+      room.set({ focus: back.focus, folder: -1, side: -1, pin: null, photo: -1, spread: back.focus === 'diary' ? back.spread : 0, hover: null, toured: !!back.toured })
+    } else room.set({ focus: null, folder: -1, side: -1, pin: null, photo: -1, hover: null, toured: false })
     let raf, t0
     const delay = setTimeout(() => {
       const run = now => {
@@ -582,7 +586,7 @@ export default function RoomHome() {
       clearTimeout(delay); cancelAnimationFrame(raf); window.removeEventListener('keydown', onKey)
       const s = room.get()
       // (dev StrictMode remounts instantly — that's not the visitor leaving)
-      if (performance.now() - mountedAt > 1500) try { sessionStorage.setItem(RETURN_KEY, JSON.stringify({ y: window.scrollY, focus: s.focus, spread: s.spread, at: Date.now() })) } catch { /* storage blocked */ }
+      if (performance.now() - mountedAt > 1500) try { sessionStorage.setItem(RETURN_KEY, JSON.stringify({ y: window.scrollY, focus: s.focus, spread: s.spread, toured: s.toured, at: Date.now() })) } catch { /* storage blocked */ }
     }
   }, [])
 
