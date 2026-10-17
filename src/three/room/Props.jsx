@@ -347,6 +347,9 @@ export default function Props({ tier = 'high' }) {
       <Hotspot id="note-ship" label="ship it — see what I've shipped" onClick={() => goToStop('projects')}>
         <Sticky lines={['ship it.']} color="#bfe3c0" position={[-0.4, 1.35, BACK + 0.004]} rotation={[0, 0, 0.03]} curl={0.12} />
       </Hotspot>
+      <Hotspot id="note-log" always label="the log — every essay, on /blog" onClick={() => window.dispatchEvent(new Event('room-open-log'))}>
+        <Sticky lines={['the log', 'read it →']} color="#a9d6ea" position={[-0.27, 1.29, BACK + 0.004]} rotation={[0, 0, -0.04]} curl={0.16} />
+      </Hotspot>
       <Sticky lines={['curl', 'shoryavardhaan', '.vercel.app']} color="#f7e27a" size={0.07} position={[0.07, Y + 0.0012, -0.58]} rotation={[-Math.PI / 2, 0, -0.25]} curl={0.02} />
 
     </group>

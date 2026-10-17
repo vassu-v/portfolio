@@ -279,6 +279,13 @@ export default function Room({ sky, sway = true }) {
       <Curtain z={WIN.z0 - 0.05} shutZ={WIN.z0 + 0.31} sway={sway} />
       <Curtain z={WIN.z1 + 0.05} shutZ={WIN.z1 - 0.31} flip sway={sway} />
 
+      {/* the shelf books are baked into one mesh, so a hidden box takes their clicks */}
+      <Hotspot id="books" always label="the log — every essay, on /blog" onClick={() => window.dispatchEvent(new Event('room-open-log'))}>
+        <mesh position={[-0.705, 1.745, BACK + 0.11]} visible={false}>
+          <boxGeometry args={[0.25, 0.24, 0.16]} />
+        </mesh>
+      </Hotspot>
+
       {/* outside */}
       <Sky sky={sky} />
       <Skyline sky={sky} depth={0.25} seed={7} height={1} x={LEFT - 4.2} />

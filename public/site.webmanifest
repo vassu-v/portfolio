@@ -1,0 +1,13 @@
+{
+  "name": "Shoryavardhaan Gupta",
+  "short_name": "Shorya",
+  "description": "Builder from Kolkata shipping civic tech, hardware and AI.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#07090c",
+  "theme_color": "#07090c",
+  "lang": "en-IN",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

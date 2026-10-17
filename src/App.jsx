@@ -241,16 +241,13 @@ function AppShell() {
     }
 
     let robotsEl = document.querySelector('meta[name="robots"]')
-    if (is404) {
-      if (!robotsEl) {
-        robotsEl = document.createElement('meta')
-        robotsEl.name = 'robots'
-        document.head.appendChild(robotsEl)
-      }
-      robotsEl.content = 'noindex'
-    } else {
-      robotsEl?.remove()
+    if (!robotsEl) {
+      robotsEl = document.createElement('meta')
+      robotsEl.name = 'robots'
+      document.head.appendChild(robotsEl)
     }
+    // must match index.html's default, which a 404 would otherwise overwrite for good
+    robotsEl.content = is404 ? 'noindex' : 'index, follow, max-image-preview:large, max-snippet:-1'
 
     document.title = title
 

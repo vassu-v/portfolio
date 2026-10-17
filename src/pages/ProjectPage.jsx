@@ -181,7 +181,7 @@ export default function ProjectPage({ slug }) {
             letterSpacing: '-0.04em',
             color: 'var(--text)', opacity: 0.03,
             userSelect: 'none', pointerEvents: 'none',
-            marginBottom: '-0.18em',
+            marginBottom: '0.12em',
           }}
         >
           {n}

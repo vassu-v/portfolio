@@ -374,6 +374,17 @@
  ],
  "posts": [
   {
+   "slug": "pixel-budget",
+   "title": "A 3D room on a laptop with no graphics card",
+   "subtitle": "My portfolio's first 3D room took 95 ms to draw one frame on my own laptop. Here's how it got to 6.7 ms, and why every visitor now gets a pixel budget instead of a resolution.",
+   "category": "Building",
+   "date": "17 Oct 2026",
+   "readTime": "6 min read",
+   "external": null,
+   "lede": "The homepage of this site is a 3D room: a desk, a corkboard, a drawer of projects, a diary. I built it on the only computer I have, a Ryzen 5 7430U laptop with AMD Radeon integrated graphics and 16 GB of RAM. No graphics card.",
+   "quote": "Frame time grew almost exactly with pixel count. So I stopped picking a resolution and started handing out a budget."
+  },
+  {
    "slug": "why-i-build",
    "title": "Nobody told me to start. That was the point.",
    "subtitle": "Three years of shipping real things from Kolkata, and what nobody tells you about starting before you're supposed to.",

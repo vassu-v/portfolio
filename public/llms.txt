@@ -1,26 +1,53 @@
 # Shoryavardhaan Gupta
 
-> 17-year-old builder and developer from Kolkata, India. Shipping civic tech, hardware, and AI projects since age 14. India Innovates 2026 Top 1,000 of 26,000+ entries.
+> Builder and developer from Kolkata, India (born 2 Sep 2009), shipping civic tech, hardware and AI projects since age 14. India Innovates 2026: Top 1,000 of 26,000+ entries. Kolkata Fork Lead at Bits&Bytes, Youth Partner at 4MQ.org, freelance UI & landing page designer.
 
-## Portfolio
-https://shoryavardhaan.vercel.app/
+The homepage (https://shoryavardhaan.vercel.app/) is an interactive 3D room rendered in the browser, so it has little readable text. Everything in it is also available as text: this file, the pages linked below, a terminal version at /terminal/, and JSON at /api/cli/*. Every project links to its public GitHub repository, so claims can be checked at the source.
 
 ## Projects
 
-- [Buy4Chai](https://shoryavardhaan.vercel.app/project/buy4chai): Self-hosted UPI/Razorpay supporter pages for Indian developers who can't access Stripe. Open source, MIT license, deploy to Vercel in 10 minutes.
-- [SarkarSathi](https://shoryavardhaan.vercel.app/project/sarkarsathi): AI-powered civic tech platform for navigating Indian government services. India Innovates 2026 Top 1,000 of 26,000+ entries.
-- [LiFi Network](https://shoryavardhaan.vercel.app/project/lifi-network): Disaster-resilient mesh network using light-based communication (LiFi). CBSE Regional Science Exhibition 2025-26 finalist.
-- [ChemX](https://shoryavardhaan.vercel.app/project/chemx): Interactive chemistry learning tool for students.
-- [Planning Research](https://shoryavardhaan.vercel.app/project/planning-research): AI planning research on object commitment in LLM agents. Published on Zenodo at age 15. DOI: 10.5281/zenodo.19513284
+- [Buy4Chai](https://shoryavardhaan.vercel.app/project/buy4chai): Self-hosted supporter page for developers Stripe locked out of. Razorpay and UPI, zero platform fees, MIT license. Source: https://github.com/vassu-v/Buy4Chai · Live: https://land-chai.vercel.app/
+- [SarkarSathi](https://shoryavardhaan.vercel.app/project/sarkarsathi): AI co-pilot for municipal accountability in India: commitment tracking, complaint clustering and governance intelligence for elected representatives. India Innovates 2026, Top 1,000 of 26,000+ entries. Source: https://github.com/vassu-v/india-innovates-CivicNTech
+- [Disaster-Resilient LiFi Network](https://shoryavardhaan.vercel.app/project/lifi-network): Off-grid IR mesh that turns solar street lamps into emergency communication nodes. CBSE Regional Science Exhibition 2025–26. Source: https://github.com/vassu-v/D-LiFi-Proto
+- [ChemX](https://shoryavardhaan.vercel.app/project/chemx): Physical chemistry reaction simulator controlled from a browser, built on Arduino. Source: https://github.com/vassu-v/ChemX_001
+- [Grounded Planning Research](https://shoryavardhaan.vercel.app/project/planning-research): Explicit object commitment in non-linguistic agent planning, published on Zenodo. DOI: 10.5281/zenodo.19513284. Source: https://github.com/vassu-v/action-vs-object-planning
+
+## Side projects
+
+- [Tackety](https://github.com/vassu-v/Tackety): Open-source, self-hostable support engine that clusters similar issues and ranks them by real impact. In development.
+- [S.H.O.A.V.](https://github.com/vassu-v/SHOAV): MCP server that gives AI agents a real browser with a deterministic guard against clickjacking, dark patterns and hidden prompt injection. Genesis Hackathon 2026, Track 03. Live: https://shoav.vercel.app/
+- [Switchyard](https://github.com/vassu-v/agent-supervisor-multiprovider_mcp): Local daemon that keeps one live session per coding agent (agy, Claude Code, OpenCode, Codex) and steers them from one CLI, MCP bridge or dashboard.
+- [Delhi CM Dashboard](https://github.com/vassu-v/delhi-cm-dashboard-hn): SarkarSathi spin-off: grievance command centre with complaint clustering, surge alerts and an AI advisor.
+- [FitHub](https://github.com/vassu-v/FitHub): Gamified fitness tracker for students using a phone or a DIY sensor band. Built in 3 hours.
+
+## Experience
+
+- Bits&Bytes: Kolkata Fork Lead, Apr 2026 – present
+- 4MQ.org: Youth Partner, Apr 2026 – present (Consultant since May 2026; Guest Fellow, Jan – Apr 2026)
+- Freelance: UI & Landing Page Design, Mar 2026 – present
+- Beyond Rote: Research & Outreach Lead, Jan – Apr 2026
+- Utsavy: Experience Designer, UI/UX, Jun – Jul 2025
 
 ## Writing
 
-- [Nobody told me to start. That was the point.](https://shoryavardhaan.vercel.app/blog/why-i-build): Origin post — on building real things from Kolkata at 17, without permission, without an ecosystem, and what three years of shipping actually teaches.
-- [Why Indian developers can't get paid online — and how I fixed it](https://shoryavardhaan.vercel.app/blog/building-buy4chai): How a Reddit thread confirmed the gap was real, and building Buy4Chai to fill it.
-- [Markets don't get disrupted. They get aged out.](https://shoryavardhaan.vercel.app/blog/markets-dont-get-disrupted): Why the quiet danger isn't AI taking jobs — it's the next generation of buyers not having the gap in the first place.
+- [A 3D room on a laptop with no graphics card](https://shoryavardhaan.vercel.app/blog/pixel-budget): How this site's 3D homepage went from 95 ms to 6.7 ms per frame on integrated graphics, and why each visitor gets a pixel budget.
+- [Nobody told me to start. That was the point.](https://shoryavardhaan.vercel.app/blog/why-i-build): Three years of shipping real things from Kolkata, and starting before you're supposed to.
+- [Why Indian developers can't get paid online, and how I fixed it](https://shoryavardhaan.vercel.app/blog/building-buy4chai): How a Reddit thread confirmed the gap was real, and building Buy4Chai to fill it.
+- [Markets don't get disrupted. They get aged out.](https://shoryavardhaan.vercel.app/blog/markets-dont-get-disrupted): Why the quiet danger isn't AI taking jobs.
 - [Apple's been playing a different game since 2017](https://shoryavardhaan.vercel.app/blog/apple-ai-decade): How Apple built AI silicon before AI was the thing to build for.
-- [Both groups are losing. Just differently.](https://shoryavardhaan.vercel.app/blog/both-groups-are-losing): On students who ship without understanding vs. students who learn syntax while the world moves on.
-- [Why "needs vs. wants" is the wrong framework](https://shoryavardhaan.vercel.app/blog/hardware-failure): Teaching financial literacy to a generation running on algorithmic desire engines.
+- [Both groups are losing. Just differently.](https://shoryavardhaan.vercel.app/blog/both-groups-are-losing): Students who ship without understanding vs. students who learn syntax while the world moves on.
+- [Why "needs vs. wants" is the wrong framework](https://shoryavardhaan.vercel.app/blog/hardware-failure): Financial literacy for a generation running on algorithmic desire engines.
+
+## Machine-readable
+
+- JSON: https://shoryavardhaan.vercel.app/api/cli/projects · /api/cli/side · /api/cli/work · /api/cli/blog · /api/cli/wins · /api/cli/about
+- Terminal: https://shoryavardhaan.vercel.app/terminal/ or `curl shoryavardhaan.vercel.app`
+- Sitemap: https://shoryavardhaan.vercel.app/sitemap.xml
+
+## Contact
+
+- Email: shoryavardhaans2@gmail.com
+- Book a 30-minute call: https://cal.com/shoryavardhaan/30min
 
 ## Links
 

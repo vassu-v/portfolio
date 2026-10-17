@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { POSTS } from '../../data/blog'
+import { DIARY_POSTS as POSTS } from '../../data/blog'
 import { Hotspot, damp } from './common'
 import { room, useRoom } from './store'
 import { goToStop } from './tourData'

@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PROJECTS } from '../../data/projects'
 import { SIDE_PROJECTS } from '../../data/sideProjects'
-import { POSTS } from '../../data/blog'
+import { DIARY_POSTS as POSTS } from '../../data/blog'
 import { ITEMS, CAL } from './corkData'
 import { PHOTOS } from './DeskPhotos'
 import LaptopTerminal from './LaptopTerminal'
@@ -557,9 +557,11 @@ export default function RoomHome() {
   useEffect(() => {
     const open = e => e.detail && navigate(`/blog/${e.detail}`)
     const proj = e => e.detail && navigate(`/project/${e.detail}`)
+    const log = () => navigate('/blog')
     window.addEventListener('room-open-post', open)
     window.addEventListener('room-open-project', proj)
-    return () => { window.removeEventListener('room-open-post', open); window.removeEventListener('room-open-project', proj) }
+    window.addEventListener('room-open-log', log)
+    return () => { window.removeEventListener('room-open-post', open); window.removeEventListener('room-open-project', proj); window.removeEventListener('room-open-log', log) }
   }, [navigate])
 
   useEffect(() => {
@@ -611,7 +613,8 @@ export default function RoomHome() {
       {!roam && !poster && <div style={{ height: `${100 + RUNWAY_UNITS * 95}vh`, position: 'relative', zIndex: 0, pointerEvents: 'none' }} />}
 
       <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px var(--pad)', pointerEvents: 'none' }}>
-        <span style={{ ...mono, color: 'var(--cu)', fontSize: '0.9rem', letterSpacing: '0.12em' }}>SG</span>
+        {/* a pulled card / folder comes right up to the camera: get out of its way */}
+        <motion.span animate={{ opacity: panelFor || photo >= 0 ? 0 : 1 }} transition={{ duration: 0.25 }} style={{ ...mono, color: 'var(--cu)', fontSize: '0.9rem', letterSpacing: '0.12em' }}>SG</motion.span>
         {roam
           ? <a href="/" style={{ ...mono, color: 'rgba(240,230,216,0.6)', fontSize: '0.62rem', letterSpacing: '0.1em', pointerEvents: 'auto' }}>← back to the site</a>
           : <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
