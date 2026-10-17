@@ -514,6 +514,22 @@
    "status": "wip",
    "github": "https://github.com/vassu-v/agent-supervisor-multiprovider_mcp",
    "live": null
+  },
+  {
+   "name": "Delhi CM Dashboard",
+   "line": "complaints, grouped by AI",
+   "desc": "A SarkarSathi spin-off built as a grievance command centre for the Delhi CM's office. Complaints across 14 districts and 11 categories on one heatmap, similar complaints merged into clusters, surge alerts against a rolling 3-week baseline, 7-day staleness flags, photo intake for handwritten letters, and an AI advisor that explains what it sees. FastAPI, SQLite, Gemini.",
+   "status": "shipped",
+   "github": "https://github.com/vassu-v/delhi-cm-dashboard-hn",
+   "live": null
+  },
+  {
+   "name": "FitHub",
+   "line": "reps from a phone or a band",
+   "desc": "A gamified fitness tracker for students: no app install, no account. Count reps with a DIY ESP8266 + MPU-6050 band, or just your phone's motion sensor. Live rep counter over WebSocket, milestone badges against yourself, and a shareable workout card. Built in 3 hours.",
+   "status": "shipped",
+   "github": "https://github.com/vassu-v/FitHub",
+   "live": null
   }
  ],
  "about": {
