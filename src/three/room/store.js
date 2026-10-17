@@ -18,6 +18,7 @@ let state = {
   drawerShut: false, // visitor shut the drawer the projects stop opened
   diaryShut: false,  // …and the diary the diary stop opened
   hireSeen: false,   // past the projects stop once: the hire-me CTA stays
+  toured: typeof window !== 'undefined' && (() => { try { return sessionStorage.getItem('room-toured') === '1' } catch { return false } })(), // reached the end of the tour this tab
   side: -1,          // side-project index card lifted out of the second drawer
   tourStop: 'intro', // scroll-tour stop the camera is at (CameraRig TOUR)
   pin: null,         // corkboard item brought forward (corkData id)

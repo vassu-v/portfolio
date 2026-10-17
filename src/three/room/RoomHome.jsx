@@ -133,6 +133,26 @@ function FreeHints({ mobile }) {
   )
 }
 
+// Once the visitor has reached the end of the tour, jumping back to a section
+// (chip, object, photo frame) leaves a way home that isn't re-scrolling the
+// whole tour. (store.toured is set by CameraRig, remembered for the tab.)
+function BackToRoom({ mobile }) {
+  const stop = useRoom(s => s.tourStop)
+  const busy = useRoom(s => !!(s.focus || s.pin || s.folder >= 0 || s.side >= 0))
+  const toured = useRoom(s => s.toured)
+  return (
+    <AnimatePresence>
+      {toured && stop !== 'free' && !busy && (
+        <motion.div key="back-to-room" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+          // phones: the stop caption owns the bottom edge, so this sits up top
+          style={{ position: 'fixed', zIndex: 50, ...(mobile ? { top: 72, left: 0, right: 0, display: 'flex', justifyContent: 'center' } : { right: 'var(--pad)', bottom: 40 }) }}>
+          <Chip onClick={() => goToStop('free')}>↓ back to the room</Chip>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 // Tour text. The intro's lettering lives in 3D (IntroPhoto) — here is only
 // the shadow veil around the lit photo, lifting as you scroll. Each later
 // stop gets a short caption while the camera holds there.
@@ -601,6 +621,7 @@ export default function RoomHome() {
 
       {!roam && !poster && <TourCopy hidden={!!panelFor} mobile={mobile} />}
       {!roam && !poster && <FreeHints mobile={mobile} />}
+      {!roam && !poster && <BackToRoom mobile={mobile} />}
 
       {/* explore chips — also the accessible way to reach every object */}
       <AnimatePresence>
